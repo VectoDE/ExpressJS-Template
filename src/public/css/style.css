@@ -1,0 +1,461 @@
+body {
+    background-color: #333;
+}
+
+/*Navigation*/
+header nav {
+    justify-content: center;
+    margin: -10px;
+}
+
+header nav ul {
+    display: flex;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    background-color: #333;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    position: relative;
+    top: 0;
+    left: 0;
+    height: 70px;
+}
+
+header nav ul img {
+    height: 2rem;
+    width: 2rem;
+    border-radius: 50%;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    -ms-border-radius: 50%;
+    -o-border-radius: 50%;
+    margin-right: 10px;
+}
+
+header nav ul li {
+    display: inline-block;
+    margin: 0 10px;
+    padding: 0;
+    font-size: 1.5rem;
+    background-color: #333;
+}
+
+header nav ul li a {
+    text-decoration: none;
+    text-transform: uppercase;
+    background-color: #333;
+    color: white;
+}
+
+header nav ul li a:hover {
+    color: green;
+}
+
+/*Header Background*/
+header div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+header div figure {
+    display: flex;
+    justify-content: center;
+    margin-top: auto;
+    margin-right: -15px;
+    margin-bottom: auto;
+    margin-left: -15px;
+}
+
+header div figure img {
+    width: 100%;
+    height: auto;
+}
+
+header div h1 {
+    position: absolute;
+    background: none;
+    color: white;
+    font-size: 3rem;
+    margin-top: -90px;
+    text-shadow: #000000 5px 5px 5px;
+    width: 100%;
+    text-align: center;
+}
+
+header div p {
+    position: absolute;
+    background: none;
+    color: white;
+    margin-top: 0;
+    font-size: 1.5rem;
+    text-shadow: #000000 5px 5px 5px;
+    width: 100%;
+    text-align: center;
+}
+
+/*Main*/
+main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #333;
+}
+
+main section {
+    justify-content: center;
+    align-items: center;
+    background-color: #333;
+    margin-right: -9px;
+    margin-left: -9px;
+}
+
+main section div {
+    justify-content: center;
+    width: 100%;
+    padding: 0rem;
+}
+
+main section div figure {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    -ms-border-radius: 5px;
+    -o-border-radius: 5px;
+    padding: 1rem;
+    margin: 1rem;
+}
+
+main section div figure img {
+    width: max-content;
+    height: 360px;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: auto;
+    max-width: max-content;
+}
+
+main section div p {
+    margin: 1rem;
+    padding: 1rem;
+    font-size: 1.5rem;
+    text-align: center;
+    text-shadow: #000000 5px 5px 5px;
+    color: white;
+    background-color: #333;
+    border-radius: 10px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -ms-border-radius: 10px;
+    -o-border-radius: 10px;
+    border-style: solid;
+    border-color: #333;
+    border-width: 1px;
+    box-shadow: #000000 5px 5px 5px;
+    -webkit-box-shadow: #000000 5px 5px 5px;
+    -moz-box-shadow: #000000 5px 5px 5px;
+    -ms-box-shadow: #000000 5px 5px 5px;
+    -o-box-shadow: #000000 5px 5px 5px;
+}
+
+main section div form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 2rem;
+    padding: 4rem;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 20px;
+    -webkit-border-radius: 20px;
+    -moz-border-radius: 20px;
+    -ms-border-radius: 20px;
+    -o-border-radius: 20px;
+    max-width: max-content;
+    border-style: solid;
+    border-color: #333;
+    border-width: 1px;
+    box-shadow: #00000069 5px 5px 5px;
+    -webkit-box-shadow: #00000069 5px 5px 5px;
+    -moz-box-shadow: #00000069 5px 5px 5px;
+    -ms-box-shadow: #00000069 5px 5px 5px;
+    -o-box-shadow: #00000069 5px 5px 5px;
+}
+
+main section div form h1 {
+    font-size: 3rem;
+    color: white;
+}
+
+main section div form label {
+    font-size: 1.5rem;
+    margin-top: 0.5rem;
+    margin-right: 1rem;
+    margin-bottom: 0rem;
+    margin-left: 1rem;
+    padding-top: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 1rem;
+    padding-left: 1rem;
+    text-align: center;
+    text-shadow: #000000 5px 5px 5px;
+    color: white;
+    background-color: #333;
+    border-radius: 10px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -ms-border-radius: 10px;
+    -o-border-radius: 10px;
+    border-style: solid;
+    border-color: #333;
+    border-width: 1px;
+}
+
+main section div form input {
+    font-size: 1.5rem;
+    margin: 1rem;
+    padding-top: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 1rem;
+    padding-left: 1rem;
+    text-align: center;
+    text-shadow: #000000 5px 5px 5px;
+    color: white;
+    background-color: #333;
+    border-radius: 10px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -ms-border-radius: 10px;
+    -o-border-radius: 10px;
+    border-style: solid;
+    border-color: #333;
+    border-width: 1px;
+    box-shadow: #00000069 5px 5px 5px;
+    -webkit-box-shadow: #00000069 5px 5px 5px;
+    -moz-box-shadow: #00000069 5px 5px 5px;
+    -ms-box-shadow: #00000069 5px 5px 5px;
+    -o-box-shadow: #00000069 5px 5px 5px;
+    width: 100%;
+    text-align: center;
+}
+
+main section div form textarea {
+    font-size: 1.5rem;
+    margin: 1rem;
+    padding-top: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 1rem;
+    padding-left: 1rem;
+    text-align: center;
+    text-shadow: #000000 5px 5px 5px;
+    color: white;
+    background-color: #333;
+    border-radius: 10px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -ms-border-radius: 10px;
+    -o-border-radius: 10px;
+    border-style: solid;
+    border-color: #333;
+    border-width: 1px;
+    box-shadow: #00000069 5px 5px 5px;
+    -webkit-box-shadow: #00000069 5px 5px 5px;
+    -moz-box-shadow: #00000069 5px 5px 5px;
+    -ms-box-shadow: #00000069 5px 5px 5px;
+    -o-box-shadow: #00000069 5px 5px 5px;
+    width: 100%;
+    text-align: center;
+}
+
+main section div form .submit-btn {
+    background-color: rgba(0, 128, 0, 0.164);
+}
+
+main section div form .submit-btn:hover {
+    background-color: rgba(0, 128, 0, 0.575);
+    cursor: pointer;
+}
+
+footer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #333;
+    margin-right: -9px;
+    margin-left: -9px;
+}
+
+footer p {
+    text-decoration: none;
+    color: white;
+    text-align: center;
+}
+
+footer p a {
+    text-decoration: none;
+    color: Aqua
+}
+
+footer p a:hover {
+    color: green;
+}
+
+@media screen and (max-width: 783px) {
+    header div h1 {
+        position: absolute;
+        background: none;
+        color: rgb(255, 255, 255);
+        font-size: 1rem;
+        margin-top: 0rem;
+        text-shadow: #000000 5px 5px 5px;
+        width: 100%;
+        text-align: center;
+    }
+    header div p {
+        position: absolute;
+        background: none;
+        color: white;
+        margin-top: 2rem;
+        font-size: 0.6rem;
+        text-shadow: #000000 5px 5px 5px;
+        width: 100%;
+        text-align: center;
+    }
+
+
+    header nav {
+        justify-content: center;
+        margin: -10px;
+    }
+
+    header nav ul {
+        display: flex;
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        background-color: #333;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        position: relative;
+        top: 0;
+        left: 0;
+        height: 70px;
+    }
+
+    header nav ul img {
+        height: 2rem;
+        width: 2rem;
+        border-radius: 50%;
+        -webkit-border-radius: 50%;
+        -moz-border-radius: 50%;
+        -ms-border-radius: 50%;
+        -o-border-radius: 50%;
+        margin-right: 10px;
+    }
+
+    header nav ul li {
+        display: inline-block;
+        margin: 0 10px;
+        padding: 0;
+        font-size: 1rem;
+        background-color: #333;
+    }
+
+    header nav ul li a {
+        text-decoration: none;
+        text-transform: uppercase;
+        background-color: #333;
+        color: white;
+    }
+
+    header nav ul li a:hover {
+        color: green;
+    }
+}
+
+@media screen and (max-width: 300px) {
+    header div h1 {
+        position: absolute;
+        background: none;
+        color: rgb(255, 255, 255);
+        font-size: 0.7rem;
+        margin-top: 0rem;
+        text-shadow: #000000 5px 5px 5px;
+        width: 100%;
+        text-align: center;
+    }
+    header div p {
+        position: absolute;
+        background: none;
+        color: white;
+        margin-top: 2rem;
+        font-size: 0.4rem;
+        text-shadow: #000000 5px 5px 5px;
+        width: 100%;
+        text-align: center;
+    }
+
+
+    header nav {
+        justify-content: center;
+        margin: -10px;
+    }
+
+    header nav ul {
+        display: flex;
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        background-color: #333;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        position: relative;
+        top: 0;
+        left: 0;
+        height: 70px;
+    }
+
+    header nav ul img {
+        height: 2rem;
+        width: 2rem;
+        border-radius: 50%;
+        -webkit-border-radius: 50%;
+        -moz-border-radius: 50%;
+        -ms-border-radius: 50%;
+        -o-border-radius: 50%;
+        margin-right: 10px;
+    }
+
+    header nav ul li {
+        display: inline-block;
+        margin: 0 10px;
+        padding: 0;
+        font-size: 0.5rem;
+        background-color: #333;
+    }
+
+    header nav ul li a {
+        text-decoration: none;
+        text-transform: uppercase;
+        background-color: #333;
+        color: white;
+    }
+
+    header nav ul li a:hover {
+        color: green;
+    }
+}
