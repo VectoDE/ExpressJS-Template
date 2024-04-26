@@ -1,43 +1,16 @@
 {
-  "name": "nodejs-expressjs-template",
-  "version": "1.0.0",
-  "description": "This Project is a Node.js with Express.js template for anybody.",
-  "main": "src/index.js",
+  "name": "expressjs-template",
+  "version": "0.0.0",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ./src/bin/www"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/VectoDE/NodeJS-ExpressJS-Template.git"
-  },
-  "keywords": [
-    "Node.js",
-    "Express.js",
-    "EJS",
-    "Template"
-  ],
-  "author": "Vecto. (Tim Hauke)",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/VectoDE/NodeJS-ExpressJS-Template/issues"
-  },
-  "homepage": "https://github.com/VectoDE/NodeJS-ExpressJS-Template#readme",
   "dependencies": {
-    "bcrypt": "^5.1.1",
-    "body-parser": "^1.20.2",
-    "dotenv": "^16.4.5",
-    "ejs": "^3.1.10",
-    "express": "^4.19.2",
-    "express-session": "^1.18.0",
-    "express-validator": "^7.0.1",
-    "http": "^0.0.1-security",
-    "https": "^1.0.0",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.3.1",
-    "morgan": "^1.10.0",
-    "mysql": "^2.18.1",
-    "node-fetch": "^3.3.2",
-    "passport": "^0.7.0",
-    "passport-local": "^1.0.0"
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "http-errors": "~1.6.3",
+    "jade": "~1.11.0",
+    "morgan": "~1.9.1"
   }
 }
