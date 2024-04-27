@@ -1,3 +1,7 @@
-exports.index = function(req, res){
-    res.render('index', { title: 'Route Seperation Example' });
+async function getIndex (req, res) {
+    res.render('index');
+};
+
+module.exports = {
+    getIndex,
 };
