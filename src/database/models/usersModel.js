@@ -1,6 +1,6 @@
 const connection = require('../connect');
 
-function createUsersTable() {
+async function createUsersTable() {
     const createTableQuery = `
         CREATE TABLE IF NOT EXISTS users (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -10,29 +10,61 @@ function createUsersTable() {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     `;
-    connection.query(createTableQuery, (err, results) => {
-        if (err) {
-            console.error('Error creating users table: ' + err.stack);
-            return;
-        }
-        console.log('Users table created successfully.');
-    });
+
+    try {
+        await new Promise((resolve, reject) => {
+            connection.query(createTableQuery, (err, results) => {
+                if (err) {
+                    reject('Error creating users table: ' + err.stack);
+                    return;
+                }
+                resolve('Users table created successfully.');
+            });
+        });
+    } catch (error) {
+        throw error;
+    }
 }
 
-function dropUsersTable() {
+async function dropUsersTable() {
     const dropTableQuery = "DROP TABLE IF EXISTS users";
-    connection.query(dropTableQuery, (err, results) => {
-        if (err) {
-            console.error('Error dropping users table: ' + err.stack);
-            return;
-        }
-        console.log('Users table dropped successfully.');
-    });
+
+    try {
+        await new Promise((resolve, reject) => {
+            connection.query(dropTableQuery, (err, results) => {
+                if (err) {
+                    reject('Error dropping users table: ' + err.stack);
+                    return;
+                }
+                resolve('Users table dropped successfully.');
+            });
+        });
+    } catch (error) {
+        throw error;
+    }
 }
 
-createUsersTable();
+async function getAllUsers() {
+    const query = "SELECT * FROM users";
+
+    try {
+        const users = await new Promise((resolve, reject) => {
+            connection.query(query, (err, results) => {
+                if (err) {
+                    reject('Error fetching users: ' + err.stack);
+                    return;
+                }
+                resolve(results);
+            });
+        });
+        return users;
+    } catch (error) {
+        throw error;
+    }
+}
 
 module.exports = {
     createUsersTable,
     dropUsersTable,
+    getAllUsers,
 };

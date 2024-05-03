@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const errorController = require('../controllers/errorController');
 
-router.get('/error', errorController.index);
+router.get(errorController.index);
 
 router.use(errorController.handleNotFound);
 
