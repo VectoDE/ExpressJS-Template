@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>API ~ Express.js Template</title>
+    <title>Register ~ Express.js Template</title>
     <link rel="shortcut icon" href="assets/img/favicon.ico" type="image/x-icon">
 
     <link rel="stylesheet" href="assets/css/style.css">
@@ -25,13 +25,27 @@
             </form>
         </nav>
         <section>
-            <h1>Express.js Template</h1>
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ipsa, quidem.</p>
+            <h1>Registration</h1>
+            <p>Register yourself by us and get some extra's.</p>
             <img src="assets/img/header.jpg" alt="Header">
         </section>
     </header>
 
-    <main></main>
+    <main>
+        <form action="/auth/register" method="post">
+            <label for="name">Name</label>
+            <input type="text" name="name" id="name" placeholder="Enter your name">
+        
+            <label for="email">Email</label>
+            <input type="email" name="email" id="email" placeholder="Enter your email">
+        
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password" placeholder="Enter your password">
+        
+            <button type="submit">Register</button>
+            <p>Already have an account? <a href="/login">Login</a></p>
+        </form>
+    </main>
 
     <footer>
         <section class="footer-socials">

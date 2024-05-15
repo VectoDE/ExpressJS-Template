@@ -9,5 +9,9 @@ router.use((err, req, res, next) => {
 });
 
 router.get('/', indexController.getIndex);
+router.get('/about', indexController.getAbout);
+router.get('/contact', indexController.getContact);
+router.get('/login', indexController.getLogin);
+router.get('/register', indexController.getRegister);
 
 module.exports = router;

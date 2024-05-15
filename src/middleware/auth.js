@@ -1,14 +1,15 @@
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 
-const secretKey = process.env.JWT_SECRET || 'yourSecretKey'; // Secret Key aus Umgebungsvariable oder Standardwert
+const secretKey = process.env.JWT_SECRET || 'yourSecretKey';
 
-// Funktion zum Generieren eines JWT-Tokens
 const generateToken = (payload) => {
-    return jwt.sign(payload, secretKey, { expiresIn: '1h' }); // Token läuft nach 1 Stunde ab
+    if (typeof payload !== 'object' || payload === null) {
+        throw new Error('Payload must be a plain object');
+    }
+    return jwt.sign(payload, secretKey, { expiresIn: '1h' });
 };
 
-// Funktion zum Überprüfen und Aktualisieren eines JWT-Tokens
 const verifyAndUpdateToken = (token) => {
     try {
         const decoded = jwt.verify(token, secretKey);
@@ -18,12 +19,28 @@ const verifyAndUpdateToken = (token) => {
             token: token,
         };
     } catch (error) {
-        // Token ist ungültig oder abgelaufen
         return { valid: false };
     }
 };
 
-// Funktion zum Löschen eines JWT-Tokens aus der .env-Datei
+const generateVerificationToken = (user) => {
+    const payload = {
+        id: user.id,
+        email: user.email,
+        type: 'email_verification',
+    };
+    return jwt.sign(payload, secretKey, { expiresIn: '1h' });
+};
+
+const verifyToken = (token) => {
+    try {
+        const decoded = jwt.verify(token, secretKey);
+        return decoded;
+    } catch (error) {
+        return null;
+    }
+};
+
 const deleteTokenFromEnv = () => {
     try {
         fs.writeFileSync('.env', fs.readFileSync('.env', 'utf8').replace(/JWT_TOKEN=.*\n/, ''));
@@ -32,7 +49,6 @@ const deleteTokenFromEnv = () => {
     }
 };
 
-// Middleware für die Authentifizierung mit JWT
 const authenticate = (req, res, next) => {
     const token = req.headers.authorization;
 
@@ -47,8 +63,7 @@ const authenticate = (req, res, next) => {
     }
 
     req.user = tokenData.user;
-
-    // Überprüfen, ob Token abgelaufen ist und falls ja, löschen
+    
     if (jwt.decode(token).exp * 1000 < Date.now()) {
         deleteTokenFromEnv();
     }
@@ -57,6 +72,8 @@ const authenticate = (req, res, next) => {
 };
 
 module.exports = {
+    generateVerificationToken,
+    verifyToken,
     authenticate,
     generateToken,
 };
