@@ -1,34 +1,34 @@
 # Express.js Template Repository
 
-Dieses Repository bietet ein grundlegendes Template für die Entwicklung von Webanwendungen mit Express.js. Es bietet eine solide Grundlage und eine vorgefertigte Ordnerstruktur, um die Entwicklung zu beschleunigen.
+This repository provides a basic template for developing web applications with Express.js. It offers a solid foundation and a pre-made folder structure to accelerate development.
 
-## Funktionen
+## Features
 
-- **Vorgefertigte Ordnerstruktur**: Klare Trennung von Routen, Middleware, Diensten und anderen Modulen für eine verbesserte Organisation.
-- **Basic Middleware**: Enthält grundlegende Middleware wie Body-Parser und CORS für eine reibungslose Anwendungsentwicklung.
-- **Einfache Konfiguration**: Einfache Konfiguration von Server- und Datenbankverbindungen für eine schnelle Einrichtung.
-- **RESTful-Routen**: Vordefinierte Routen für häufige RESTful-Operationen wie GET, POST, PUT und DELETE.
-- **Error Handling**: Grundlegende Fehlerbehandlung und Middleware zur Verbesserung der Robustheit der Anwendung.
-- **Dokumentation**: README.md mit Anweisungen zur Verwendung und Erweiterung des Templates.
+- **Pre-made Folder Structure**: Clear separation of routes, middleware, services, and other modules for improved organization.
+- **Basic Middleware**: Includes essential middleware like Body-Parser and CORS for smooth application development.
+- **Easy Configuration**: Simple setup of server and database connections for quick deployment.
+- **RESTful Routes**: Pre-defined routes for common RESTful operations such as GET, POST, PUT, and DELETE.
+- **Error Handling**: Basic error handling and middleware to enhance application robustness.
+- **Documentation**: README.md with instructions for using and extending the template.
 
 ## Installation
 
-1. Klone dieses Repository auf deinen lokalen Computer.
-2. Navigiere zum Verzeichnis des Templates und installiere die Abhängigkeiten mit `npm install`.
-3. Passe die Konfigurationsdateien an, um deine Anwendung anzupassen.
-4. Starte die Anwendung mit `npm start`.
+1. Clone this repository to your local machine.
+2. Navigate to the template directory and install dependencies with `npm install`.
+3. Customize configuration files to suit your application.
+4. Start the application with `npm start`.
 
-## Verwendung
+## Usage
 
-- Füge neue Routen und Middleware im entsprechenden Ordner hinzu.
-- Konfiguriere deine Datenbankverbindung in der `.env`-Datei.
-- Passe die Serverkonfiguration in der `.env`-Datei an.
-- Füge weitere Middleware oder Dienste hinzu, um deine Anwendung zu erweitern.
+- Add new routes and middleware in the respective folders.
+- Configure your database connection in the `.env` file.
+- Adjust server configuration in the `.env` file.
+- Add additional middleware or services to extend your application.
 
-## Beitragende
+## Contributors
 
-- [Tim Hauke](https://hauknetz.de) - Hauptentwickler
+- [Tim Hauke](https://hauknetz.de) - Lead Developer
 
-## Lizenz
+## License
 
-Dieses Projekt ist unter der [MIT-Lizenz](Link zur Lizenz) lizenziert.
+This project is licensed under the [MIT License](Link to License).
