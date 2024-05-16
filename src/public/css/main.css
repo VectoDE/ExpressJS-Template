@@ -1,0 +1,17 @@
+:root {
+    /* Text Settings */
+    --font-family: ;
+    --font-size: 17px;
+    --text-color: white;
+    --text-color-hovered: purple;
+
+    /* Background Settings */
+    --background-color: grey;
+    --background-color-navbar: darkgrey;
+
+    /*Search bar*/
+    --search-color: white;
+    --search-color-hover: purple;
+    --search-border-color: green;
+    --search-background-color: black;
+}

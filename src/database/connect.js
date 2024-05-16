@@ -2,7 +2,7 @@ const mysql = require('mysql');
 const usersModel = require('./models/usersModel');
 const productsModel = require('./models/productsModel');
 
-let connection; // Singleton für die Datenbankverbindung
+let connection;
 
 function connectToDatabase() {
     if (!connection) {
@@ -19,8 +19,7 @@ function connectToDatabase() {
                 return;
             }
             console.log('Connected to database as id ' + connection.threadId);
-
-            // Nach erfolgreicher Verbindung die Tabellen überprüfen und erstellen
+            
             checkAndCreateTables();
         });
 

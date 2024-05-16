@@ -1,0 +1,147 @@
+@import 'main.css';
+
+* {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: var(--font-family);
+    font-size: var(--font-size);
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    padding: 0rem;
+}
+
+header nav {
+    padding: 1rem;
+}
+
+header nav ul {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    list-style: none;
+    padding: 0;
+    margin: 1rem;
+}
+
+header nav ul li {
+    padding: 0 1rem;
+    justify-content: center;
+    text-align: center;
+}
+
+header nav ul li a {
+    text-decoration: none;
+    text-align: center;
+    color: var(--text-color);
+    font-size: 20px;
+}
+
+header nav ul li a:hover {
+    color: var(--text-color-hovered);
+}
+
+header nav form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.5rem 0 0 0;
+    margin: 0;
+    width: 100%;
+}
+
+header nav form input {
+    padding: 0.2rem 1rem 0.2rem 1rem;
+    border: 1px solid var(--search-border-color);
+    border-radius: 5px;
+    margin-right: 0.4rem;
+    background-color: var(--search-background-color);
+    color: var(--search-color);
+}
+
+header nav form button {
+    padding: 0.2rem 1rem 0.2rem 1rem;
+    border: 1px solid var(--search-border-color);
+    border-radius: 5px;
+    margin: 0;
+    background-color: var(--search-background-color);
+    color: var(--search-color);
+}
+
+header section {
+    padding: 1rem;
+}
+
+main {
+    margin: 0;
+    padding: 2rem;
+}
+
+
+pre code{
+    display: block;
+    padding: 0.5rem;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.42857143;
+    word-break: break-all;
+    word-wrap: break-word;
+    color: #ffffff;
+    background-color: darkgrey;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+
+
+footer {
+    display: block;
+    padding: 1rem;
+    margin-top: -17px;
+}
+
+footer .footer-top-button {
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+}
+
+footer div {
+    justify-content: center;
+    align-items: center;
+    list-style: none;
+    padding: 0;
+    margin: 1rem;
+}
+
+footer div ul {
+    list-style: none;
+}
+
+footer div ul li {
+    padding: 0 1rem;
+    justify-content: center;
+    text-align: center;
+}
+
+footer div ul li a {
+    text-decoration: none;
+    text-align: center;
+    color: var(--text-color);
+    font-size: 20px;
+}
+
+footer div ul li a:hover {
+    text-decoration: none;
+    text-align: center;
+    color: var(--text-color-hovered);
+    font-size: 20px;
+}

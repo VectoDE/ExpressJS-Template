@@ -23,7 +23,7 @@ async function createUsersTable() {
                 resolve('Users table created successfully.');
             });
         });
-        connection.end(); // Verbindung schließen
+        connection.end();
     } catch (error) {
         throw error;
     }
