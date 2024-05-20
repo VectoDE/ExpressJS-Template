@@ -1,54 +1,44 @@
-const connection = require('../connect');
+const mongoose = require('mongoose');
 
-async function createProductsTable() {
-    const createTableQuery = `
-        CREATE TABLE IF NOT EXISTS products (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(255) NOT NULL,
-            description TEXT,
-            price DECIMAL(10, 2) NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    `;
-    return new Promise((resolve, reject) => {
-        connection.query(createTableQuery, (err, results) => {
-            if (err) {
-                reject('Error creating products table: ' + err.stack);
-                return;
-            }
-            resolve('Products table created successfully.');
-        });
-    });
-}
+const ProductSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true
+    },
+    description: {
+        type: String
+    },
+    price: {
+        type: Number,
+        required: true
+    },
+    created_at: {
+        type: Date,
+        default: Date.now
+    }
+});
 
-async function dropProductsTable() {
-    const dropTableQuery = "DROP TABLE IF EXISTS products";
-    return new Promise((resolve, reject) => {
-        connection.query(dropTableQuery, (err, results) => {
-            if (err) {
-                reject('Error dropping products table: ' + err.stack);
-                return;
-            }
-            resolve('Products table dropped successfully.');
-        });
-    });
+const Product = mongoose.model('Product', ProductSchema);
+
+async function createProduct({ name, description, price }) {
+    try {
+        const product = await Product.create({ name, description, price });
+        return product;
+    } catch (error) {
+        throw error;
+    }
 }
 
 async function getAllProducts() {
-    const query = "SELECT * FROM products";
-    return new Promise((resolve, reject) => {
-        connection.query(query, (err, results) => {
-            if (err) {
-                reject('Error fetching products: ' + err.stack);
-                return;
-            }
-            resolve(results);
-        });
-    });
+    try {
+        const products = await Product.find();
+        return products;
+    } catch (error) {
+        throw error;
+    }
 }
 
 module.exports = {
-    createProductsTable,
-    dropProductsTable,
+    createProduct,
     getAllProducts,
 };

@@ -4,13 +4,16 @@ const cors = require('cors');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 
-const logger = require('./middleware/logger');
 const { authenticate } = require('./middleware/auth');
+const errorHandler = require('./middleware/errorHandler');
+
+const { logger, errorLogger } = require('./utilities/logger');
 
 const app = express();
 
 const indexRoutes = require('./routes/index.js');
 const authRoutes = require('./routes/auth');
+const roleRoutes = require('./routes/role');
 const apiRoutes = require('./routes/api.js');
 const errorRoutes = require('./routes/error.js');
 const usersRoutes = require('./routes/users.js');
@@ -26,29 +29,21 @@ app.set('views', path.join(__dirname, 'views'));
 const publicDirectoryPath = path.join(__dirname, 'public');
 app.use('/assets', express.static(publicDirectoryPath));
 
-app.use(logger);
+app.use(logger, errorLogger);
+app.use(errorHandler);
 
 app.use('/', indexRoutes);
-app.use('/auth', authRoutes);
-
+app.use('/error', errorRoutes);
 app.use(authenticate);
+app.use('/auth', authRoutes);
+app.use('/dashboard/role', roleRoutes);
 app.use('/api', apiRoutes);
 app.use('/users', usersRoutes);
-app.use('/error', errorRoutes);
 
 app.use((req, res, next) => {
     const err = new Error('Not Found');
     err.status = 404;
     next(err);
-});
-
-app.use((err, req, res, next) => {
-    res.status(err.status || 500);
-    res.json({
-        error: {
-            message: err.message,
-        },
-    });
 });
 
 module.exports = app;

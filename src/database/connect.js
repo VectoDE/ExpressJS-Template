@@ -1,44 +1,30 @@
-const mysql = require('mysql');
-const usersModel = require('./models/usersModel');
-const productsModel = require('./models/productsModel');
+const mongoose = require('mongoose');
 
 let connection;
 
-function connectToDatabase() {
+async function connectToDatabase() {
     if (!connection) {
-        connection = mysql.createConnection({
-            host: process.env.DB_HOST,
-            user: process.env.DB_USER,
-            password: process.env.DB_PASSWORD,
-            database: process.env.DB_NAME
-        });
+        try {
+            await mongoose.connect(process.env.MONGODB_URI, {});
+            console.log('Connected to MongoDB');
+            connection = mongoose.connection;
 
-        connection.connect((err) => {
-            if (err) {
-                console.error('Error connecting to database: ' + err.stack);
-                return;
-            }
-            console.log('Connected to database as id ' + connection.threadId);
-            
-            checkAndCreateTables();
-        });
-
-        connection.on('error', (err) => {
-            console.error('Database connection error: ' + err.stack);
-        });
+            await checkAndCreateCollectionsAndIndexes();
+        } catch (error) {
+            console.error('Error connecting to MongoDB:', error.message);
+        }
     }
 
     return connection;
 }
 
-async function checkAndCreateTables() {
+async function checkAndCreateCollectionsAndIndexes() {
     try {
-        await usersModel.createUsersTable();
-        await productsModel.createProductsTable();
-        console.log('Tables checked and created successfully.');
+        console.log('Collections and indexes checked and created successfully.');
     } catch (error) {
-        console.error('Error checking and creating tables: ' + error.message);
+        console.error('Error checking and creating collections and indexes:', error.message);
     }
 }
+
 
 module.exports = connectToDatabase;

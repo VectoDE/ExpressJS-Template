@@ -25,7 +25,7 @@ const verifyAndUpdateToken = (token) => {
 
 const generateVerificationToken = (user) => {
     const payload = {
-        id: user.id,
+        id: user._id, // Use _id for MongoDB
         email: user.email,
         type: 'email_verification',
     };
@@ -63,11 +63,6 @@ const authenticate = (req, res, next) => {
     }
 
     req.user = tokenData.user;
-    
-    if (jwt.decode(token).exp * 1000 < Date.now()) {
-        deleteTokenFromEnv();
-    }
-
     next();
 };
 

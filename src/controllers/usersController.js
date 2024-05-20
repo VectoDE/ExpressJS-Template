@@ -1,6 +1,6 @@
 const userModel = require('../database/models/usersModel');
 
-async function getUsers (req, res) {
+async function getUsers(req, res) {
     try {
         const users = await userModel.getAllUsers();
         res.json(users);
@@ -10,7 +10,7 @@ async function getUsers (req, res) {
     }
 };
 
-async function createUser (req, res) {
+async function createUser(req, res) {
     const userData = req.body;
     try {
         const newUser = await userModel.createUser(userData);
@@ -21,7 +21,7 @@ async function createUser (req, res) {
     }
 };
 
-async function getUserById (req, res) {
+async function getUserById(req, res) {
     const userId = req.params.id;
     try {
         const user = await userModel.getUserById(userId);
@@ -35,7 +35,7 @@ async function getUserById (req, res) {
     }
 };
 
-async function updateUser (req, res) {
+async function updateUser(req, res) {
     const userId = req.params.id;
     const userData = req.body;
     try {
@@ -47,7 +47,7 @@ async function updateUser (req, res) {
     }
 };
 
-async function deleteUser (req, res) {
+async function deleteUser(req, res) {
     const userId = req.params.id;
     try {
         await userModel.deleteUser(userId);

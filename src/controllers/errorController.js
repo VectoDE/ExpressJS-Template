@@ -1,19 +1,13 @@
-async function index (req, res) {
-    res.render('error', {error: code, message});
-};
-
 async function handleNotFound(req, res, next) {
-    res.status(404).send("Sorry, can't find that!");
+    res.status(404).render('not_found', { pageTitle: 'Not Found', message: 'Sorry, the page you are looking for does not exist.' });
 }
 
 async function handleInternalError(err, req, res, next) {
     console.error(err.stack);
-    res.status(500).send('Something broke!');
+    res.status(500).render('error', { error: err });
 }
 
 module.exports = {
-    index,
     handleNotFound,
     handleInternalError
 };
-

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Roles</title>
+</head>
+<body>
+    <h1>Dashboard - Roles</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% roles.forEach(role => { %>
+                <tr>
+                    <td><%= role.name %></td>
+                    <td>
+                        <a href="/role/<%= role._id %>">Details</a>
+                        <a href="/role/<%= role._id %>/edit">Edit</a>
+                        <form action="/role/<%= role._id %>/delete" method="POST">
+                            <button type="submit">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+    <a href="/role/create">Create Role</a>
+</body>
+</html>
