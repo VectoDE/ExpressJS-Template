@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <%- include('../../partials/head', { title }) %>
+  </head>
+  <body class="page-home">
+    <%- include('../../partials/header') %>
+    <main class="container">
+      <%- include('../../partials/flash') %>
+      <section class="hero">
+        <h1>Enterprise Express.js auf einen Blick</h1>
+        <p>
+          Dieses Template bündelt erprobte Best Practices für API, Authentifizierung, Monitoring
+          und eine moderne Weboberfläche – ideal als Ausgangspunkt für produktive Plattformen.
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="/register">Jetzt starten</a>
+          <a class="button ghost" href="/docs">API entdecken</a>
+        </div>
+      </section>
+
+      <section class="card-grid" aria-labelledby="feature-title">
+        <h2 id="feature-title">Highlights</h2>
+        <% highlights.forEach((item) => { %>
+        <article class="card">
+          <h3><%= item.split(' ')[0] %></h3>
+          <p><%= item %></p>
+        </article>
+        <% }) %>
+      </section>
+
+      <section class="card-grid" aria-labelledby="security-title">
+        <h2 id="security-title">Sicherheits-Baseline</h2>
+        <article class="card">
+          <h3>Identity &amp; Sessions</h3>
+          <p>JWT Access &amp; Refresh Tokens kombiniert mit gehärteten, verschlüsselten Sessions und CSRF-Schutz.</p>
+        </article>
+        <article class="card">
+          <h3>Request Shield</h3>
+          <p>Rate Limiting, HPP, XSS-Cleaning, Sanitizing sowie Content Security Policy schützen vor gängigen Angriffen.</p>
+        </article>
+        <article class="card">
+          <h3>Observability</h3>
+          <p>Strukturierte Logs, Health-Check und vorbereitete Tests schaffen Transparenz für Betrieb &amp; CI/CD.</p>
+        </article>
+      </section>
+    </main>
+    <%- include('../../partials/footer') %>
+    <script src="/assets/js/main.js" defer></script>
+  </body>
+</html>

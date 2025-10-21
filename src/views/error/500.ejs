@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <%- include('../partials/head', { title: 'Fehler' }) %>
+  </head>
+  <body class="page-error">
+    <%- include('../partials/header') %>
+    <main class="container narrow">
+      <section class="card">
+        <h1>Es ist ein Fehler aufgetreten</h1>
+        <p><%= message %></p>
+        <% if (stack) { %>
+        <pre class="code-block"><%= stack %></pre>
+        <% } %>
+        <a class="button ghost" href="/">Zurück zur Startseite</a>
+      </section>
+    </main>
+    <%- include('../partials/footer') %>
+    <script src="/assets/js/main.js" defer></script>
+  </body>
+</html>

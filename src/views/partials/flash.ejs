@@ -1,0 +1,9 @@
+<% if (flash && flash.length) { %>
+<div class="flash-container" role="status" aria-live="polite">
+  <% flash.forEach((message) => { %>
+  <div class="flash flash-<%= message.type || 'info' %>">
+    <span><%= message.text %></span>
+  </div>
+  <% }) %>
+</div>
+<% } %>

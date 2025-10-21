@@ -1,0 +1,25 @@
+<header class="site-header">
+  <div class="container header-container">
+    <a class="brand" href="/" aria-label="Zur Startseite"><%= app.name %></a>
+    <nav aria-label="Hauptnavigation">
+      <ul class="nav-links">
+        <li><a href="/security">Security</a></li>
+        <li><a href="/privacy">Datenschutz</a></li>
+        <li><a href="/docs">API Docs</a></li>
+        <li><a href="/health">Health Check</a></li>
+      </ul>
+    </nav>
+    <div class="header-actions">
+      <% if (isAuthenticated && currentUser) { %>
+      <span class="welcome">Hallo, <strong><%= currentUser.name || currentUser.email %></strong></span>
+      <form method="post" action="/logout" class="logout-form">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <button type="submit" class="button ghost">Abmelden</button>
+      </form>
+      <% } else { %>
+      <a class="button ghost" href="/login">Anmelden</a>
+      <a class="button primary" href="/register">Registrieren</a>
+      <% } %>
+    </div>
+  </div>
+</header>
