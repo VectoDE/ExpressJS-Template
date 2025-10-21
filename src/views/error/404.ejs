@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <%- include('../partials/head', { title: 'Nicht gefunden' }) %>
+  </head>
+  <body class="page-error">
+    <%- include('../partials/header') %>
+    <main class="container narrow">
+      <section class="card">
+        <h1>Seite nicht gefunden</h1>
+        <p>Die angeforderte Ressource existiert nicht oder wurde verschoben.</p>
+        <a class="button primary" href="/">Zur Startseite</a>
+      </section>
+    </main>
+    <%- include('../partials/footer') %>
+    <script src="/assets/js/main.js" defer></script>
+  </body>
+</html>

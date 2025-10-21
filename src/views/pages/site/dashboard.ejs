@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <%- include('../../partials/head', { title }) %>
+  </head>
+  <body class="page-dashboard">
+    <%- include('../../partials/header') %>
+    <main class="container">
+      <%- include('../../partials/flash') %>
+      <section class="section">
+        <h1>Dashboard</h1>
+        <p>
+          Willkommen im sicheren Control Center. Hier findest du eine Übersicht über dein Profil, aktive Token und die wichtigsten API-Endpunkte.
+        </p>
+      </section>
+
+      <section class="card-grid" aria-labelledby="profile">
+        <h2 id="profile">Profil</h2>
+        <article class="card">
+          <h3>Benutzerdaten</h3>
+          <dl class="definition-list">
+            <div>
+              <dt>Name</dt>
+              <dd><%= user.name || '–' %></dd>
+            </div>
+            <div>
+              <dt>E-Mail</dt>
+              <dd><%= user.email %></dd>
+            </div>
+            <div>
+              <dt>Rollen</dt>
+              <dd><%= Array.isArray(user.roles) ? user.roles.join(', ') : user.role || 'user' %></dd>
+            </div>
+            <div>
+              <dt>Registriert</dt>
+              <dd><%= user.createdAt ? new Date(user.createdAt).toLocaleString('de-DE') : '–' %></dd>
+            </div>
+          </dl>
+        </article>
+
+        <article class="card">
+          <h3>API Token</h3>
+          <% if (tokens) { %>
+          <p class="token-label">Access Token</p>
+          <code class="code-block"><%= tokens.access.token %></code>
+          <p class="token-label">Gültig bis</p>
+          <p><%= new Date(tokens.access.expires).toLocaleString('de-DE') %></p>
+          <p class="token-label">Refresh Token</p>
+          <code class="code-block"><%= tokens.refresh.token %></code>
+          <% } else { %>
+          <p>Keine Token in der Session gefunden. Melde dich erneut an, um neue Token zu generieren.</p>
+          <% } %>
+        </article>
+      </section>
+
+      <section class="card-grid" aria-labelledby="next-steps">
+        <h2 id="next-steps">Nächste Schritte</h2>
+        <article class="card">
+          <h3>API testen</h3>
+          <p>
+            Verwende <code>npm test</code> für automatisierte Health Checks und integriere zusätzliche Tests in
+            <code>src/tests</code>.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Clients anbinden</h3>
+          <p>
+            Exportiere die Swagger Definition über <a href="/docs">/docs</a>, um Frontends oder mobile Apps automatisch zu generieren.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Deployment vorbereiten</h3>
+          <p>
+            Konfiguriere Secrets in deiner CI/CD-Pipeline und aktiviere HTTPS sowie Reverse Proxy Hardening (HSTS, TLS 1.2+).
+          </p>
+        </article>
+      </section>
+    </main>
+    <%- include('../../partials/footer') %>
+    <script src="/assets/js/main.js" defer></script>
+  </body>
+</html>

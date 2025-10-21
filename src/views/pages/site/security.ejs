@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <%- include('../../partials/head', { title }) %>
+  </head>
+  <body class="page-security">
+    <%- include('../../partials/header') %>
+    <main class="container">
+      <%- include('../../partials/flash') %>
+      <section class="section">
+        <h1>Sicherheit auf Enterprise-Niveau</h1>
+        <p>
+          Die Vorlage vereint zahlreiche Schutzmechanismen, die sich in produktiven Cloud-Umgebungen bewährt haben.
+          Alle Komponenten sind so konfiguriert, dass sie im Zusammenspiel einen starken Basisschutz gewährleisten.
+        </p>
+      </section>
+
+      <section class="card-grid" aria-labelledby="security-controls">
+        <h2 id="security-controls">Technische Controls</h2>
+        <article class="card">
+          <h3>Zero Trust API</h3>
+          <ul>
+            <li>JWT Access Tokens mit Rolling Refresh</li>
+            <li>Rollenbasierte Autorisierung</li>
+            <li>Validierung jeder Anfrage via Joi</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>Hardened Surface</h3>
+          <ul>
+            <li>Helmet inkl. Content Security Policy</li>
+            <li>Rate Limiting, HPP &amp; XSS Clean</li>
+            <li>Mongo &amp; Header Sanitizing</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>Sichere Sessions</h3>
+          <ul>
+            <li>Verschlüsselter Mongo-Store mit Idle-Timeout</li>
+            <li>CSRF-Schutz für alle Formulare</li>
+            <li>Session Regeneration gegen Fixation</li>
+          </ul>
+        </article>
+      </section>
+    </main>
+    <%- include('../../partials/footer') %>
+    <script src="/assets/js/main.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <%- include('../../partials/head', { title }) %>
+  </head>
+  <body class="page-privacy">
+    <%- include('../../partials/header') %>
+    <main class="container">
+      <%- include('../../partials/flash') %>
+      <section class="section">
+        <h1>Datenschutz &amp; Compliance</h1>
+        <p>
+          Dieses Template speichert lediglich die minimal notwendigen personenbezogenen Daten zur Nutzerverwaltung. Alle Sessions
+          sind verschlüsselt abgelegt, Passwörter werden per <code>scrypt</code> gehasht und sensible Konfiguration erfolgt ausschließlich über
+          Umgebungsvariablen.
+        </p>
+      </section>
+      <section class="card-grid" aria-labelledby="compliance">
+        <h2 id="compliance">Best Practices</h2>
+        <article class="card">
+          <h3>Data Minimization</h3>
+          <p>Standard-Userprofil mit Name, Mailadresse und Rollen – optional erweiterbar über Mongoose-Schema.</p>
+        </article>
+        <article class="card">
+          <h3>Auditierbarkeit</h3>
+          <p>Strukturierte Logs (JSON) und Health-Probes erleichtern Revisionen sowie Monitoring.</p>
+        </article>
+        <article class="card">
+          <h3>Konfigurierbarkeit</h3>
+          <p>Alle Secrets &amp; Laufzeiten werden über <code>.env</code> gesteuert und via Joi beim Start validiert.</p>
+        </article>
+      </section>
+    </main>
+    <%- include('../../partials/footer') %>
+    <script src="/assets/js/main.js" defer></script>
+  </body>
+</html>
