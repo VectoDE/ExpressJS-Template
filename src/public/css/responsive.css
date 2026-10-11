@@ -1,0 +1,268 @@
+/*
+ * Device adjustments on top of the layout: large monitors and TVs, tablets, touch screens, landscape phones,
+ * notched displays and print. Breakpoints are in px on purpose: they must not move when the root size scales.
+ */
+
+/* Large monitors and TVs: everything is sized in rem, so raising the root size scales the whole interface
+   and keeps text readable from the sofa. The page width grows with it. */
+@media (min-width: 1600px) {
+  html {
+    font-size: 106.25%;
+  }
+}
+
+@media (min-width: 1920px) {
+  html {
+    font-size: 112.5%;
+  }
+
+  :root {
+    --shell-width: 80rem;
+  }
+}
+
+@media (min-width: 2560px) {
+  html {
+    font-size: 131.25%;
+  }
+}
+
+@media (min-width: 3200px) {
+  html {
+    font-size: 162.5%;
+  }
+}
+
+@media (min-width: 3840px) {
+  html {
+    font-size: 187.5%;
+  }
+}
+
+/* Remote controls and keyboards: the focus ring grows with the interface instead of staying at 3 px. */
+@media (min-width: 1920px) {
+  :focus-visible {
+    outline-width: 0.1875rem;
+    outline-offset: 0.15rem;
+  }
+}
+
+/* Touch screens have no hover. Lifts and wipes would stick after a tap, so they are switched off. */
+@media (hover: none) {
+  .button:hover,
+  .data-table tbody tr:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .button--primary:hover::before,
+  .button--danger:hover::before {
+    transform: scaleX(0);
+  }
+
+  .flash__close:hover {
+    transform: none;
+  }
+}
+
+/* Fingers need at least 44 by 44 px (WCAG 2.5.5). */
+@media (pointer: coarse) {
+  .site-footer__links a,
+  .back-link a,
+  .form__aside a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+
+  .language-switch a,
+  .language-switch__current,
+  .motion-switch button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.5rem;
+    padding-inline: 0.9rem;
+  }
+
+  .section-nav a {
+    padding-block: 0.65rem;
+  }
+
+  .button--small {
+    min-height: 2.75rem;
+  }
+}
+
+/* Phones: the five motion styles sit in two rows of three and two, never four and a lone one. */
+@media (max-width: 480px) {
+  .motion-switch {
+    width: 100%;
+  }
+
+  .motion-switch ul {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+    border-radius: var(--radius-md);
+  }
+
+  .motion-switch button {
+    width: 100%;
+    justify-content: center;
+    padding-inline: 0.2rem;
+    border-radius: var(--radius-sm);
+  }
+}
+
+/* Tablets (portrait and small landscape): one column, but the space is used. */
+@media (min-width: 481px) and (max-width: 960px) {
+  /* The summary becomes a row of facts above the sections instead of a long sidebar. */
+  .account-summary .facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4) var(--space-5);
+  }
+
+  .hero__text {
+    max-width: 40rem;
+  }
+}
+
+@media (max-width: 960px) {
+  /* Section links as a horizontal strip that scrolls sideways when it runs out of room. */
+  .section-nav {
+    margin-bottom: var(--space-4);
+    padding: 0;
+    border-left: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    /* The right edge fades out so a cut-off pill reads as "more to scroll", not as a layout error. */
+    mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent);
+  }
+
+  .section-nav ul {
+    display: flex;
+    gap: var(--space-2);
+    width: max-content;
+    /* Room to scroll the last pill out of the faded edge. */
+    padding-inline-end: 2.5rem;
+  }
+
+  .section-nav a {
+    border: 1px solid var(--color-line);
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .section-nav__marker {
+    display: none;
+  }
+
+  .api-hint {
+    display: none;
+  }
+
+  /* Check chain sits above the form and reads left to right. */
+  .auth-aside {
+    position: static;
+    order: -1;
+    padding: 0;
+  }
+
+  .check-chain {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+  }
+
+  .check-chain::before,
+  .check-chain::after {
+    display: none;
+  }
+
+  .check-chain__step {
+    flex-direction: column;
+    gap: var(--space-1);
+    font-size: var(--text-xs);
+    text-align: center;
+  }
+
+  .code-timer {
+    justify-content: center;
+    margin-top: var(--space-4);
+  }
+}
+
+/* Phones held sideways: little height, so nothing sticks and the story steps are shorter. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .site-header {
+    position: static;
+  }
+
+  .auth-aside,
+  .account-summary {
+    position: static;
+  }
+
+  .hero {
+    min-height: 0;
+  }
+
+  .motion .story__stage {
+    top: var(--space-2);
+  }
+
+  .motion .story__step {
+    min-height: 80vh;
+  }
+}
+
+/* Notches and rounded corners: content keeps clear of the unsafe areas (needs viewport-fit=cover). */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .site-footer__inner {
+    padding-bottom: max(var(--space-5), env(safe-area-inset-bottom));
+  }
+}
+
+/* Print: content only, no navigation, no motion, black on white. */
+@media print {
+  .site-header,
+  .site-footer,
+  .skip-link,
+  .flash__close,
+  .section-nav,
+  .story__stage,
+  .button,
+  .button-row,
+  form {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff;
+    color: #000000;
+  }
+
+  .panel,
+  .feature,
+  .story__step {
+    break-inside: avoid;
+    border-color: #999999;
+    box-shadow: none;
+  }
+
+  .motion [data-reveal],
+  .motion .story__step {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.85em;
+  }
+}

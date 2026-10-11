@@ -1,0 +1,9 @@
+node_modules/
+coverage/
+reports/
+package-lock.json
+*.ejs
+docs/third-party-notices.md
+.impeccable/
+playwright-report/
+test-results/

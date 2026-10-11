@@ -1,0 +1,317 @@
+/*
+ * Home page scrollytelling: a request travels through the stations while the visitor scrolls.
+ * main.js sets --story-progress (0 to 1) on .story and marks the active step with .is-active.
+ * Without the "motion" class the stage stays hidden and the steps read as a plain numbered list.
+ */
+.story {
+  margin-top: var(--space-9);
+  /* Inactive steps sit slightly to the right; that offset must never widen the page on phones. */
+  overflow-x: clip;
+}
+
+.story__intro {
+  max-width: 40rem;
+  margin-bottom: var(--space-6);
+}
+
+.story__intro h2 {
+  font-size: var(--text-2xl);
+}
+
+.story__intro p {
+  color: var(--color-muted);
+  font-size: var(--text-md);
+}
+
+.story__stage {
+  display: none;
+}
+
+.story__steps {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+
+.story__step {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-1) var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.story__step-index {
+  grid-row: span 3;
+  color: var(--color-accent);
+  font-size: var(--text-lg);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.story__step h3 {
+  margin: 0;
+}
+
+.story__step p {
+  max-width: 65ch;
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.story__step-code {
+  justify-self: start;
+  max-width: 100%;
+  margin-top: var(--space-2);
+  overflow-wrap: anywhere;
+  font-size: var(--text-xs);
+}
+
+/* With motion: sticky stage left, long scroll track of steps right. */
+.motion .story__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: var(--space-7);
+  align-items: start;
+}
+
+.motion .story__stage {
+  position: sticky;
+  /* Vertically centred in the space below the header. */
+  top: max(calc(4.25rem + var(--space-5)), calc(50vh - 8rem));
+  display: grid;
+  gap: var(--space-6);
+  padding: var(--space-6);
+  /* The edge keeps the dark panel apart from a dark page. */
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-terminal);
+  color: var(--color-terminal-ink);
+  box-shadow: var(--shadow-lifted);
+}
+
+.story__rail {
+  position: relative;
+  padding-top: var(--space-2);
+}
+
+/* Track and fill share one line through the node centres. */
+.story__rail::before,
+.story__rail-fill {
+  content: '';
+  position: absolute;
+  left: calc(100% / 14);
+  right: calc(100% / 14);
+  top: calc(var(--space-2) + 0.55rem);
+  height: 2px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--color-terminal-dim) 35%, transparent);
+}
+
+.story__rail-fill {
+  background: var(--color-accent-on-dark);
+  transform-origin: left;
+  transform: scaleX(var(--story-progress, 0));
+}
+
+.story__packet {
+  position: absolute;
+  top: calc(var(--space-2) + 0.55rem - 0.4rem);
+  left: calc(100% / 14 + (100% - 100% / 7) * var(--story-progress, 0) - 0.4rem);
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background: var(--color-accent-on-dark);
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--color-accent-on-dark) 25%, transparent),
+    0 0 18px var(--color-accent-on-dark);
+}
+
+.story__nodes {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.story__node {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  color: var(--color-terminal-dim);
+  font-size: var(--text-xs);
+  text-align: center;
+  transition: color var(--duration-base) ease;
+}
+
+.story__node-dot {
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid color-mix(in srgb, var(--color-terminal-dim) 60%, transparent);
+  border-radius: 50%;
+  background: var(--color-terminal);
+  transition:
+    border-color var(--duration-base) ease,
+    background-color var(--duration-base) ease,
+    transform var(--duration-slow) var(--ease-spring);
+}
+
+.story__node.is-passed {
+  color: var(--color-terminal-ink);
+}
+
+.story__node.is-passed .story__node-dot {
+  border-color: var(--color-accent-on-dark);
+  background: var(--color-accent-on-dark);
+}
+
+.story__node.is-active .story__node-dot {
+  transform: scale(1.35);
+}
+
+.story__node-label {
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+/* All lines share one grid cell, so the box grows with the longest line instead of letting it spill out. */
+.story__readout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  min-height: 7.5rem;
+  padding: var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--color-terminal-dim) 30%, transparent);
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+.story__readout::before {
+  content: '';
+  grid-row: 1;
+  display: block;
+  width: 2.5rem;
+  height: 0.5rem;
+  margin-bottom: var(--space-3);
+  background: radial-gradient(circle, var(--color-terminal-dim) 0 0.22rem, transparent 0.25rem) 0 0 / 0.85rem 0.5rem
+    repeat-x;
+  opacity: 0.6;
+}
+
+/* Only the active line is shown; it types itself out. */
+.story__code {
+  grid-row: 2;
+  grid-column: 1;
+  padding: 0;
+  background: none;
+  color: var(--color-terminal-ink);
+  font-size: inherit;
+  overflow-wrap: break-word;
+  opacity: 0;
+  clip-path: inset(0 100% 0 0);
+}
+
+.story__code.is-active {
+  opacity: 1;
+  animation: type-in 0.9s steps(24, end) forwards;
+}
+
+.story__code.is-active::after {
+  content: '';
+  display: inline-block;
+  width: 0.55em;
+  height: 1.1em;
+  margin-left: 0.15em;
+  vertical-align: text-bottom;
+  background: var(--color-accent-on-dark);
+  animation: caret 1s steps(1) infinite;
+}
+
+@keyframes caret {
+  50% {
+    opacity: 0;
+  }
+}
+
+.motion .story__steps {
+  gap: 0;
+}
+
+/* Each step gets a screen's worth of scroll so the stage has time to play. */
+.motion .story__step {
+  min-height: 62vh;
+  align-content: center;
+  border-color: transparent;
+  background: transparent;
+  transform: translateX(calc(var(--move, 1) * 16px));
+  transition: transform var(--duration-slow) var(--ease-out);
+}
+
+/* Steps out of focus step back in colour, not in opacity, so their text keeps its contrast. */
+.motion .story__step h3,
+.motion .story__step .story__step-index {
+  color: var(--color-muted);
+  transition: color var(--duration-slow) var(--ease-out);
+}
+
+.motion .story__step.is-active {
+  transform: none;
+}
+
+.motion .story__step.is-active h3 {
+  color: var(--color-ink);
+}
+
+.motion .story__step.is-active .story__step-index {
+  color: var(--color-accent);
+}
+
+.motion .story__step h3 {
+  font-size: var(--text-xl);
+}
+
+.motion .story__step-code {
+  display: none;
+}
+
+@media (max-width: 60rem) {
+  .motion .story__body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+  }
+
+  .motion .story__stage {
+    top: calc(3.75rem + var(--space-2));
+    z-index: 5;
+    /* A collar in the page colour hides the text scrolling past between header and stage. */
+    box-shadow:
+      0 calc(-1 * var(--space-3)) 0 var(--space-2) var(--color-bg),
+      var(--shadow-lifted);
+    gap: var(--space-4);
+    padding: var(--space-4);
+  }
+
+  /* In one column the sideways step-back reads as a layout jump, so only the colour changes. */
+  .motion .story__step {
+    min-height: 48vh;
+    transform: none;
+  }
+
+  .story__node-label {
+    display: none;
+  }
+
+  .story__readout {
+    min-height: 4.5rem;
+    font-size: var(--text-xs);
+  }
+}

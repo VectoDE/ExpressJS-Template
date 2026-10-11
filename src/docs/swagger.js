@@ -1,21 +1,39 @@
-const path = require('path');
+const path = require('node:path');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDefinition = require('./swaggerDef');
 const config = require('../config/config');
 
-const options = {
+const swaggerSpec = swaggerJsdoc({
   definition: swaggerDefinition,
-  apis: [path.join(__dirname, '../routes/v1/*.js')],
-};
+  // Listed one by one so the docs show the tags in a logical order. Paths need forward slashes, also on Windows.
+  apis: ['auth', 'account', 'user'].map((name) =>
+    path.join(__dirname, `../routes/v1/${name}.route.js`).replaceAll('\\', '/')
+  ),
+});
 
-const swaggerSpec = swaggerJsdoc(options);
-
+/**
+ * Off by default in production (API_DOCS_ENABLED). Swagger UI needs inline styles,
+ * so only /docs gets that exception in its Content Security Policy.
+ */
 const setupSwagger = (app) => {
-  if (config.env === 'test') {
+  if (!config.docsEnabled) {
     return;
   }
-  app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  app.get('/docs/openapi.json', (req, res) => res.json(swaggerSpec));
+  app.use(
+    '/docs',
+    (req, res, next) => {
+      res.setHeader(
+        'Content-Security-Policy',
+        "default-src 'self'; base-uri 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; " +
+          "img-src 'self' data:; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'"
+      );
+      next();
+    },
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpec, { customSiteTitle: 'Express.js Template API' })
+  );
 };
 
 module.exports = {

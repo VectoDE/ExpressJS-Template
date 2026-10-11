@@ -1,0 +1,6 @@
+<%# Field for a one-time code. Locals: id, label, help, recovery (also accept recovery codes), autofocus. -%>
+<%- include('field', {
+  id, name: 'code', label, type: 'text', autocomplete: 'one-time-code',
+  inputmode: locals.recovery ? 'text' : 'numeric', maxlength: locals.recovery ? 11 : 6,
+  pattern: locals.recovery ? undefined : '[0-9]{6}', required: true, help: locals.help, autofocus: locals.autofocus,
+}) %>

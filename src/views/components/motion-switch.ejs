@@ -1,0 +1,12 @@
+<%#
+  Lets visitors compare the animation styles. Works only with JavaScript, so it starts hidden and main.js shows it.
+  The choice is kept in this browser only (localStorage) and never reaches the server.
+-%>
+<div class="motion-switch" role="group" aria-label="<%= t('nav.motion') %>" data-motion-switch hidden>
+  <span class="motion-switch__label" aria-hidden="true"><%= t('nav.motion') %></span>
+  <ul>
+    <% ['film', 'precise', 'playful', 'calm', 'off'].forEach((style) => { %>
+    <li><button type="button" data-motion-style="<%= style %>" aria-pressed="false" title="<%= t('motion.' + style + 'Hint') %>"><%= t('motion.' + style) %></button></li>
+    <% }) %>
+  </ul>
+</div>

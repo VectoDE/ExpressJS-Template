@@ -1,0 +1,233 @@
+<%
+  const dateOptions = { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Berlin' };
+  const dateTimeOptions = { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' };
+  const formatDate = (date, options = dateOptions) =>
+    date ? new Date(date).toLocaleString(t('meta.dateLocale'), options) : t('common.unknown');
+  const sections = [
+    { id: 'profile', label: t('account.profile.title') },
+    { id: 'password', label: t('account.password.title') },
+    { id: 'two-factor', label: t('account.twoFactor.title') },
+    { id: 'sessions', label: t('account.sessions.title') },
+    { id: 'activity', label: t('account.activity.title') },
+    { id: 'export', label: t('account.export.title') },
+    { id: 'delete', label: t('account.delete.title') },
+  ];
+-%>
+<%- include('../../layouts/top', { bodyClass: 'page-account' }) %>
+<%- include('../../components/page-intro', { heading: t('account.greeting', { name: user.name }), lead: t('account.lead') }) %>
+
+<% if (!user.isEmailVerified) { %>
+<div class="notice-bar" role="status">
+  <p><%= t('account.verifyBanner.text') %></p>
+  <form method="post" action="/account/verification">
+    <%- include('../../components/csrf') %>
+    <button type="submit" class="button button--secondary"><%= t('account.verifyBanner.submit') %></button>
+  </form>
+</div>
+<% } %>
+
+<% if (recoveryCodes) { %>
+<section class="panel panel--highlight recovery-panel" id="recovery-codes" aria-labelledby="recovery-title" tabindex="-1">
+  <h2 id="recovery-title"><%= t('account.twoFactor.codesTitle') %></h2>
+  <p><%= t('account.twoFactor.codesText') %></p>
+  <ol class="recovery-codes">
+    <% recoveryCodes.forEach((code) => { %><li><code><%= code %></code></li><% }) %>
+  </ol>
+</section>
+<% } %>
+
+<div class="account-layout">
+  <aside class="account-summary" aria-labelledby="summary-title">
+    <h2 id="summary-title"><%= t('account.summary.title') %></h2>
+    <dl class="facts">
+      <div>
+        <dt><%= t('account.summary.email') %></dt>
+        <dd>
+          <span class="facts__value"><%= user.email %></span>
+          <%- include('../../components/status-badge', { on: user.isEmailVerified, labelOn: t('account.summary.verified'), labelOff: t('account.summary.unverified') }) %>
+        </dd>
+      </div>
+      <div><dt><%= t('account.summary.role') %></dt><dd><%= roleLabel(user.role) %></dd></div>
+      <div>
+        <dt><%= t('account.summary.twoFactor') %></dt>
+        <dd><%- include('../../components/status-badge', { on: twoFactor.enabled, labelOn: t('account.summary.on'), labelOff: t('account.summary.off') }) %></dd>
+      </div>
+      <div><dt><%= t('account.summary.memberSince') %></dt><dd><%= formatDate(user.createdAt) %></dd></div>
+    </dl>
+    <nav class="section-nav" aria-label="<%= t('account.title') %>" data-scrollspy>
+      <ul>
+        <% sections.forEach((section) => { %><li><a href="#<%= section.id %>"><%= section.label %></a></li><% }) %>
+      </ul>
+    </nav>
+    <div class="api-hint">
+      <h3><%= t('account.api.title') %></h3>
+      <p><%= t('account.api.text') %><% if (docsEnabled) { %> <a href="/docs/"><%= t('account.api.docs') %></a><% } %></p>
+    </div>
+  </aside>
+
+  <div class="account-sections">
+    <section class="panel" id="profile" aria-labelledby="profile-title" data-reveal>
+      <h2 id="profile-title"><%= t('account.profile.title') %></h2>
+      <form method="post" action="/account/profile" class="form">
+        <%- include('../../components/csrf') %>
+        <%- include('../../components/field', {
+          id: 'profile-name', name: 'name', label: t('fields.name'), value: user.name,
+          autocomplete: 'name', minlength: 3, maxlength: 120, required: true,
+        }) %>
+        <%- include('../../components/field', {
+          id: 'profile-email', name: 'email', label: t('fields.email'), type: 'email', value: user.email,
+          autocomplete: 'email', maxlength: 254, required: true,
+        }) %>
+        <%- include('../../components/field', {
+          id: 'profile-password', name: 'currentPassword', label: t('fields.currentPassword'), type: 'password',
+          autocomplete: 'current-password', maxlength: 128, help: t('account.profile.passwordHelp'),
+        }) %>
+        <div class="button-row"><button type="submit" class="button button--primary"><%= t('account.profile.submit') %></button></div>
+      </form>
+    </section>
+
+    <section class="panel" id="password" aria-labelledby="password-title" data-reveal>
+      <h2 id="password-title"><%= t('account.password.title') %></h2>
+      <p><%= t('account.password.text') %></p>
+      <form method="post" action="/account/password" class="form">
+        <%- include('../../components/csrf') %>
+        <%- include('../../components/username-hint') %>
+        <%- include('../../components/field', {
+          id: 'password-current', name: 'currentPassword', label: t('fields.currentPassword'), type: 'password',
+          autocomplete: 'current-password', maxlength: 128, required: true,
+        }) %>
+        <%- include('../../components/field', {
+          id: 'password-new', name: 'password', label: t('fields.newPassword'), type: 'password',
+          autocomplete: 'new-password', minlength: 12, maxlength: 128, required: true, help: t('fields.passwordHelp'),
+        }) %>
+        <%- include('../../components/field', {
+          id: 'password-confirm', name: 'passwordConfirm', label: t('fields.passwordConfirm'), type: 'password',
+          autocomplete: 'new-password', minlength: 12, maxlength: 128, required: true,
+        }) %>
+        <div class="button-row"><button type="submit" class="button button--primary"><%= t('account.password.submit') %></button></div>
+      </form>
+    </section>
+
+    <section class="panel" id="two-factor" aria-labelledby="two-factor-title" data-reveal>
+      <div class="panel__head">
+        <h2 id="two-factor-title"><%= t('account.twoFactor.title') %></h2>
+        <%- include('../../components/status-badge', { on: twoFactor.enabled, labelOn: t('account.summary.on'), labelOff: t('account.summary.off') }) %>
+      </div>
+      <% if (twoFactor.enabled) { %>
+      <p><%= t('account.twoFactor.onText', { date: formatDate(twoFactor.enabledAt), count: twoFactor.recoveryCodesLeft }) %></p>
+      <div class="split-forms">
+        <form method="post" action="/account/2fa/recovery-codes" class="form">
+          <%- include('../../components/csrf') %>
+          <p class="form__intro"><%= t('account.twoFactor.renewText') %></p>
+          <%- include('../../components/code-field', { id: 'renew-code', label: t('fields.code'), recovery: true }) %>
+          <div class="button-row"><button type="submit" class="button button--secondary"><%= t('account.twoFactor.renew') %></button></div>
+        </form>
+        <form method="post" action="/account/2fa/disable" class="form">
+          <%- include('../../components/csrf') %>
+          <%- include('../../components/username-hint') %>
+          <p class="form__intro"><%= t('account.twoFactor.disableText') %></p>
+          <%- include('../../components/field', {
+            id: 'disable-password', name: 'password', label: t('fields.currentPassword'), type: 'password',
+            autocomplete: 'current-password', maxlength: 128, required: true,
+          }) %>
+          <%- include('../../components/code-field', { id: 'disable-code', label: t('fields.code'), recovery: true }) %>
+          <div class="button-row"><button type="submit" class="button button--danger"><%= t('account.twoFactor.disable') %></button></div>
+        </form>
+      </div>
+      <% } else if (pendingSetup) { %>
+      <p><%= t('account.twoFactor.setupText') %></p>
+      <div class="totp-setup">
+        <figure class="qr" role="img" aria-label="<%= t('account.twoFactor.qrLabel') %>"><%- pendingSetup.qrSvg %></figure>
+        <div class="totp-setup__body">
+          <p class="totp-secret"><span><%= t('account.twoFactor.secret') %></span><code><%= pendingSetup.secret.match(/.{1,4}/g).join(' ') %></code></p>
+          <form method="post" action="/account/2fa/enable" class="form">
+            <%- include('../../components/csrf') %>
+            <%- include('../../components/code-field', { id: 'enable-code', label: t('fields.code'), autofocus: false }) %>
+            <div class="button-row"><button type="submit" class="button button--primary"><%= t('account.twoFactor.confirm') %></button></div>
+          </form>
+        </div>
+      </div>
+      <% } else { %>
+      <p><%= t('account.twoFactor.offText') %></p>
+      <form method="post" action="/account/2fa/setup" class="form">
+        <%- include('../../components/csrf') %>
+        <%- include('../../components/username-hint') %>
+        <%- include('../../components/field', {
+          id: 'setup-password', name: 'password', label: t('fields.currentPassword'), type: 'password',
+          autocomplete: 'current-password', maxlength: 128, required: true,
+        }) %>
+        <div class="button-row"><button type="submit" class="button button--primary"><%= t('account.twoFactor.start') %></button></div>
+      </form>
+      <% } %>
+    </section>
+
+    <section class="panel" id="sessions" aria-labelledby="sessions-title" data-reveal>
+      <h2 id="sessions-title"><%= t('account.sessions.title') %></h2>
+      <p><%= t('account.sessions.text') %></p>
+      <% if (sessions.length) { %>
+      <ul class="session-list">
+        <% sessions.forEach((session) => { const device = session.device || t('common.unknownDevice'); %>
+        <li class="session-list__item">
+          <div>
+            <p class="session-list__device"><%= device %></p>
+            <p class="session-list__meta"><span><%= t('account.sessions.since') %> <%= formatDate(session.startedAt, dateTimeOptions) %></span><span><%= t('account.sessions.lastUsed') %> <%= formatDate(session.lastRefreshedAt, dateTimeOptions) %></span></p>
+          </div>
+          <form method="post" action="/account/sessions/<%= session.id %>/revoke">
+            <%- include('../../components/csrf') %>
+            <button type="submit" class="button button--quiet button--small" aria-label="<%= t('account.sessions.revokeLabel', { device }) %>"><%= t('account.sessions.revoke') %></button>
+          </form>
+        </li>
+        <% }) %>
+      </ul>
+      <% } else { %>
+      <p class="empty-state"><%= t('account.sessions.empty') %></p>
+      <% } %>
+      <form method="post" action="/account/sessions/revoke-all" class="inline-action">
+        <%- include('../../components/csrf') %>
+        <p><%= t('account.sessions.revokeAllText') %></p>
+        <button type="submit" class="button button--secondary"><%= t('account.sessions.revokeAll') %></button>
+      </form>
+    </section>
+
+    <section class="panel" id="activity" aria-labelledby="activity-title" data-reveal>
+      <h2 id="activity-title"><%= t('account.activity.title') %></h2>
+      <p><%= t('account.activity.text', { days: retentionDays }) %></p>
+      <% if (activity.length) { %>
+      <ol class="timeline">
+        <% activity.forEach((event) => { %>
+        <li class="timeline__item timeline__item--<%= ['loginFailed', 'accountLocked', 'refreshTokenReuse'].includes(event.type) ? 'alert' : 'normal' %>">
+          <time datetime="<%= new Date(event.createdAt).toISOString() %>"><%= formatDate(event.createdAt, dateTimeOptions) %></time>
+          <span class="timeline__what"><%= t('activity.' + event.type) %></span>
+          <% if (event.device) { %><span class="timeline__device"><%= event.device %></span><% } %>
+        </li>
+        <% }) %>
+      </ol>
+      <% } else { %>
+      <p class="empty-state"><%= t('account.activity.empty') %></p>
+      <% } %>
+    </section>
+
+    <section class="panel" id="export" aria-labelledby="export-title" data-reveal>
+      <h2 id="export-title"><%= t('account.export.title') %></h2>
+      <p><%= t('account.export.text') %></p>
+      <div class="button-row">
+        <a class="button button--secondary" href="/account/export" download><%= t('account.export.submit') %></a>
+      </div>
+    </section>
+
+    <section class="panel panel--danger" id="delete" aria-labelledby="delete-title" data-reveal>
+      <h2 id="delete-title"><%= t('account.delete.title') %></h2>
+      <p><%= t('account.delete.text') %></p>
+      <form method="post" action="/account/delete" class="form">
+        <%- include('../../components/csrf') %>
+        <%- include('../../components/username-hint') %>
+        <%- include('../../components/field', {
+          id: 'delete-password', name: 'password', label: t('account.delete.password'), type: 'password',
+          autocomplete: 'current-password', maxlength: 128, required: true,
+        }) %>
+        <div class="button-row"><button type="submit" class="button button--danger"><%= t('account.delete.submit') %></button></div>
+      </form>
+    </section>
+  </div>
+</div>
+<%- include('../../layouts/bottom') %>

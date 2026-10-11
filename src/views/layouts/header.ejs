@@ -1,0 +1,44 @@
+<%
+  const navItems = [
+    { href: '/security', label: t('nav.security') },
+    { href: '/privacy', label: t('nav.privacy') },
+  ];
+  if (docsEnabled) navItems.push({ href: '/docs/', label: t('nav.docs') });
+  if (isAdmin) navItems.push({ href: '/admin/users', label: t('nav.admin'), match: '/admin' });
+  const isCurrent = (item) => currentPath === item.href || (item.match && currentPath.startsWith(item.match));
+-%>
+<header class="site-header">
+  <div class="shell site-header__inner">
+    <a class="brand" href="/">
+      <img class="brand__mark" src="/assets/img/favicon.svg" alt="" width="32" height="32" />
+      <span class="brand__name"><%= app.name %></span>
+    </a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu" data-menu-toggle>
+      <span class="menu-toggle__bars" aria-hidden="true"></span>
+      <span class="visually-hidden"><%= t('nav.main') %></span>
+    </button>
+    <div class="site-menu" id="site-menu">
+      <div class="site-menu__inner">
+      <nav class="site-nav" aria-label="<%= t('nav.main') %>">
+        <ul>
+          <% navItems.forEach((item) => { %>
+          <li><a href="<%= item.href %>"<% if (isCurrent(item)) { %> aria-current="page"<% } %>><%= item.label %></a></li>
+          <% }) %>
+        </ul>
+      </nav>
+      <div class="site-header__actions">
+        <% if (isAuthenticated && currentUser) { %>
+        <a class="button button--quiet" href="/dashboard"<% if (currentPath === '/dashboard') { %> aria-current="page"<% } %>><%= t('nav.account') %></a>
+        <form method="post" action="/logout">
+          <%- include('../components/csrf') %>
+          <button type="submit" class="button button--secondary"><%= t('nav.signOut') %></button>
+        </form>
+        <% } else { %>
+        <a class="button button--quiet" href="/login"<% if (currentPath === '/login') { %> aria-current="page"<% } %>><%= t('nav.signIn') %></a>
+        <a class="button button--primary" href="/register"><%= t('nav.register') %></a>
+        <% } %>
+      </div>
+      </div>
+    </div>
+  </div>
+</header>

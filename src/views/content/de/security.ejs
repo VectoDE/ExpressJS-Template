@@ -1,0 +1,30 @@
+<%- include('../../components/page-intro', {
+  heading: 'Sicherheit',
+  lead: 'Diese Schutzmaßnahmen bringt die Vorlage mit. Sie ersetzen keine Prüfung deiner eigenen Erweiterungen, nehmen dir aber die Grundlagen ab.',
+}) %>
+<%- include('../../components/control-groups', { groups: [
+  { title: 'Anmeldung', items: [
+    'Passwörter mit scrypt nach OWASP-Empfehlung (N = 2¹⁷)',
+    'Zweiter Faktor per TOTP (RFC 6238), Schlüssel verschlüsselt mit AES-256-GCM',
+    'Zehn Wiederherstellungscodes, gespeichert nur als Hash, jeder einmal gültig',
+    'Kontosperre nach Fehlversuchen, auch falsche Codes zählen mit',
+  ] },
+  { title: 'Tokens und Links', items: [
+    'JWT mit festem Algorithmus, Issuer, Audience und Token-Typ',
+    'Refresh-Tokens sind einmal nutzbar; wird eines erneut benutzt, enden alle Sitzungen',
+    'Links für Passwort-Reset und E-Mail-Bestätigung sind einmal gültig und laufen ab',
+    'Tokens aus E-Mail-Links erscheinen in keinem Log',
+  ] },
+  { title: 'Browser', items: [
+    'Content Security Policy ohne Inline-Skripte und Inline-Styles',
+    'CSRF-Token in jedem Formular, dazu eine Prüfung der Fetch-Metadata',
+    'Session-Cookie mit HttpOnly, Secure, SameSite=Strict und __Host-Präfix',
+    'HSTS, COOP, COEP, CORP und Permissions-Policy',
+  ] },
+  { title: 'Eingaben und Betrieb', items: [
+    'Jede Anfrage wird gegen ein Schema geprüft, unbekannte Felder werden abgelehnt',
+    'Schutz vor NoSQL-Injection und Prototype Pollution',
+    'Größenlimits, Rate-Limits und Timeouts gegen Slowloris',
+    'Fehlermeldungen ohne interne Details, dafür mit Fehler-ID',
+  ] },
+] }) %>

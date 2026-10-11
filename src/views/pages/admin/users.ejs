@@ -1,0 +1,61 @@
+<%
+  const formatDate = (date) =>
+    new Date(date).toLocaleDateString(t('meta.dateLocale'), { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Europe/Berlin' });
+-%>
+<%- include('../../layouts/top', { bodyClass: 'page-admin' }) %>
+<%- include('../../components/page-intro', { heading: t('admin.title'), lead: t('admin.lead') }) %>
+
+<form method="get" action="/admin/users" class="filter-bar" role="search">
+  <div class="field filter-bar__search">
+    <label class="field__label" for="q"><%= t('admin.search') %></label>
+    <input class="field__input" id="q" name="q" type="search" value="<%= filters.q %>" maxlength="100" placeholder="<%= t('admin.searchPlaceholder') %>" />
+  </div>
+  <div class="field">
+    <label class="field__label" for="role"><%= t('admin.role') %></label>
+    <select class="field__input" id="role" name="role">
+      <option value=""><%= t('admin.allRoles') %></option>
+      <% ['user', 'admin'].forEach((role) => { %><option value="<%= role %>"<% if (filters.role === role) { %> selected<% } %>><%= roleLabel(role) %></option><% }) %>
+    </select>
+  </div>
+  <div class="button-row">
+    <button type="submit" class="button button--primary"><%= t('admin.filter') %></button>
+    <% if (filters.q || filters.role) { %><a class="button button--quiet" href="/admin/users"><%= t('admin.reset') %></a><% } %>
+  </div>
+</form>
+
+<p class="result-count" role="status"><%= t('admin.count', { count: result.totalResults }) %></p>
+
+<% if (result.results.length) { %>
+<div class="table-wrap">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th scope="col"><%= t('admin.name') %></th>
+        <th scope="col"><%= t('admin.email') %></th>
+        <th scope="col"><%= t('admin.role') %></th>
+        <th scope="col"><%= t('admin.verified') %></th>
+        <th scope="col"><%= t('admin.twoFactor') %></th>
+        <th scope="col"><%= t('admin.created') %></th>
+        <th scope="col"><span class="visually-hidden"><%= t('admin.edit') %></span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% result.results.forEach((row) => { %>
+      <tr>
+        <td data-label="<%= t('admin.name') %>"><%= row.name %></td>
+        <% const [local, domain] = row.email.split('@'); %><td data-label="<%= t('admin.email') %>"><%= local %>@<wbr><%= domain %></td>
+        <td data-label="<%= t('admin.role') %>"><span class="role-tag role-tag--<%= row.role %>"><%= roleLabel(row.role) %></span></td>
+        <td data-label="<%= t('admin.verified') %>"><%= row.isEmailVerified ? t('admin.yes') : t('admin.no') %></td>
+        <td data-label="<%= t('admin.twoFactor') %>"><%= row.twoFactorEnabled ? t('admin.yes') : t('admin.no') %></td>
+        <td data-label="<%= t('admin.created') %>"><%= formatDate(row.createdAt) %></td>
+        <td class="data-table__action"><a class="button button--quiet button--small" href="/admin/users/<%= row.id %>" aria-label="<%= t('admin.editLabel', { name: row.name }) %>"><%= t('admin.edit') %></a></td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<%- include('../../components/pagination', { page: result.page, totalPages: result.totalPages, pageUrl }) %>
+<% } else { %>
+<p class="empty-state empty-state--large"><%= t('admin.empty') %></p>
+<% } %>
+<%- include('../../layouts/bottom') %>

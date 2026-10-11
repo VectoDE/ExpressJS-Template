@@ -1,0 +1,40 @@
+<%- include('../../components/page-intro', {
+  heading: 'Datenschutz',
+  lead: 'Diese Seite ist ein Platzhalter und keine Datenschutzerklärung. Wer die Vorlage betreibt, braucht eine eigene, rechtlich geprüfte Fassung.',
+}) %>
+<div class="prose">
+  <h2>Welche Daten gespeichert werden</h2>
+  <p>
+    Für ein Konto speichert die Anwendung Name, E-Mail-Adresse, Rolle, Sprache und einen Hash des Passworts. Das
+    Passwort selbst wird nie gespeichert. Wer die Zwei-Faktor-Anmeldung einschaltet, hinterlegt einen verschlüsselten
+    Schlüssel und Hashes der Wiederherstellungscodes.
+  </p>
+  <h2>Protokolle</h2>
+  <p>
+    Server-Logs enthalten Methode, Pfad, Status, Antwortzeit und eine Request-ID, aber keine Formulardaten und keine
+    Tokens aus E-Mail-Links. Zu jedem Konto führt die Anwendung ein Aktivitätsprotokoll mit sicherheitsrelevanten
+    Ereignissen wie Anmeldungen und Passwortänderungen. Es enthält Zeitpunkt, Art des Ereignisses und eine grobe
+    Gerätebezeichnung wie „Firefox · Windows“, aber keine IP-Adressen.
+  </p>
+  <h2>E-Mails</h2>
+  <p>
+    Die Anwendung verschickt nur Nachrichten zum Konto: Bestätigungslinks, Links zum Zurücksetzen des Passworts und
+    Hinweise auf Änderungen an der Sicherheit. Werbung oder Newsletter gibt es nicht.
+  </p>
+  <h2>Cookies</h2>
+  <p>
+    Es gibt ein technisch notwendiges Session-Cookie. Es wird erst gesetzt, wenn du ein Formular öffnest, dich
+    anmeldest oder die Sprache wechselst. Tracking, externe Schriften und Skripte von fremden Servern gibt es nicht.
+  </p>
+  <h2>Speicherdauer</h2>
+  <p>
+    Sitzungen enden nach Inaktivität und spätestens nach einer festen Höchstdauer. Refresh-Tokens und Links aus E-Mails
+    verfallen nach ihrer Laufzeit, das Aktivitätsprotokoll nach <%= locals.retentionDays || 180 %> Tagen. Die Datenbank
+    löscht alles davon automatisch.
+  </p>
+  <h2>Deine Rechte</h2>
+  <p>
+    Angemeldet kannst du in deinem Konto alle Daten als Datei herunterladen, Name, E-Mail-Adresse und Passwort ändern
+    und das Konto samt Aktivitätsprotokoll endgültig löschen.
+  </p>
+</div>

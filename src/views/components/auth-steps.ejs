@@ -1,0 +1,24 @@
+<%#
+  The "check chain" beside every sign-in form: which steps are done, which one runs now.
+  Locals: steps ([{ key, state: 'done' | 'current' | 'next' }]), timer (optional, shows the 30-second code ring).
+-%>
+<aside class="auth-aside" aria-label="<%= t('auth.steps.label') %>">
+  <ol class="check-chain">
+    <% steps.forEach((step, index) => { %>
+    <li class="check-chain__step check-chain__step--<%= step.state %>"<% if (step.state === 'current') { %> aria-current="step"<% } %>>
+      <span class="check-chain__node" aria-hidden="true"><span class="check-chain__index"><%= index + 1 %></span></span>
+      <span class="check-chain__label"><%= t('auth.steps.' + step.key) %></span>
+      <% if (step.state !== 'next') { %><span class="visually-hidden">(<%= t(step.state === 'done' ? 'auth.steps.stateDone' : 'auth.steps.stateCurrent') %>)</span><% } %>
+    </li>
+    <% }) %>
+  </ol>
+  <% if (locals.timer) { %>
+  <div class="code-timer" data-code-timer>
+    <svg class="code-timer__ring" viewBox="0 0 48 48" aria-hidden="true">
+      <circle class="code-timer__track" cx="24" cy="24" r="20" />
+      <circle class="code-timer__progress" cx="24" cy="24" r="20" pathLength="100" />
+    </svg>
+    <p class="code-timer__text"><%= t('auth.codeTimer') %></p>
+  </div>
+  <% } %>
+</aside>

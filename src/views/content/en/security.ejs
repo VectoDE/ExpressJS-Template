@@ -1,0 +1,30 @@
+<%- include('../../components/page-intro', {
+  heading: 'Security',
+  lead: 'These protections ship with the template. They do not replace a review of your own extensions, but they take care of the groundwork.',
+}) %>
+<%- include('../../components/control-groups', { groups: [
+  { title: 'Sign-in', items: [
+    'Passwords hashed with scrypt as OWASP recommends (N = 2¹⁷)',
+    'Second factor with TOTP (RFC 6238), keys encrypted with AES-256-GCM',
+    'Ten recovery codes, stored only as hashes, each valid once',
+    'Account lockout after failed attempts, wrong codes count too',
+  ] },
+  { title: 'Tokens and links', items: [
+    'JWT with a fixed algorithm, issuer, audience and token type',
+    'Refresh tokens work once; reusing one ends every session',
+    'Password reset and email confirmation links work once and expire',
+    'Tokens from email links never appear in a log',
+  ] },
+  { title: 'Browser', items: [
+    'Content Security Policy without inline scripts or inline styles',
+    'CSRF token in every form, plus a Fetch Metadata check',
+    'Session cookie with HttpOnly, Secure, SameSite=Strict and the __Host- prefix',
+    'HSTS, COOP, COEP, CORP and Permissions-Policy',
+  ] },
+  { title: 'Input and operations', items: [
+    'Every request is checked against a schema, unknown fields are rejected',
+    'Protection against NoSQL injection and prototype pollution',
+    'Size limits, rate limits and timeouts against slowloris',
+    'Error messages without internal details, with an error ID instead',
+  ] },
+] }) %>

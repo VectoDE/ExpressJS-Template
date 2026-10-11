@@ -1,0 +1,57 @@
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero__text">
+    <h1 id="hero-title" class="hero__title" data-split>Express.js mit Sicherheit ab Werk</h1>
+    <p class="hero__lead">
+      REST-API, Anmeldung mit zweitem Faktor, Passwort-Reset per <span class="nowrap">E-Mail</span>, Kontoverwaltung und Benutzerverwaltung in
+      einem Projekt. Die Grundlagen sind abgesichert und getestet, dein Code beginnt bei der eigentlichen Aufgabe.
+    </p>
+    <div class="button-row">
+      <% if (isAuthenticated) { %>
+      <a class="button button--primary button--large" href="/dashboard">Zu meinem Konto</a>
+      <% } else { %>
+      <a class="button button--primary button--large" href="/register">Konto anlegen</a>
+      <% } %>
+      <a class="button button--secondary button--large" href="#story-title">So läuft eine Anfrage</a>
+    </div>
+  </div>
+  <%- include('../../components/header-check', { headers, caption: 'Diese Antwort kam mit ' + headers.length + ' Sicherheits-Headern' }) %>
+</section>
+
+<%- include('../../components/story', {
+  id: 'story',
+  heading: 'Der Weg einer Anfrage',
+  lead: 'Bevor dein Code eine Anfrage sieht, läuft sie durch sieben Stationen. Scroll mit.',
+  steps: [
+    { title: 'Ankunft', code: 'X-Request-Id: 7c1e…', text: 'Jede Anfrage bekommt eine ID, die in jedem Log-Eintrag und auf Fehlerseiten auftaucht. Was größer als 100 KB ist, lehnt der Server ab, bevor er es liest.' },
+    { title: 'Header', code: "Content-Security-Policy: default-src 'self'", text: 'Content Security Policy ohne Inline-Skripte, HSTS, COOP, COEP und eine Permissions-Policy, die Kamera, Mikrofon und Standort sperrt.' },
+    { title: 'Tempolimit', code: 'RateLimit-Policy: 300;w=900', text: '300 Anfragen pro 15 Minuten und IP, bei Anmeldung und Passwortformularen 10 Fehlversuche. Mit RATE_LIMIT_STORE=mongo teilen sich mehrere Instanzen die Zähler.' },
+    { title: 'Herkunft', code: 'Sec-Fetch-Site: same-origin', text: 'Formulare tragen ein CSRF-Token, das bei jeder Ausgabe neu maskiert wird. Posts von fremden Seiten scheitern schon an der Fetch-Metadata-Prüfung.' },
+    { title: 'Eingaben', code: '400 "email" must be a valid email', text: 'Joi prüft jedes Feld gegen ein Schema und lehnt unbekannte Felder ab. MongoDB-Operatoren und Prototype-Schlüssel werden vorher entfernt.' },
+    { title: 'Identität', code: 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9…', text: 'Session-Cookie oder JWT, die Rolle kommt aus der Datenbank, auf Wunsch mit zweitem Faktor. Nach einer Passwortänderung sind alte Tokens und Sessions ungültig.' },
+    { title: 'Antwort', code: '200 OK', text: 'Fehler verraten keine Interna, nur eine Fehler-ID. Laufzeit und Status landen als Metrik für Prometheus.' },
+  ],
+}) %>
+
+<%- include('../../components/feature-grid', {
+  id: 'features',
+  heading: 'Was drin ist',
+  features: [
+    { title: 'API und Browser', text: 'JSON-API unter /v1 mit Access- und Refresh-Tokens, dazu serverseitig gerenderte Seiten mit Session-Anmeldung. OpenAPI-Doku unter /docs.' },
+    { title: 'Vollständige Anmeldung', text: 'Registrierung, E-Mail-Bestätigung, Passwort vergessen, Zwei-Faktor mit Authenticator-App und Wiederherstellungscodes.' },
+    { title: 'Konto in Nutzerhand', text: 'Profil, Passwort, angemeldete Geräte, Aktivitätsprotokoll, Datenexport und Löschung, wie es die DSGVO verlangt.' },
+    { title: 'Verwaltung', text: 'Benutzer suchen, Rollen vergeben und Konten löschen, im Browser und über die API mit denselben Rechten.' },
+    { title: 'Zwei Sprachen', text: 'Oberfläche und E-Mails auf Deutsch und Englisch. Weitere Sprachen sind eine Datei mehr.' },
+    { title: 'Bereit für den Betrieb', text: 'Docker, Health-Checks, Prometheus-Metriken, strukturierte Logs mit Request-ID und ein Lasttest für jeden Endpunkt.' },
+  ],
+}) %>
+
+<%- include('../../components/quickstart', {
+  id: 'quickstart',
+  heading: 'In drei Befehlen lokal',
+  lead: 'Node.js 22 und eine MongoDB reichen. Die Einrichtung erzeugt eine .env mit zufälligen Schlüsseln.',
+  commands: [
+    { command: 'npm run setup', text: '.env mit eigenen Schlüsseln anlegen' },
+    { command: 'npm run create-admin', text: 'Erstes Administratorkonto erstellen' },
+    { command: 'npm run dev', text: 'Server mit Neustart bei Änderungen starten' },
+  ],
+}) %>

@@ -1,0 +1,8 @@
+<%# Locals: page, totalPages, pageUrl(page). Rendered only when there is more than one page. -%>
+<% if (totalPages > 1) { %>
+<nav class="pagination" aria-label="<%= t('common.pagination') %>">
+  <% if (page > 1) { %><a class="button button--secondary" href="<%= pageUrl(page - 1) %>" rel="prev"><%= t('common.previous') %></a><% } else { %><span></span><% } %>
+  <span class="pagination__status"><%= t('common.pageOf', { page, total: totalPages }) %></span>
+  <% if (page < totalPages) { %><a class="button button--secondary" href="<%= pageUrl(page + 1) %>" rel="next"><%= t('common.next') %></a><% } else { %><span></span><% } %>
+</nav>
+<% } %>

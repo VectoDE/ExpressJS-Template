@@ -1,166 +1,249 @@
-const httpStatus = require('http-status');
+const config = require('../../config/config');
+const { tokenTypes } = require('../../config/tokens');
+const httpStatus = require('../../utils/httpStatus');
 const authValidation = require('../../validations/auth.validation');
 const authService = require('../../services/auth.service');
 const tokenService = require('../../services/token.service');
 const userService = require('../../services/user.service');
-const { addFlashMessage } = require('../../utils/flash');
+const { addFlashMessage, rememberInput } = require('../../utils/flash');
+const describeFormErrors = require('../../utils/formErrors');
+const requestContext = require('../../utils/requestContext');
+const safeRedirect = require('../../utils/safeRedirect');
+const { startSession, resetSession, endSession } = require('../../utils/webSession');
 
-const validate = (schema, payload) =>
-  schema.validate(payload, {
-    abortEarly: false,
-    stripUnknown: true,
-  });
+const validate = (schema, payload) => schema.validate(payload, { abortEarly: false, stripUnknown: true });
+
+// Only harmless fields are kept for the next render, never passwords.
+const typed = (req, field, max) => String(req.body[field] ?? '').slice(0, max);
+
+const flash = (req, type, key, vars) => addFlashMessage(req, { type, text: req.t(key, vars) });
+
+const TWO_FACTOR_WINDOW_MS = config.auth.twoFactorChallengeMinutes * 60 * 1000;
 
 const renderLogin = (req, res) => {
-  res.render('pages/auth/login', {
-    title: 'Anmelden',
-  });
+  res.render('pages/auth/login', { title: req.t('auth.login.title') });
 };
 
 const renderRegister = (req, res) => {
-  res.render('pages/auth/register', {
-    title: 'Registrieren',
-  });
+  res.render('pages/auth/register', { title: req.t('auth.register.title') });
 };
 
-const handleLogin = async (req, res, next) => {
+/**
+ * Password step. The browser session only ever holds the public profile; API tokens are never stored
+ * in it or shown in HTML. With 2FA on, the session remembers who passed the password, for a few minutes.
+ */
+const handleLogin = async (req, res) => {
   const { error, value } = validate(authValidation.login.body, req.body);
   if (error) {
-    addFlashMessage(req, {
-      type: 'error',
-      text: error.details.map((detail) => detail.message).join(' '),
-    });
+    rememberInput(req, { email: typed(req, 'email', 254) });
+    flash(req, 'error', 'flash.loginIncomplete');
     return res.redirect('/login');
   }
 
-  value.email = value.email.toLowerCase();
-
-  const redirectTo = req.session && req.session.returnTo ? req.session.returnTo : '/dashboard';
-  const target = redirectTo;
-
+  const target = safeRedirect(req.session.returnTo, '/dashboard');
+  let result;
   try {
-    const user = await authService.loginWithEmailAndPassword(value.email, value.password);
-    const tokens = await tokenService.generateAuthTokens(user);
-    const safeUser = userService.toUserResponse(user);
-
-    req.session.regenerate((regenerateError) => {
-      if (regenerateError) {
-        return next(regenerateError);
-      }
-      req.session.user = safeUser;
-      req.session.tokens = tokens;
-      delete req.session.returnTo;
-      addFlashMessage(req, {
-        type: 'success',
-        text: `Willkommen zurück, ${safeUser.name || safeUser.email}!`,
-      });
-      req.session.save((saveError) => {
-        if (saveError) {
-          return next(saveError);
-        }
-        return res.redirect(target);
-      });
-    });
+    result = await authService.login(value.email, value.password, requestContext(req));
   } catch (err) {
-    if (err.statusCode === httpStatus.UNAUTHORIZED) {
-      addFlashMessage(req, {
-        type: 'error',
-        text: 'Ungültige Anmeldedaten. Bitte versuche es erneut.',
-      });
+    if (err.statusCode === httpStatus.UNAUTHORIZED || err.reason === 'emailNotVerified') {
+      rememberInput(req, { email: value.email });
+      flash(req, 'error', err.reason === 'emailNotVerified' ? 'flash.emailNotVerified' : 'flash.loginInvalid');
       return res.redirect('/login');
     }
-    return next(err);
+    throw err;
   }
 
-  return null;
+  if (result.twoFactorRequired) {
+    req.session.pendingLogin = { userId: result.user.id, startedAt: Date.now(), returnTo: target };
+    return res.redirect('/login/2fa');
+  }
+  await startSession(req, result.user, { type: 'success', text: req.t('flash.signedIn', { name: result.user.name }) });
+  return res.redirect(target);
 };
 
-const handleRegister = async (req, res, next) => {
-  const { error, value } = validate(authValidation.register.body, req.body);
+// The pending sign-in, or null when there is none, it is too old or the password changed in between.
+const pendingLogin = async (req) => {
+  const pending = req.session.pendingLogin;
+  if (!pending || Date.now() - pending.startedAt > TWO_FACTOR_WINDOW_MS) {
+    return null;
+  }
+  const user = await userService.getUserById(pending.userId);
+  if (!user || user.credentialsChangedAt.getTime() > pending.startedAt) {
+    return null;
+  }
+  return pending;
+};
+
+const expired = (req, res) => {
+  delete req.session.pendingLogin;
+  flash(req, 'warning', 'flash.twoFactorExpired');
+  return res.redirect('/login');
+};
+
+const renderTwoFactor = async (req, res) => {
+  if (!(await pendingLogin(req))) {
+    return expired(req, res);
+  }
+  return res.render('pages/auth/two-factor', { title: req.t('auth.twoFactor.title') });
+};
+
+const handleTwoFactor = async (req, res) => {
+  const pending = await pendingLogin(req);
+  if (!pending) {
+    return expired(req, res);
+  }
+  const { error, value } = validate(authValidation.twoFactorForm.body, req.body);
   if (error) {
-    addFlashMessage(req, {
-      type: 'error',
-      text: error.details.map((detail) => detail.message).join(' '),
-    });
+    flash(req, 'error', 'fieldErrors.code');
+    return res.redirect('/login/2fa');
+  }
+  let result;
+  try {
+    result = await authService.completeTwoFactorLogin(pending.userId, value.code, requestContext(req));
+  } catch (err) {
+    if (err.statusCode === httpStatus.UNAUTHORIZED) {
+      flash(req, 'error', 'flash.twoFactorCodeInvalid');
+      return res.redirect('/login/2fa');
+    }
+    throw err;
+  }
+  await startSession(req, result.user, { type: 'success', text: req.t('flash.signedIn', { name: result.user.name }) });
+  if (result.recoveryCodeUsed) {
+    flash(req, 'warning', 'flash.recoveryCodeUsed', { count: result.remainingRecoveryCodes });
+  }
+  return res.redirect(pending.returnTo);
+};
+
+const handleRegister = async (req, res) => {
+  const { error, value } = validate(authValidation.register.body, req.body);
+  const keepInput = () => rememberInput(req, { name: typed(req, 'name', 120), email: typed(req, 'email', 254) });
+  if (error) {
+    keepInput();
+    addFlashMessage(req, { type: 'error', text: describeFormErrors(error, req.t) });
     return res.redirect('/register');
   }
 
-  value.role = 'user';
-  value.email = value.email.toLowerCase();
-
+  let user;
   try {
-    const user = await authService.registerUser(value);
-    const tokens = await tokenService.generateAuthTokens(user);
-    const safeUser = userService.toUserResponse(user);
-
-    req.session.regenerate((regenerateError) => {
-      if (regenerateError) {
-        return next(regenerateError);
-      }
-      req.session.user = safeUser;
-      req.session.tokens = tokens;
-      delete req.session.returnTo;
-      addFlashMessage(req, {
-        type: 'success',
-        text: 'Registrierung erfolgreich! Willkommen an Bord.',
-      });
-      req.session.save((saveError) => {
-        if (saveError) {
-          return next(saveError);
-        }
-        return res.redirect('/dashboard');
-      });
-    });
+    user = await authService.registerUser(value, requestContext(req));
   } catch (err) {
-    if (err.statusCode === httpStatus.BAD_REQUEST) {
-      addFlashMessage(req, {
-        type: 'error',
-        text: err.message,
-      });
+    if (err.statusCode === httpStatus.CONFLICT) {
+      keepInput();
+      flash(req, 'error', 'flash.emailUnavailable');
       return res.redirect('/register');
     }
-    return next(err);
+    throw err;
   }
-
-  return null;
+  // With AUTH_REQUIRE_VERIFIED_EMAIL the account must be confirmed before the first sign-in.
+  if (config.auth.requireVerifiedEmail) {
+    rememberInput(req, { email: user.email });
+    flash(req, 'success', 'flash.registeredVerify');
+    return res.redirect('/login');
+  }
+  await startSession(req, user, { type: 'success', text: req.t('flash.registered') });
+  return res.redirect('/dashboard');
 };
 
-const handleLogout = async (req, res, next) => {
-  const refreshToken = req.session && req.session.tokens ? req.session.tokens.refresh.token : null;
+const handleLogout = async (req, res) => {
+  await endSession(req, res);
+  res.redirect('/?signedOut=1');
+};
 
-  if (refreshToken) {
-    try {
-      await authService.logout(refreshToken);
-    } catch (error) {
-      if (!error.statusCode) {
-        return next(error);
-      }
-    }
+const renderForgotPassword = (req, res) => {
+  res.render('pages/auth/forgot-password', { title: req.t('auth.forgot.title') });
+};
+
+// Same message whether or not the address has an account.
+const handleForgotPassword = (req, res) => {
+  const { error, value } = validate(authValidation.forgotPassword.body, req.body);
+  if (error) {
+    rememberInput(req, { email: typed(req, 'email', 254) });
+    flash(req, 'error', 'fieldErrors.email');
+    return res.redirect('/forgot-password');
   }
+  authService.requestPasswordReset(value.email, requestContext(req));
+  flash(req, 'info', 'flash.resetRequested', { minutes: config.auth.resetPasswordExpirationMinutes });
+  return res.redirect('/login');
+};
 
-  req.session.regenerate((regenerateError) => {
-    if (regenerateError) {
-      return next(regenerateError);
+const invalidLink = (req, res, target) => {
+  flash(req, 'error', 'flash.linkInvalid');
+  return res.redirect(target);
+};
+
+const renderResetPassword = async (req, res) => {
+  const token = String(req.query.token ?? '');
+  if (!(await tokenService.findEmailToken(token, tokenTypes.RESET_PASSWORD))) {
+    return invalidLink(req, res, '/forgot-password');
+  }
+  return res.render('pages/auth/reset-password', { title: req.t('auth.reset.title'), token });
+};
+
+const handleResetPassword = async (req, res) => {
+  const { error, value } = validate(authValidation.resetPasswordForm.body, req.body);
+  if (error) {
+    if (error.details.some((detail) => detail.path[0] === 'token')) {
+      return invalidLink(req, res, '/forgot-password');
     }
-    req.session.user = null;
-    req.session.tokens = null;
-    addFlashMessage(req, {
-      type: 'success',
-      text: 'Du wurdest sicher abgemeldet.',
-    });
-    req.session.save((saveError) => {
-      if (saveError) {
-        return next(saveError);
-      }
-      return res.redirect('/');
-    });
-  });
+    addFlashMessage(req, { type: 'error', text: describeFormErrors(error, req.t) });
+    return res.redirect(`/reset-password?token=${encodeURIComponent(value.token)}`);
+  }
+  try {
+    await authService.resetPassword(value.token, value.password, requestContext(req));
+  } catch (err) {
+    if (err.statusCode === httpStatus.BAD_REQUEST) {
+      return invalidLink(req, res, '/forgot-password');
+    }
+    throw err;
+  }
+  await resetSession(req, { type: 'success', text: req.t('flash.passwordReset') });
+  return res.redirect('/login');
+};
+
+const afterVerification = (req) => (req.session.user ? '/dashboard' : '/login');
+
+// GET only shows a button: link scanners in mail systems open links, and that must not confirm anything.
+const renderVerifyEmail = async (req, res) => {
+  const token = String(req.query.token ?? '');
+  if (!(await tokenService.findEmailToken(token, tokenTypes.VERIFY_EMAIL))) {
+    return invalidLink(req, res, afterVerification(req));
+  }
+  return res.render('pages/auth/verify-email', { title: req.t('auth.verify.title'), token });
+};
+
+const handleVerifyEmail = async (req, res) => {
+  const { error, value } = validate(authValidation.verifyEmail.body, req.body);
+  if (error) {
+    return invalidLink(req, res, afterVerification(req));
+  }
+  let user;
+  try {
+    user = await authService.verifyEmail(value.token, requestContext(req));
+  } catch (err) {
+    if (err.statusCode === httpStatus.BAD_REQUEST) {
+      return invalidLink(req, res, afterVerification(req));
+    }
+    throw err;
+  }
+  if (req.session.user?.id === user.id) {
+    req.session.user = userService.toUserResponse(user);
+  }
+  flash(req, 'success', 'flash.emailVerified');
+  return res.redirect(afterVerification(req));
 };
 
 module.exports = {
   renderLogin,
   renderRegister,
   handleLogin,
+  renderTwoFactor,
+  handleTwoFactor,
   handleRegister,
   handleLogout,
+  renderForgotPassword,
+  handleForgotPassword,
+  renderResetPassword,
+  handleResetPassword,
+  renderVerifyEmail,
+  handleVerifyEmail,
 };

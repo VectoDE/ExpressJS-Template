@@ -1,0 +1,15 @@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title><%= locals.title ? `${title} · ${app.name}` : app.name %></title>
+<meta name="description" content="<%= locals.description || t('meta.description') %>" />
+<meta name="color-scheme" content="light dark" />
+<script src="/assets/js/motion-init.js"></script>
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="/assets/css/tokens.css" />
+<link rel="stylesheet" href="/assets/css/base.css" />
+<link rel="stylesheet" href="/assets/css/layout.css" />
+<link rel="stylesheet" href="/assets/css/components.css" />
+<link rel="stylesheet" href="/assets/css/motion.css" />
+<link rel="stylesheet" href="/assets/css/responsive.css" />
+<% (locals.stylesheets || []).forEach((sheet) => { %><link rel="stylesheet" href="/assets/css/<%= sheet %>.css" />
+<% }) %><script src="/assets/js/main.js" defer></script>

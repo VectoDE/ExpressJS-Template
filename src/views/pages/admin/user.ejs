@@ -1,0 +1,67 @@
+<%
+  const formatDate = (date) =>
+    new Date(date).toLocaleString(t('meta.dateLocale'), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' });
+-%>
+<%- include('../../layouts/top', { bodyClass: 'page-admin' }) %>
+<p class="back-link"><a href="/admin/users"><%= t('admin.back') %></a></p>
+<%- include('../../components/page-intro', { heading: subject.name, lead: subject.email }) %>
+
+<div class="admin-layout">
+  <section class="panel" aria-labelledby="edit-title" data-reveal>
+    <h2 id="edit-title"><%= t('admin.editTitle') %></h2>
+    <form method="post" action="/admin/users/<%= subject.id %>" class="form">
+      <%- include('../../components/csrf') %>
+      <%- include('../../components/field', {
+        id: 'user-name', name: 'name', label: t('fields.name'), value: subject.name,
+        autocomplete: 'off', minlength: 3, maxlength: 120, required: true,
+      }) %>
+      <div class="field">
+        <label class="field__label" for="user-role"><%= t('fields.role') %></label>
+        <select class="field__input" id="user-role" name="role" aria-describedby="user-role-help"<% if (isSelf) { %> disabled<% } %>>
+          <% ['user', 'admin'].forEach((role) => { %><option value="<%= role %>"<% if (subject.role === role) { %> selected<% } %>><%= roleLabel(role) %></option><% }) %>
+        </select>
+        <% if (isSelf) { %><input type="hidden" name="role" value="<%= subject.role %>" /><% } %>
+        <p class="field__help" id="user-role-help"><%= isSelf ? t('flash.ownRole') : t('admin.roleHelp') %></p>
+      </div>
+      <div class="button-row"><button type="submit" class="button button--primary"><%= t('admin.save') %></button></div>
+    </form>
+  </section>
+
+  <section class="panel" aria-labelledby="facts-title" data-reveal>
+    <h2 id="facts-title"><%= t('account.summary.title') %></h2>
+    <dl class="facts">
+      <div><dt><%= t('account.summary.email') %></dt><dd><%- include('../../components/status-badge', { on: subject.isEmailVerified, labelOn: t('account.summary.verified'), labelOff: t('account.summary.unverified') }) %></dd></div>
+      <div><dt><%= t('account.summary.twoFactor') %></dt><dd><%- include('../../components/status-badge', { on: twoFactor.enabled, labelOn: t('account.summary.on'), labelOff: t('account.summary.off') }) %></dd></div>
+      <div><dt><%= t('account.summary.memberSince') %></dt><dd><%= formatDate(subject.createdAt) %></dd></div>
+    </dl>
+    <h3><%= t('account.activity.title') %></h3>
+    <% if (activity.length) { %>
+    <ol class="timeline">
+      <% activity.forEach((event) => { %>
+      <li class="timeline__item timeline__item--<%= ['loginFailed', 'accountLocked', 'refreshTokenReuse'].includes(event.type) ? 'alert' : 'normal' %>">
+        <time datetime="<%= new Date(event.createdAt).toISOString() %>"><%= formatDate(event.createdAt) %></time>
+        <span class="timeline__what"><%= t('activity.' + event.type) %></span>
+      </li>
+      <% }) %>
+    </ol>
+    <% } else { %>
+    <p class="empty-state"><%= t('account.activity.empty') %></p>
+    <% } %>
+  </section>
+
+  <% if (!isSelf) { %>
+  <section class="panel panel--danger admin-layout__wide" aria-labelledby="delete-title" data-reveal>
+    <h2 id="delete-title"><%= t('admin.deleteTitle') %></h2>
+    <p><%= t('admin.deleteText') %></p>
+    <form method="post" action="/admin/users/<%= subject.id %>/delete" class="form form--inline">
+      <%- include('../../components/csrf') %>
+      <%- include('../../components/field', {
+        id: 'confirm-email', name: 'confirmEmail', label: t('admin.deleteConfirm'), type: 'email',
+        autocomplete: 'off', maxlength: 254, required: true,
+      }) %>
+      <div class="button-row"><button type="submit" class="button button--danger"><%= t('admin.deleteSubmit') %></button></div>
+    </form>
+  </section>
+  <% } %>
+</div>
+<%- include('../../layouts/bottom') %>

@@ -1,0 +1,57 @@
+# Local production-like stack: the app and MongoDB on an internal network.
+# Put a TLS-terminating reverse proxy in front for real deployments (see docs/deployment.md).
+name: expressjs-template
+
+services:
+  app:
+    build: .
+    image: expressjs-template:3.0.0
+    env_file: .env
+    environment:
+      MONGODB_URI: mongodb://${MONGO_APP_USERNAME:-app}:${MONGO_APP_PASSWORD:?set MONGO_APP_PASSWORD in .env}@mongo:27017/expressjs_template?authSource=expressjs_template
+      # The app never needs the database root account; blank it out instead of inheriting it from .env.
+      MONGO_ROOT_USERNAME: ''
+      MONGO_ROOT_PASSWORD: ''
+    ports:
+      - '127.0.0.1:8080:8080'
+    depends_on:
+      mongo:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    networks: [frontend, backend]
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:8.2@sha256:e0ce8c35124d4a9f9785532d1f268f39e9728ffa1cb38f46fa482436424c4bd3
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?set MONGO_ROOT_PASSWORD in .env}
+      MONGO_APP_DATABASE: expressjs_template
+      MONGO_APP_USERNAME: ${MONGO_APP_USERNAME:-app}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD:?set MONGO_APP_PASSWORD in .env}
+    volumes:
+      - mongo-data:/data/db
+      - ./docker/mongo/init-app-user.js:/docker-entrypoint-initdb.d/init-app-user.js:ro
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', 'db.adminCommand("ping").ok']
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    security_opt:
+      - no-new-privileges:true
+    networks: [backend]
+    restart: unless-stopped
+
+networks:
+  frontend:
+  # No route to the outside: only the app can reach MongoDB.
+  backend:
+    internal: true
+
+volumes:
+  mongo-data:

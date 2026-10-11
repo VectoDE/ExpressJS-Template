@@ -1,0 +1,168 @@
+/*
+ * Design tokens. Every colour, size, radius and timing used by the other stylesheets comes from here.
+ * Contrast (WCAG 2.1 AA), measured for both themes: body text >= 12.9:1, every other text and button pair >= 6.3:1.
+ */
+:root {
+  color-scheme: light dark;
+
+  /* Colour, light theme */
+  --color-bg: #f4f6f5;
+  --color-surface: #ffffff;
+  --color-surface-sunken: #eaefec;
+  --color-ink: #14201a;
+  --color-muted: #4a5751;
+  --color-line: #d3dcd7;
+  --color-line-strong: #a9b8b0;
+  --color-accent: #17663f;
+  --color-accent-hover: #0f4f30;
+  --color-accent-ink: #ffffff;
+  --color-accent-soft: #e1f0e7;
+  --color-focus: #b45309;
+  --color-danger: #a4262c;
+  --color-danger-hover: #861d22;
+  --color-danger-soft: #fbeaea;
+  --color-warning-soft: #fdf3dc;
+  --color-warning-line: #d9a632;
+  --color-info-soft: #e6eef8;
+  --color-info-line: #7d9cc7;
+  --color-terminal: #12201a;
+  --color-terminal-ink: #d7e8de;
+  --color-terminal-dim: #8fb3a0;
+  --color-accent-on-dark: #5cc48d;
+  --shadow-raised: 0 1px 2px rgb(20 32 26 / 6%), 0 8px 24px -12px rgb(20 32 26 / 18%);
+  --shadow-lifted: 0 2px 4px rgb(20 32 26 / 6%), 0 18px 40px -18px rgb(20 32 26 / 28%);
+
+  /* Type: system fonts only, nothing is loaded from third parties */
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  --text-xs: 0.8125rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-md: 1.125rem;
+  --text-lg: 1.375rem;
+  --text-xl: clamp(1.6rem, 1.3rem + 1.2vw, 2.1rem);
+  --text-2xl: clamp(2rem, 1.4rem + 2.6vw, 3rem);
+  --text-display: clamp(2.6rem, 1.4rem + 5vw, 5.25rem);
+  --leading-tight: 1.1;
+  --leading-body: 1.6;
+
+  /* Space and shape */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
+  --space-9: 7rem;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --shell-width: 74rem;
+  --text-width: 42rem;
+  --form-width: 28rem;
+
+  /* Motion. One vocabulary for the whole interface: things arrive fast and settle softly. */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 160ms;
+  --duration-base: 280ms;
+  --duration-slow: 560ms;
+  --duration-scene: 900ms;
+  --stagger: 70ms;
+  /* Multipliers the motion styles below change: travel distance, rotation, start scale. */
+  --move: 1;
+  --tilt: 0;
+  --land-scale: 0.97;
+}
+
+@supports (transition-timing-function: linear(0, 1)) {
+  :root {
+    /* A damped spring, overshoots once and settles. */
+    --ease-spring: linear(
+      0,
+      0.009,
+      0.035 2.1%,
+      0.141 4.4%,
+      0.723 12.9%,
+      0.938 16.7%,
+      1.017 19.4%,
+      1.077 22.4%,
+      1.088 25.3%,
+      1.083 27.4%,
+      1.051 31.8%,
+      1.012 37.5%,
+      0.996 43.4%,
+      0.993 50.6%,
+      1.001 72.5%,
+      1
+    );
+  }
+}
+
+/*
+ * Motion styles. MOTION_STYLE sets the default on <html data-motion>, the footer switch can override it.
+ * "film" is the base above; "off" is handled in motion.css.
+ */
+:root[data-motion='precise'] {
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-spring: cubic-bezier(0.2, 0, 0, 1);
+  --duration-fast: 90ms;
+  --duration-base: 160ms;
+  --duration-slow: 260ms;
+  --duration-scene: 420ms;
+  --stagger: 30ms;
+  --move: 0.45;
+  --land-scale: 1;
+}
+
+:root[data-motion='playful'] {
+  --duration-base: 360ms;
+  --duration-slow: 720ms;
+  --duration-scene: 1100ms;
+  --stagger: 95ms;
+  --move: 1.8;
+  --tilt: 1;
+  --land-scale: 0.88;
+}
+
+:root[data-motion='calm'] {
+  --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-slow: 700ms;
+  --duration-scene: 1200ms;
+  --stagger: 120ms;
+  --move: 0;
+  --land-scale: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0e1412;
+    --color-surface: #151d1a;
+    --color-surface-sunken: #1b2622;
+    --color-ink: #e5ece8;
+    --color-muted: #a2b1aa;
+    --color-line: #2b3833;
+    --color-line-strong: #46574f;
+    --color-accent: #5cc48d;
+    --color-accent-hover: #7dd5a6;
+    --color-accent-ink: #0b1310;
+    --color-accent-soft: #19382a;
+    --color-focus: #f5b041;
+    --color-danger: #f07a7f;
+    --color-danger-hover: #f59a9e;
+    --color-danger-soft: #3a1c1e;
+    --color-warning-soft: #3a2f14;
+    --color-warning-line: #b08a2e;
+    --color-info-soft: #1a2638;
+    --color-info-line: #5a7aa8;
+    --color-terminal: #0a120f;
+    --color-terminal-ink: #d7e8de;
+    --color-terminal-dim: #8fb3a0;
+    --shadow-raised: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 24px -12px rgb(0 0 0 / 60%);
+    --shadow-lifted: 0 2px 4px rgb(0 0 0 / 30%), 0 18px 40px -18px rgb(0 0 0 / 70%);
+  }
+}

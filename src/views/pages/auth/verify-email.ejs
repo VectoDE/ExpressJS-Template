@@ -1,0 +1,15 @@
+<%- include('../../layouts/top', { bodyClass: 'page-auth', width: 'auth' }) %>
+<div class="auth-layout">
+  <section class="panel auth-panel">
+    <%- include('../../components/page-intro', { heading: t('auth.verify.title'), lead: t('auth.verify.lead') }) %>
+    <form method="post" action="/verify-email" class="form">
+      <%- include('../../components/csrf') %>
+      <input type="hidden" name="token" value="<%= token %>" />
+      <button type="submit" class="button button--primary button--block"><%= t('auth.verify.submit') %></button>
+    </form>
+  </section>
+  <%- include('../../components/auth-steps', { steps: [
+    { key: 'account', state: 'done' }, { key: 'confirm', state: 'current' }, { key: 'start', state: 'next' },
+  ] }) %>
+</div>
+<%- include('../../layouts/bottom') %>

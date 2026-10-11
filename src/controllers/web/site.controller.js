@@ -1,64 +1,45 @@
-const catchAsync = require('../../utils/catchAsync');
-const userService = require('../../services/user.service');
-const { addFlashMessage } = require('../../utils/flash');
+const config = require('../../config/config');
+
+// Security headers the home page lists with the values this very response carries.
+const SHOWN_HEADERS = [
+  'content-security-policy',
+  'strict-transport-security',
+  'cross-origin-opener-policy',
+  'cross-origin-embedder-policy',
+  'cross-origin-resource-policy',
+  'x-frame-options',
+  'x-content-type-options',
+  'referrer-policy',
+  'permissions-policy',
+  'cache-control',
+];
+
+const responseHeaders = (res) =>
+  SHOWN_HEADERS.map((name) => ({ name, value: res.getHeader(name) })).filter((header) => header.value !== undefined);
+
+// Messages for pages reached after the session was destroyed, where no flash can be stored.
+const STATUS_FLASH = {
+  signedOut: 'flash.signedOut',
+  deleted: 'flash.deleted',
+};
 
 const renderHome = (req, res) => {
-  res.render('pages/site/home', {
-    title: 'Enterprise Express Template',
-    highlights: [
-      'Mehrschichtige Architektur mit geprüften Sicherheitsstandards',
-      'Sofort einsetzbare API-Dokumentation & Test-Suite',
-      'Integrierte Weboberfläche mit CSRF- und Sitzungsschutz',
-    ],
+  Object.entries(STATUS_FLASH).forEach(([param, key]) => {
+    if (req.query[param] === '1') {
+      res.locals.flash = [...res.locals.flash, { type: 'success', text: req.t(key) }];
+    }
   });
+  res.render('pages/site/home', { title: null, headers: responseHeaders(res) });
 };
 
-const renderSecurity = (req, res) => {
-  res.render('pages/site/security', {
-    title: 'Security-Übersicht',
-  });
+// Long-form pages: the text lives per language in views/content/<locale>/.
+const contentPage = (page, titleKey) => (req, res) => {
+  res.render('pages/site/content', { title: req.t(titleKey), page, retentionDays: config.audit.retentionDays });
 };
-
-const renderPrivacy = (req, res) => {
-  res.render('pages/site/privacy', {
-    title: 'Datenschutz',
-  });
-};
-
-const renderDashboard = catchAsync(async (req, res) => {
-  const sessionUser = req.session.user;
-  if (!sessionUser) {
-    addFlashMessage(req, {
-      type: 'warning',
-      text: 'Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.',
-    });
-    return res.redirect('/login');
-  }
-
-  const userDoc = await userService.getUserById(sessionUser.id);
-  if (!userDoc) {
-    addFlashMessage(req, {
-      type: 'error',
-      text: 'Dein Benutzerkonto konnte nicht gefunden werden.',
-    });
-    req.session.user = null;
-    req.session.tokens = null;
-    return res.redirect('/login');
-  }
-
-  const user = userService.toUserResponse(userDoc);
-  req.session.user = user;
-
-  return res.render('pages/site/dashboard', {
-    title: 'Dashboard',
-    user,
-    tokens: req.session.tokens || null,
-  });
-});
 
 module.exports = {
   renderHome,
-  renderSecurity,
-  renderPrivacy,
-  renderDashboard,
+  renderSecurity: contentPage('security', 'nav.security'),
+  renderPrivacy: contentPage('privacy', 'nav.privacy'),
+  renderImprint: contentPage('imprint', 'nav.imprint'),
 };

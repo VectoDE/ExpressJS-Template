@@ -1,9 +1,9 @@
-const httpStatus = require('http-status');
+const httpStatus = require('./httpStatus');
 
 class ApiError extends Error {
-  constructor(statusCode = httpStatus.INTERNAL_SERVER_ERROR, message, isOperational = true, stack = '') {
+  constructor(statusCode, message, isOperational = true, stack = '') {
     super(message);
-    this.statusCode = statusCode;
+    this.statusCode = statusCode ?? httpStatus.INTERNAL_SERVER_ERROR;
     this.isOperational = isOperational;
     if (stack) {
       this.stack = stack;

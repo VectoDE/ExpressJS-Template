@@ -1,0 +1,11 @@
+<%# Locals: groups ([{ title, items }]). -%>
+<div class="control-grid">
+  <% groups.forEach((group) => { %>
+  <section class="control-group" data-reveal>
+    <h2><%= group.title %></h2>
+    <ul class="check-list">
+      <% group.items.forEach((item) => { %><li><%= item %></li><% }) %>
+    </ul>
+  </section>
+  <% }) %>
+</div>

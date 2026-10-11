@@ -1,77 +1,113 @@
-const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
+const httpStatus = require('../utils/httpStatus');
 const config = require('../config/config');
 const logger = require('../config/logger');
+const { redactUrl } = require('../utils/redact');
+const i18n = require('../i18n');
+
+const CSRF_MESSAGE = 'Security verification failed. Please reload the page and try again.';
 
 const isWebRequest = (req) => {
-  const acceptsHtml = req.accepts('html');
-  if (!acceptsHtml) {
+  if (
+    req.originalUrl.startsWith('/v1') ||
+    req.originalUrl.startsWith('/docs') ||
+    req.originalUrl.startsWith('/health') ||
+    req.originalUrl.startsWith('/metrics')
+  ) {
     return false;
   }
-  return !req.originalUrl.startsWith('/v1') && !req.originalUrl.startsWith('/docs');
+  return req.accepts(['json', 'html']) === 'html';
 };
 
-const renderErrorView = (res, view, statusCode, message, stack) => {
+// Browser error pages show a fixed text per status; API messages and internals stay out of the HTML.
+const errorPage = (res, statusCode) => {
+  const pages = (res.locals.section || i18n.forLocale().section)('errorPages');
+  return pages[statusCode] || pages[statusCode >= 500 ? 500 : 400];
+};
+
+const renderErrorView = (res, statusCode, stack) => {
+  const page = errorPage(res, statusCode);
   res.status(statusCode);
-  return res.render(view, {
-    statusCode,
-    message,
-    stack,
+  return res.render('error/error', { title: page.heading, statusCode, page, stack }, (renderError, html) => {
+    if (renderError) {
+      // Never fall through to Express' default page, which would print the template error and file paths.
+      logger.error('Error page could not be rendered: %s', renderError.message);
+      return res.type('text/plain').send(`${page.heading}. ${page.text}`);
+    }
+    return res.send(html);
   });
 };
 
 const notFound = (req, res, next) => {
   if (isWebRequest(req)) {
-    return renderErrorView(res, 'error/404', httpStatus.NOT_FOUND, 'The requested page could not be found.');
+    return renderErrorView(res, httpStatus.NOT_FOUND);
   }
-  return next(new ApiError(httpStatus.NOT_FOUND, `Route ${req.originalUrl} not found`));
+  return next(new ApiError(httpStatus.NOT_FOUND, 'Not found'));
 };
 
+/**
+ * Turns every error into an ApiError. Only messages that are safe for clients survive:
+ * our own operational errors and body-parser errors flagged with `expose`.
+ * Everything else becomes a generic 500, so driver messages or connection strings never leak.
+ */
 const errorConverter = (err, req, res, next) => {
-  let error = err;
-  if (!(error instanceof ApiError)) {
-    const statusCode = error.statusCode || error.status || httpStatus.INTERNAL_SERVER_ERROR;
-    const message = error.message || httpStatus[statusCode];
-    error = new ApiError(statusCode, message, false, err.stack);
+  if (err instanceof ApiError) {
+    return next(err);
   }
-  next(error);
+  let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+  let message = httpStatus.message(statusCode);
+
+  if (err.code === 11000) {
+    statusCode = httpStatus.CONFLICT;
+    message = 'Resource already exists';
+  } else if (err.name === 'CastError' || err.name === 'ValidationError') {
+    statusCode = httpStatus.BAD_REQUEST;
+    message = 'Invalid request data';
+  } else if (err.expose && Number.isInteger(err.status) && err.status >= 400 && err.status < 500) {
+    statusCode = err.status;
+    message = err.message;
+  }
+  const error = new ApiError(statusCode, message, statusCode < 500, err.stack);
+  error.code = err.code;
+  error.cause = err;
+  return next(error);
 };
 
+// eslint-disable-next-line no-unused-vars
 const errorHandler = (err, req, res, next) => {
-  const statusCode = err.statusCode || err.status || httpStatus.INTERNAL_SERVER_ERROR;
-  const message = err.message || httpStatus[statusCode];
+  const statusCode = err.statusCode || httpStatus.INTERNAL_SERVER_ERROR;
+  const message = err.isOperational ? err.message : httpStatus.message(statusCode);
+  const showStack = config.env === 'development';
 
-  if (config.env === 'development') {
-    logger.error(err);
+  const url = redactUrl(req.originalUrl);
+  if (statusCode >= 500) {
+    logger.error('[%s] %s %s -> %d: %s', req.id, req.method, url, statusCode, (err.cause || err).stack || err.message);
   } else {
-    logger.error(`${statusCode} - ${message}`);
+    logger.warn('[%s] %s %s -> %d: %s', req.id, req.method, url, statusCode, err.message);
+  }
+
+  if (res.headersSent) {
+    return req.socket.destroy();
   }
 
   if (err.code === 'EBADCSRFTOKEN') {
-    const csrfMessage = 'Security verification failed. Please refresh the page and try again.';
     if (isWebRequest(req)) {
-      return renderErrorView(res, 'error/500', httpStatus.FORBIDDEN, csrfMessage);
+      return renderErrorView(res, httpStatus.FORBIDDEN);
     }
-    return res.status(httpStatus.FORBIDDEN).json({
-      code: httpStatus.FORBIDDEN,
-      message: csrfMessage,
-    });
+    return res
+      .status(httpStatus.FORBIDDEN)
+      .json({ code: httpStatus.FORBIDDEN, message: CSRF_MESSAGE, requestId: req.id });
   }
 
   if (isWebRequest(req)) {
-    const stack = config.env === 'development' ? err.stack : undefined;
-    return renderErrorView(res, 'error/500', statusCode, message, stack);
+    return renderErrorView(res, statusCode, showStack ? err.stack : undefined);
   }
 
-  const response = {
-    code: statusCode,
-    message,
-  };
-
-  if (config.env === 'development' && err.stack) {
+  // The request id lets support match a client report to the server log without exposing anything else.
+  const response = { code: statusCode, message, requestId: req.id };
+  if (showStack) {
     response.stack = err.stack;
   }
-
   return res.status(statusCode).json(response);
 };
 

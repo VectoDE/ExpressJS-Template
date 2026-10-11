@@ -1,0 +1,12 @@
+<%# Locals: id, heading, features ([{ title, text }]). -%>
+<section class="section" aria-labelledby="<%= id %>-title">
+  <h2 id="<%= id %>-title" class="section__title"><%= heading %></h2>
+  <div class="feature-grid">
+    <% features.forEach((feature) => { %>
+    <article class="feature" data-reveal>
+      <h3><%= feature.title %></h3>
+      <p><%= feature.text %></p>
+    </article>
+    <% }) %>
+  </div>
+</section>

@@ -1,0 +1,4 @@
+<%# Long-form page. The text per language lives in views/content/<locale>/<page>.ejs. Local: page. -%>
+<%- include('../../layouts/top', { bodyClass: 'page-' + page, width: page === 'security' ? 'wide' : 'text' }) %>
+<%- include('../../content/' + locale + '/' + page) %>
+<%- include('../../layouts/bottom') %>

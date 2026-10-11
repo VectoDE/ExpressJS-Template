@@ -1,45 +1,44 @@
-const httpStatus = require('http-status');
-const jwt = require('jsonwebtoken');
 const ApiError = require('../utils/ApiError');
-const config = require('../config/config');
+const httpStatus = require('../utils/httpStatus');
 const userService = require('../services/user.service');
+const tokenService = require('../services/token.service');
+const { tokenTypes } = require('../config/tokens');
 const { roleRights } = require('../config/roles');
 
-const auth = (...requiredRights) => async (req, res, next) => {
-  try {
-    let token;
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
-      token = req.headers.authorization.replace('Bearer ', '');
-    }
+const BEARER = /^Bearer ([A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)$/;
 
-    if (!token) {
-      throw new ApiError(httpStatus.UNAUTHORIZED, 'Authentication token missing');
-    }
+/**
+ * Accepts only access tokens. Rights come from the role stored in the database, never from the token,
+ * and tokens issued before the last password, email or role change are rejected.
+ */
+const auth =
+  (...requiredRights) =>
+  async (req, res, next) => {
+    try {
+      const match = BEARER.exec(req.get('Authorization') || '');
+      if (!match) {
+        throw new ApiError(httpStatus.UNAUTHORIZED, 'Authentication required');
+      }
 
-    const payload = jwt.verify(token, config.jwt.secret);
-    const user = await userService.getUserById(payload.sub);
+      const payload = tokenService.decodeToken(match[1], tokenTypes.ACCESS);
+      const user = await userService.getUserById(payload.sub);
+      if (!user || payload.iat * 1000 < user.credentialsChangedAt.getTime()) {
+        throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid or expired token');
+      }
 
-    if (!user) {
-      throw new ApiError(httpStatus.UNAUTHORIZED, 'User associated with token no longer exists');
-    }
-
-    req.user = user;
-
-    if (requiredRights.length) {
       const userRights = roleRights.get(user.role) || [];
-      const hasRequiredRights = requiredRights.every((requiredRight) => userRights.includes(requiredRight));
-
-      if (!hasRequiredRights && req.params.userId !== user.id) {
+      if (!requiredRights.every((right) => userRights.includes(right))) {
         throw new ApiError(httpStatus.FORBIDDEN, 'You do not have permission to perform this action');
       }
-    }
 
-    next();
-  } catch (error) {
-    const message = error instanceof ApiError ? error.message : 'Invalid or expired authentication token';
-    const statusCode = error instanceof ApiError ? error.statusCode : httpStatus.UNAUTHORIZED;
-    next(new ApiError(statusCode, message));
-  }
-};
+      req.user = user;
+      return next();
+    } catch (error) {
+      if (error.statusCode === httpStatus.UNAUTHORIZED) {
+        res.set('WWW-Authenticate', 'Bearer');
+      }
+      return next(error);
+    }
+  };
 
 module.exports = auth;

@@ -1,7 +1,6 @@
 const pick = (object, keys) => {
   return keys.reduce((obj, key) => {
-    if (object && Object.prototype.hasOwnProperty.call(object, key)) {
-      // eslint-disable-next-line no-param-reassign
+    if (object && Object.hasOwn(object, key)) {
       obj[key] = object[key];
     }
     return obj;

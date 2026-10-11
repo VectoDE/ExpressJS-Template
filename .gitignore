@@ -128,3 +128,14 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+reports/
+
+# Tool output
+.impeccable/
+playwright-report/
+test-results/
+blob-report/
+
+# Editor and dev container setup stays local
+.vscode/
+.devcontainer/

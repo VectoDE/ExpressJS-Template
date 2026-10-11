@@ -1,39 +1,42 @@
 const express = require('express');
-const csurf = require('csurf');
-const { ensureAuthenticated, ensureGuest } = require('../../middlewares/viewAuth');
+const { csrfProtection } = require('../../middlewares/csrf');
 const viewLocals = require('../../middlewares/viewLocals');
-const siteController = require('../../controllers/web/site.controller');
-const authController = require('../../controllers/web/auth.controller');
 const { addFlashMessage } = require('../../utils/flash');
+const siteRoute = require('./site.route');
+const authRoute = require('./auth.route');
+const accountRoute = require('./account.route');
+const adminRoute = require('./admin.route');
 
 const router = express.Router();
-const csrfProtection = csurf();
 
 router.use(csrfProtection);
 router.use(viewLocals);
 
-router.get('/', siteController.renderHome);
-router.get('/security', siteController.renderSecurity);
-router.get('/privacy', siteController.renderPrivacy);
-router.get('/dashboard', ensureAuthenticated, siteController.renderDashboard);
+router.use('/', siteRoute);
+router.use('/', authRoute);
+router.use('/account', accountRoute);
+router.use('/admin', adminRoute);
 
-router.get('/login', ensureGuest, authController.renderLogin);
-router.post('/login', ensureGuest, authController.handleLogin);
-router.get('/register', ensureGuest, authController.renderRegister);
-router.post('/register', ensureGuest, authController.handleRegister);
-router.post('/logout', ensureAuthenticated, authController.handleLogout);
+// A failed CSRF check sends the user back to the form it came from, never to an address taken from headers.
+const FORM_PAGES = [
+  [/^\/(login|login\/2fa|register|forgot-password)$/, (path) => path],
+  [/^\/reset-password$/, () => '/forgot-password'],
+  [/^\/verify-email$/, () => '/login'],
+  [/^\/account\//, () => '/dashboard'],
+  [/^\/admin\/users\/[0-9a-f]{24}(\/delete)?$/, (path) => path.replace(/\/delete$/, '')],
+];
+
+const formPageFor = (path) => {
+  const match = FORM_PAGES.find(([pattern]) => pattern.test(path));
+  return match ? match[1](path) : '/';
+};
 
 router.use((err, req, res, next) => {
-  if (err.code !== 'EBADCSRFTOKEN') {
+  if (err.code !== 'EBADCSRFTOKEN' || !req.session) {
     return next(err);
   }
-  addFlashMessage(req, {
-    type: 'error',
-    text: 'Deine Sitzung ist abgelaufen. Bitte versuche es erneut.',
-  });
-  const fallback = '/';
-  const referrer = req.get('Referrer');
-  return res.redirect(referrer || fallback);
+  addFlashMessage(req, { type: 'error', text: req.t('flash.formExpired') });
+  return res.redirect(formPageFor(req.path));
 });
 
 module.exports = router;

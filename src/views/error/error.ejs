@@ -1,0 +1,17 @@
+<%# Shared error page. Locals: statusCode, page ({ heading, text }), stack (development only). -%>
+<%- include('../layouts/top', { bodyClass: 'page-error', width: 'narrow' }) %>
+<section class="panel panel--center error-panel">
+  <p class="error-code" aria-hidden="true"><% String(statusCode).split('').forEach((digit) => { %><span><%= digit %></span><% }) %></p>
+  <%- include('../components/page-intro', { heading: page.heading, lead: page.text }) %>
+  <div class="button-row button-row--center"><a class="button button--primary" href="/"><%= t('common.backHome') %></a></div>
+  <% if (statusCode >= 500 && locals.requestId) { %>
+  <p class="error-reference"><%= t('errorPage.requestId') %>: <code><%= requestId %></code><br /><span><%= t('errorPage.requestIdHelp') %></span></p>
+  <% } %>
+  <% if (stack) { %>
+  <details class="stack">
+    <summary><%= t('errorPage.stack') %></summary>
+    <pre><%= stack %></pre>
+  </details>
+  <% } %>
+</section>
+<%- include('../layouts/bottom') %>

@@ -1,0 +1,34 @@
+<%#
+  Scroll-driven walk through the request pipeline. Locals: id, heading, lead, steps ([{ title, text, code }]).
+  Without JavaScript or with reduced motion it is a plain ordered list; main.js adds the scroll timeline.
+-%>
+<section class="story" aria-labelledby="<%= id %>-title" data-story>
+  <header class="story__intro">
+    <h2 id="<%= id %>-title"><%= heading %></h2>
+    <p><%= lead %></p>
+  </header>
+  <div class="story__body">
+    <div class="story__stage" aria-hidden="true">
+      <div class="story__rail">
+        <span class="story__rail-fill"></span>
+        <span class="story__packet"></span>
+        <ol class="story__nodes">
+          <% steps.forEach((step) => { %><li class="story__node"><span class="story__node-dot"></span><span class="story__node-label"><%= step.title %></span></li><% }) %>
+        </ol>
+      </div>
+      <div class="story__readout">
+        <% steps.forEach((step, index) => { %><code class="story__code" data-step-code="<%= index %>"><%= step.code %></code><% }) %>
+      </div>
+    </div>
+    <ol class="story__steps">
+      <% steps.forEach((step, index) => { %>
+      <li class="story__step" data-step="<%= index %>">
+        <span class="story__step-index"><%= String(index + 1).padStart(2, '0') %></span>
+        <h3><%= step.title %></h3>
+        <p><%= step.text %></p>
+        <code class="story__step-code"><%= step.code %></code>
+      </li>
+      <% }) %>
+    </ol>
+  </div>
+</section>

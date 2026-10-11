@@ -8,23 +8,38 @@ const enumerateErrorFormat = format((info) => {
   return info;
 });
 
+// Request data ends up in log lines; escaping CR/LF stops forged log entries.
+const neutralizeNewlines = format((info) => {
+  if (typeof info.message === 'string') {
+    Object.assign(info, { message: info.message.replaceAll('\r', String.raw`\r`).replaceAll('\n', String.raw`\n`) });
+  }
+  return info;
+});
+
+const readable = format.printf(({ timestamp, level, message, stack, ...rest }) => {
+  const payload = Object.keys(rest).length ? ` ${JSON.stringify(rest)}` : '';
+  // Winston passes the stack as a string; anything else is serialised instead of printing [object Object].
+  const trace = typeof stack === 'string' ? stack : JSON.stringify(stack);
+  return stack
+    ? `${timestamp} ${level}: ${message}\n${trace}${payload}`
+    : `${timestamp} ${level}: ${message}${payload}`;
+});
+
 const logger = createLogger({
   level: config.logLevel,
+  silent: config.env === 'test',
   format: format.combine(
     enumerateErrorFormat(),
-    format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     format.errors({ stack: true }),
     format.splat(),
-    format.printf(({ timestamp, level, message, stack, ...rest }) => {
-      const payload = Object.keys(rest).length ? ` ${JSON.stringify(rest)}` : '';
-      return stack
-        ? `${timestamp} ${level}: ${message}\n${stack}${payload}`
-        : `${timestamp} ${level}: ${message}${payload}`;
-    })
+    neutralizeNewlines(),
+    format.timestamp(),
+    config.isProduction ? format.json() : readable
   ),
   transports: [
     new transports.Console({
       handleExceptions: true,
+      handleRejections: true,
     }),
   ],
   exitOnError: false,

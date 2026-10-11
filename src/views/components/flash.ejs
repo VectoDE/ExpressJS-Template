@@ -1,0 +1,12 @@
+<%# One-time messages. Errors use role="alert" so screen readers announce them at once. -%>
+<% if (flash && flash.length) { %>
+<div class="flash-list">
+  <% flash.forEach((message) => { const type = ['success', 'warning', 'error'].includes(message.type) ? message.type : 'info'; %>
+  <div class="flash flash--<%= type %>" role="<%= type === 'error' ? 'alert' : 'status' %>">
+    <span class="flash__icon" aria-hidden="true"></span>
+    <p><%= message.text %></p>
+    <button type="button" class="flash__close" data-dismiss aria-label="<%= t('common.closeMessage') %>">&times;</button>
+  </div>
+  <% }) %>
+</div>
+<% } %>

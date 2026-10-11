@@ -1,0 +1,39 @@
+<%- include('../../components/page-intro', {
+  heading: 'Privacy',
+  lead: 'This page is a placeholder, not a privacy policy. Whoever runs the template needs their own version, reviewed by a lawyer.',
+}) %>
+<div class="prose">
+  <h2>What is stored</h2>
+  <p>
+    For an account the application stores name, email address, role, language and a hash of the password. The password
+    itself is never stored. Users who turn on two-factor sign-in also store an encrypted key and hashes of the recovery
+    codes.
+  </p>
+  <h2>Logs</h2>
+  <p>
+    Server logs contain method, path, status, response time and a request ID, but no form data and no tokens from email
+    links. For each account the application keeps an activity log of security events such as sign-ins and password
+    changes. It holds the time, the kind of event and a rough device label like “Firefox · Windows”, but no IP addresses.
+  </p>
+  <h2>Emails</h2>
+  <p>
+    The application only sends messages about the account: confirmation links, password reset links and notices about
+    security changes. There is no advertising and no newsletter.
+  </p>
+  <h2>Cookies</h2>
+  <p>
+    There is one technically necessary session cookie. It is only set when you open a form, sign in or switch the
+    language. There is no tracking, no external fonts and no scripts from other servers.
+  </p>
+  <h2>Retention</h2>
+  <p>
+    Sessions end after inactivity and at the latest after a fixed maximum. Refresh tokens and email links expire after
+    their lifetime, the activity log after <%= locals.retentionDays || 180 %> days. The database deletes all of it
+    automatically.
+  </p>
+  <h2>Your rights</h2>
+  <p>
+    Signed in, you can download all your data as a file, change name, email address and password, and delete the
+    account together with its activity log.
+  </p>
+</div>

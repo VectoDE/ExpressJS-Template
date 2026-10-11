@@ -1,0 +1,14 @@
+<%#
+  Opens every page. Locals: title, description (optional), width ('wide' | 'text' | 'narrow' | 'auth'),
+  bodyClass (optional), stylesheets (optional, extra files from /assets/css). Close with layouts/bottom.
+-%>
+<!DOCTYPE html>
+<html lang="<%= locale %>" data-motion="<%= app.motion.style %>"<% if (app.motion.switcher) { %> data-motion-switchable<% } %>>
+  <head>
+    <%- include('head') %>
+  </head>
+  <body class="<%= locals.bodyClass || '' %>">
+    <a class="skip-link" href="#main"><%= t('nav.skip') %></a>
+    <%- include('header') %>
+    <main id="main" class="page page--<%= locals.width || 'wide' %>">
+      <%- include('../components/flash') %>

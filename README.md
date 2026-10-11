@@ -1,143 +1,123 @@
-# Express Enterprise Starter
+# ExpressJS Template
 
-An opinionated, production-ready Express.js template that demonstrates best practices for building secure, observable, and testable REST APIs. It includes layered architecture, authentication with JWT and refresh tokens, request validation, MongoDB integration, API documentation, and developer tooling.
+[![CI](https://github.com/VectoDE/ExpressJS-Template/actions/workflows/ci.yml/badge.svg)](https://github.com/VectoDE/ExpressJS-Template/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/VectoDE/ExpressJS-Template/actions/workflows/codeql.yml/badge.svg)](https://github.com/VectoDE/ExpressJS-Template/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/VectoDE/ExpressJS-Template/badge)](https://securityscorecards.dev/viewer/?uri=github.com/VectoDE/ExpressJS-Template)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-## ✨ Highlights
+Starter for Express 5 applications with a JSON API and server-rendered pages. Version 3.0.0.
 
-- **Modular architecture** separating configuration, routes, controllers, services, and data access layers.
-- **Secure by default** middleware stack with Helmet, rate limiting, request sanitization, and CORS controls.
-- **JWT authentication** with refresh tokens, role-based authorization, and reusable access control helpers.
-- **Centralised error handling** using custom `ApiError` objects and environment-aware responses.
-- **Comprehensive logging** powered by Winston and HTTP request tracing via Morgan.
-- **API documentation** automatically generated with Swagger UI (`/docs`).
-- **Test harness** with Jest and SuperTest for integration testing and continuous integration readiness.
-- **Environment validation** via Joi to prevent misconfiguration at boot time.
-- **Modern web experience** including secured sessions, CSRF protection, and a responsive EJS dashboard.
+It comes with sign-up and sign-in for both an API (JWT) and a browser (session cookie), two-factor
+authentication, email verification and password reset, user management for admins, GDPR self-service,
+OpenAPI docs, Docker, CI and tests for every endpoint. Security settings are strict
+by default; you loosen them where your project needs it, not the other way round.
 
-## 🗂️ Project Structure
+## What is included
 
+- **API** under `/v1`: register, login with optional second factor, token rotation, logout, email verification,
+  password reset, account self-service, sessions and activity log, user admin
+- **Browser pages** with EJS in German and English: sign-in, account page with profile, password, two-factor
+  and session management, data export, account deletion, user administration, privacy and imprint
+  placeholders. Light and dark theme, WCAG 2.1 AA, no external fonts or scripts
+- **Responsive and animated:** layouts for phones, tablets, large monitors and TVs up to 3840 px; five motion
+  styles (`MOTION_STYLE`) with a switch in the footer; reduced motion is respected
+- **Modular structure:** layouts and components for views, layered CSS with design tokens, UI texts in
+  `src/locales`, routers split by area, a generator for new owner-scoped resources
+- **Security:** scrypt hashing, single-use refresh tokens with reuse detection, account lockout, CSRF protection,
+  strict CSP and security headers, encrypted session store, validation on every route. Details in
+  [docs/security.md](docs/security.md)
+- **Quality:** unit and integration tests, Playwright browser tests with accessibility checks, load test of every
+  endpoint, ESLint with security and SonarQube rules, Prettier, pre-commit hook
+- **Operations:** health and readiness probes, JSON logs, graceful shutdown, non-root Docker image
+- **Repository:** CI, CodeQL, OSV scanner, Gitleaks, Dependency Review, OpenSSF Scorecard, Dependabot, release
+  workflow
+
+## Quick start
+
+The repository is a GitHub template. Click **Use this template** on GitHub to create your own repository
+from it (or run `gh repo create my-app --template VectoDE/ExpressJS-Template --private --clone`), then clone it.
+
+Requirements: Node.js 22.12 or newer and MongoDB 6 or newer (or Docker).
+
+```bash
+cd my-app
+npm ci                 # also installs the pre-commit hook
+npm run setup          # writes .env with random secrets, never overwrites an existing one
+npm run create-admin   # first administrator
+npm run dev
 ```
-├── src
-│   ├── app.js               # Express app configuration
-│   ├── server.js            # Application bootstrap & graceful shutdown
-│   ├── config/              # Environment, logger, database, roles, token settings
-│   ├── controllers/         # Request handlers (REST, auth, health, web views)
-│   ├── docs/                # Swagger configuration & definitions
-│   ├── middlewares/         # Auth, validation, error & logging middleware
-│   ├── models/              # Mongoose schemas (User, Token)
-│   ├── routes/v1/           # Versioned REST API routes
-│   ├── routes/web/          # Browser routes with CSRF/session handling
-│   ├── services/            # Business logic & orchestration layer
-│   ├── views/               # EJS templates for UI & error pages
-│   ├── public/              # Static assets (CSS/JS) served via /assets
-│   ├── utils/               # Shared helpers (ApiError, password hashing, etc.)
-│   └── validations/         # Joi schemas & custom validators
-├── src/tests/               # Jest setup and sample integration tests
-├── example.env              # Documented environment variables
-└── jest.config.js           # Jest configuration
+
+Open <http://localhost:8080>. API docs are at <http://localhost:8080/docs> outside production. Without
+`SMTP_URL`, emails such as verification links are written to the log in development.
+
+`npm run seed` creates demo accounts, including an admin, as an alternative to `create-admin`. To look at the
+interface without installing MongoDB, run `npm run preview`: it starts the app on <http://localhost:3100> with
+an in-memory database and the demo accounts from `tests/e2e/fixtures.js`.
+
+With Docker:
+
+```bash
+cp .env.example .env   # set NODE_ENV=production, the secrets, APP_URL and SMTP_URL
+docker compose up -d --build
 ```
 
-## 🚀 Getting Started
+## Scripts
 
-1. **Clone and install dependencies**
-   ```bash
-   git clone <repository-url>
-   cd ExpressJS-Template
-   npm install
-   ```
-2. **Configure environment variables**
-   - Copy `example.env` to `.env` and adapt values to your setup.
-   - Mandatory values include MongoDB connection details and a strong `JWT_SECRET`.
-3. **Run the API locally**
-   ```bash
-   npm run dev
-   ```
-   The server listens on `http://localhost:8080` by default and exposes interactive docs at `http://localhost:8080/docs`.
+| Command                           | Purpose                                                             |
+| --------------------------------- | ------------------------------------------------------------------- |
+| `npm run setup`                   | Create `.env` with random secrets                                   |
+| `npm run dev`                     | Start with reload on changes in `src/`                              |
+| `npm start`                       | Start without reload                                                |
+| `npm run create-admin`            | Create an administrator or promote an existing account              |
+| `npm run seed`                    | Demo accounts for development (refuses production)                  |
+| `npm run generate -- <name>`      | Scaffold an owner-scoped REST resource with tests                   |
+| `npm run preview`                 | Start the app with an in-memory MongoDB and demo accounts           |
+| `npm test`                        | Unit and integration tests (in-memory MongoDB)                      |
+| `npm run test:coverage`           | Tests with coverage report                                          |
+| `npm run test:e2e`                | Browser tests in Chromium, Firefox, WebKit and a phone (Playwright) |
+| `npm run test:e2e:install`        | Install the Playwright browsers once                                |
+| `npm run test:perf`               | Load test of every endpoint with latency budgets                    |
+| `npm run lint` / `npm run format` | ESLint / Prettier                                                   |
+| `npm run licenses`                | Check dependency licenses, regenerate the third-party notices       |
+| `npm run check`                   | Lint, format check, tests and audit, as in CI                       |
 
-## 🔧 Environment Variables
+## Project layout
 
-| Name | Description | Default |
-| ---- | ----------- | ------- |
-| `NODE_ENV` | Node runtime mode (`development`, `production`, `test`) | `development` |
-| `PORT` | HTTP port | `8080` |
-| `MONGODB_URI` | MongoDB connection string | `mongodb://127.0.0.1:27017/expressjs_template` |
-| `MONGODB_DB_NAME` | MongoDB database name | `expressjs_template` |
-| `JWT_SECRET` | Secret used to sign JWT tokens | _required in production_ |
-| `JWT_ACCESS_EXPIRATION_MINUTES` | Access token lifetime in minutes | `30` |
-| `JWT_REFRESH_EXPIRATION_DAYS` | Refresh token lifetime in days | `30` |
-| `LOG_LEVEL` | Winston log level | `info` |
-| `CORS_ORIGIN` | Comma separated list of allowed origins or `*` | `*` |
-| `SESSION_SECRET` | Secret used to sign & encrypt session data | _required in production_ |
-| `SESSION_NAME` | Name of the session cookie | `sid` |
-| `SESSION_IDLE_TIMEOUT_MINUTES` | Session idle timeout before invalidation | `30` |
-| `SESSION_COOKIE_SECURE` | Enable secure cookies (requires HTTPS/proxy) | `false` |
-| `TRUST_PROXY` | Trust reverse proxy headers for secure cookies | `false` |
+```text
+src/            application code (config, routes, controllers, services, models, views)
+tests/          unit, integration, browser (e2e) and performance tests
+docs/           documentation
+scripts/        setup, admin, seed, generator, preview server, license check
+.github/        workflows, templates, community files
+```
 
-## 📚 Available Scripts
+The layers and the request flow are described in [docs/architecture.md](docs/architecture.md).
 
-| Command            | Description                                                   |
-| ------------------ | ------------------------------------------------------------- |
-| `npm run dev`      | Start API & web UI with `nodemon` and auto-reload on file changes. |
-| `npm start`        | Launch the API and web interface in production mode.             |
-| `npm test`         | Execute Jest test suite (runs in `NODE_ENV=test`).               |
+## Documentation
 
-## 🖥️ Web Experience
+|                                                                 |                                                 |
+| --------------------------------------------------------------- | ----------------------------------------------- |
+| [Configuration](docs/configuration.md)                          | Environment variables and production rules      |
+| [API](docs/api.md)                                              | Endpoints, authentication, errors               |
+| [Security](docs/security.md)                                    | Controls, fixed issues, OWASP mapping           |
+| [Compliance](docs/compliance.md)                                | GDPR, cookies, accessibility, imprint, licenses |
+| [Testing](docs/testing.md) / [Performance](docs/performance.md) | Test suites and load tests                      |
+| [Deployment](docs/deployment.md)                                | Docker, reverse proxy, go-live checklist        |
+| [Upgrading to 3.0](docs/upgrading.md)                           | Breaking changes from 1.x and 2.0               |
+| [Changelog](docs/changelog.md)                                  | Release history                                 |
 
-- `GET /` liefert eine gehärtete Landing Page mit Projektüberblick und Schnellzugriffen.
-- Authentifizierung & Registrierung erfolgen über EJS-Formulare mit CSRF-Tokens und verschlüsselten Sessions.
-- Das Dashboard zeigt Nutzerprofil, aktive Tokens und empfohlene nächste Schritte für Deployments.
-- Fehler für Browser-Clients werden als stilisierte HTML-Seiten ausgegeben, während die API weiterhin JSON liefert.
+## Before going live
 
-## 🔐 Authentication & Authorization
+Replace the imprint and privacy pages, set the secrets, `APP_URL` and `SMTP_URL` (TLS only), configure
+`TRUST_PROXY` and `CORS_ORIGIN`, and work
+through the checklists in [deployment](docs/deployment.md#checklist-before-going-live) and
+[compliance](docs/compliance.md#operator-checklist). The legal pages are placeholders, not legal advice.
 
-- Users register via `POST /v1/auth/register`. Passwords are hashed with Node.js `crypto.scrypt` before persisting.
-- Login with `POST /v1/auth/login` to receive access and refresh tokens.
-- Refresh access tokens through `POST /v1/auth/refresh-tokens`.
-- Revoke refresh tokens using `POST /v1/auth/logout`.
-- Protect endpoints by attaching `Authorization: Bearer <accessToken>` headers.
-- Role-based permissions are defined in `src/config/roles.js` and enforced via the `auth` middleware.
-- Browser sessions are encrypted in MongoDB, regenerated on login, and protected via CSRF tokens for every form submit.
+## Contributing and security
 
-## 📘 API Reference
+See [CONTRIBUTING.md](.github/CONTRIBUTING.md). Report vulnerabilities privately as described in
+[SECURITY.md](.github/SECURITY.md).
 
-Swagger documentation is available at `/docs` (disabled during tests). The generated specification can be reused for client generation or platform integration.
+## License
 
-Key endpoints:
-
-- `GET /health` – Lightweight service health probe.
-- `POST /v1/auth/register` – Create a new account.
-- `POST /v1/auth/login` – Exchange credentials for JWT tokens.
-- `POST /v1/auth/refresh-tokens` – Renew expired access tokens.
-- `GET /v1/users/profile` – Retrieve the authenticated user's profile.
-- `GET /v1/users` – Admin-only paginated listing of users.
-- `GET /` – Landing page, documentation hub, and entry into the secured dashboard.
-
-## 🧪 Testing Strategy
-
-- Jest runs in isolated `NODE_ENV=test` mode with deterministic environment setup (`src/tests/jest.setup.js`).
-- Example integration test (`src/tests/integration/health.test.js`) demonstrates how to exercise routes with SuperTest.
-- Extend the suite with further unit or integration tests as new features are introduced.
-
-## 📈 Observability & Error Handling
-
-- Winston logger centralises structured logging across the application.
-- Morgan HTTP logging middleware writes concise request traces.
-- Custom `ApiError` ensures consistent error payloads and stack traces during development.
-- Health check endpoint simplifies infrastructure liveness and readiness probes.
-- Browser requests receive branded HTML error pages while API consumers continue to receive JSON payloads.
-
-## 🛠️ Extending the Template
-
-- Add new modules under `src/services` to encapsulate domain logic.
-- Create DTOs/validators in `src/validations` and pair them with routes via the `validate` middleware.
-- Use `src/utils` for sharable helpers (e.g., mailers, external integrations).
-- Update Swagger definitions in `src/docs/swaggerDef.js` as you add endpoints.
-- Expand the web experience inside `src/routes/web` and `src/views` for custom flows such as onboarding, billing, or admin dashboards.
-
-## 🪪 License
-
-Released under the [MIT License](./LICENSE).
-
----
-
-Built with ❤️ to jump-start enterprise-grade Express.js services.
+[MIT](LICENSE). Licenses of the dependencies are listed in [docs/third-party-notices.md](docs/third-party-notices.md).

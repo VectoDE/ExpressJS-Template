@@ -1,0 +1,13 @@
+<%# Live list of the security headers this response carries. Locals: headers, caption. -%>
+<figure class="header-check" aria-labelledby="header-check-title">
+  <figcaption class="header-check__title" id="header-check-title"><%= caption %></figcaption>
+  <ul class="header-check__list">
+    <% headers.forEach((header) => { %>
+    <li class="header-check__item">
+      <span class="header-check__status" aria-hidden="true"></span>
+      <code class="header-check__name"><%= header.name %></code>
+      <code class="header-check__value" title="<%= header.value %>"><%= header.value %></code>
+    </li>
+    <% }) %>
+  </ul>
+</figure>

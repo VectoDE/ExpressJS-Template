@@ -1,0 +1,18 @@
+<%- include('../../layouts/top', { bodyClass: 'page-auth', width: 'auth' }) %>
+<div class="auth-layout">
+  <section class="panel auth-panel">
+    <%- include('../../components/page-intro', { heading: t('auth.twoFactor.title'), lead: t('auth.twoFactor.lead') }) %>
+    <form method="post" action="/login/2fa" class="form">
+      <%- include('../../components/csrf') %>
+      <%- include('../../components/code-field', {
+        id: 'code', label: t('fields.code'), help: t('auth.twoFactor.recoveryHint'), recovery: true, autofocus: true,
+      }) %>
+      <button type="submit" class="button button--primary button--block"><%= t('auth.twoFactor.submit') %></button>
+    </form>
+    <p class="panel__footer"><a href="/login"><%= t('auth.twoFactor.cancel') %></a></p>
+  </section>
+  <%- include('../../components/auth-steps', { timer: true, steps: [
+    { key: 'credentials', state: 'done' }, { key: 'code', state: 'current' }, { key: 'signedIn', state: 'next' },
+  ] }) %>
+</div>
+<%- include('../../layouts/bottom') %>

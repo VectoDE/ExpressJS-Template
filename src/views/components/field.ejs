@@ -1,0 +1,23 @@
+<%#
+  Labelled form field. Locals: id, name, label, type (default text), value, autocomplete, required,
+  minlength, maxlength, inputmode, pattern, help (hint under the field, linked with aria-describedby), autofocus.
+-%>
+<div class="field">
+  <label class="field__label" for="<%= id %>"><%= label %><% if (!locals.required) { %> <span class="field__optional">(<%= t('common.optional') %>)</span><% } %></label>
+  <input
+    class="field__input"
+    id="<%= id %>"
+    name="<%= name %>"
+    type="<%= locals.type || 'text' %>"
+    <% if (locals.value !== undefined && locals.value !== null) { %>value="<%= value %>"<% } %>
+    <% if (locals.autocomplete) { %>autocomplete="<%= autocomplete %>"<% } %>
+    <% if (locals.minlength) { %>minlength="<%= minlength %>"<% } %>
+    <% if (locals.maxlength) { %>maxlength="<%= maxlength %>"<% } %>
+    <% if (locals.inputmode) { %>inputmode="<%= inputmode %>"<% } %>
+    <% if (locals.pattern) { %>pattern="<%= pattern %>"<% } %>
+    <% if (locals.help) { %>aria-describedby="<%= id %>-help"<% } %>
+    <% if (locals.required) { %>required<% } %>
+    <% if (locals.autofocus) { %>autofocus<% } %>
+  />
+  <% if (locals.help) { %><p class="field__help" id="<%= id %>-help"><%= help %></p><% } %>
+</div>

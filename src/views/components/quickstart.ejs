@@ -1,0 +1,12 @@
+<%# Locals: id, heading, lead, commands ([{ command, text }]). The steps are a real sequence, so they are numbered. -%>
+<section class="section quickstart" aria-labelledby="<%= id %>-title" data-reveal>
+  <div class="quickstart__text">
+    <h2 id="<%= id %>-title" class="section__title"><%= heading %></h2>
+    <p><%= lead %></p>
+  </div>
+  <ol class="terminal">
+    <% commands.forEach((item) => { %>
+    <li class="terminal__line"><code><%= item.command %></code><span><%= item.text %></span></li>
+    <% }) %>
+  </ol>
+</section>

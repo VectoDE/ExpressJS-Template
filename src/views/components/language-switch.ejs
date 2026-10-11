@@ -1,0 +1,14 @@
+<%# Plain links: a visitor who never switches gets no cookie. The current language is marked, not linked. -%>
+<nav class="language-switch" aria-label="<%= t('nav.language') %>">
+  <ul>
+    <% locales.forEach((code) => { %>
+    <li>
+      <% if (code === locale) { %>
+      <span class="language-switch__current" aria-current="true" lang="<%= code %>"><%= code.toUpperCase() %></span>
+      <% } else { %>
+      <a href="/language/<%= code %>?returnTo=<%= encodeURIComponent(returnTo) %>" lang="<%= code %>" hreflang="<%= code %>"><%= code.toUpperCase() %></a>
+      <% } %>
+    </li>
+    <% }) %>
+  </ul>
+</nav>
