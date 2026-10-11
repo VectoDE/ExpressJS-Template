@@ -10,12 +10,13 @@ useDatabase();
 
 describe('languages', () => {
   it('follows Accept-Language without setting a cookie', async () => {
-    const res = await request(app).get('/').set('Accept', 'text/html').set('Accept-Language', 'en-US,en;q=0.9');
-    expect(res.text).toContain('<html lang="en"');
-    expect(res.text).toContain('Sign in');
+    const res = await request(app).get('/').set('Accept', 'text/html').set('Accept-Language', 'de-DE,de;q=0.9');
+    expect(res.text).toContain('<html lang="de"');
+    expect(res.text).toContain('Anmelden');
     expect(res.headers['set-cookie']).toBeUndefined();
-    const german = await request(app).get('/').set('Accept', 'text/html');
-    expect(german.text).toContain('<html lang="de"');
+    // Without a usable header the default language applies.
+    const fallback = await request(app).get('/').set('Accept', 'text/html').set('Accept-Language', 'fr');
+    expect(fallback.text).toContain('<html lang="en"');
   });
 
   it('switches with a link, returns to the page and remembers the choice', async () => {

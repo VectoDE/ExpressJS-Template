@@ -24,7 +24,7 @@ for (const colorScheme of ['light', 'dark']) {
     test('error page keeps the layout and has one heading', async ({ page }) => {
       const response = await page.goto('/does-not-exist');
       expect(response.status()).toBe(404);
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Seite nicht gefunden');
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Page not found');
       await expectAccessible(page);
     });
 

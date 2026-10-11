@@ -11,12 +11,12 @@ test('reduced motion shows the final state without the motion class', async ({ p
 test('the footer switch changes the style and remembers it', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('html')).toHaveAttribute('data-motion', 'film');
-  const playful = page.getByRole('button', { name: 'Verspielt' });
+  const playful = page.getByRole('button', { name: 'Playful' });
   await playful.click();
   await expect(page.locator('html')).toHaveAttribute('data-motion', 'playful');
-  await expect(page.getByRole('button', { name: 'Verspielt' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'Playful' })).toHaveAttribute('aria-pressed', 'true');
 
-  await page.getByRole('button', { name: 'Aus' }).click();
+  await page.getByRole('button', { name: 'Off' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-motion', 'off');
   await expect(page.locator('html')).not.toHaveClass(/motion/);
   await page.goto('/security');

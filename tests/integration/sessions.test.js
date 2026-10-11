@@ -15,9 +15,6 @@ const login = (user, ua = FIREFOX) =>
 
 const bearer = (res) => ({ Authorization: `Bearer ${res.body.tokens.access.token}` });
 
-// credentialsChangedAt has second precision; wait for the next second so "before" is unambiguous.
-const nextSecond = () => new Promise((resolve) => setTimeout(resolve, 1005 - (Date.now() % 1000)));
-
 describe('API sessions', () => {
   it('lists one entry per sign-in with a device label and keeps it across refreshes', async () => {
     const user = await createUser();
@@ -78,8 +75,8 @@ describe('API sessions', () => {
   it('signs out everywhere, including access tokens', async () => {
     const user = await createUser();
     const first = await login(user);
+    // No wait on purpose: a token from the same second as the sign-out must stop working too.
     const second = await login(user);
-    await nextSecond();
     await request(app).delete('/v1/account/sessions').set(bearer(first)).expect(204);
     await request(app).get('/v1/users/profile').set(bearer(second)).expect(401);
     await request(app)
@@ -132,7 +129,7 @@ describe('sessions and activity in the browser', () => {
 
     const dashboard = await client.agent.get('/dashboard').set('Accept', 'text/html').expect(200);
     expect(dashboard.text).toContain('curl');
-    expect(dashboard.text).toContain('Anmeldung');
+    expect(dashboard.text).toContain('Sign-in');
     const sessionId = /action="\/account\/sessions\/([A-Za-z0-9-]+)\/revoke"/.exec(dashboard.text)[1];
 
     const revoked = await client.submit(`/account/sessions/${sessionId}/revoke`, {}, '/dashboard');
@@ -141,7 +138,6 @@ describe('sessions and activity in the browser', () => {
 
     const other = browser(app);
     await other.submit('/login', { email: user.email, password: PASSWORD });
-    await nextSecond();
     const all = await client.submit('/account/sessions/revoke-all', {}, '/dashboard');
     expect(all.headers.location).toBe('/dashboard#sessions');
     await client.agent.get('/dashboard').set('Accept', 'text/html').expect(200);

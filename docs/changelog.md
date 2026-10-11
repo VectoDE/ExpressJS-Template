@@ -17,6 +17,7 @@ Security release with a full audit. See [upgrading](upgrading.md) for migration 
 - Fixed: publicly known default secrets signed tokens and sessions when none were configured.
 - Fixed: refresh tokens were accepted as access tokens.
 - Fixed: JWTs were stored in the browser session and shown on the dashboard.
+- Fixed: tokens and browser sessions from the same second as a password change or "sign out everywhere" stayed valid. Tokens now carry their issue time in milliseconds (`ims`).
 - Fixed: open redirect through the `Referer` header after a CSRF failure.
 - Fixed: internal error messages reached clients.
 - Fixed: 37 known vulnerabilities in dependencies, including `csurf`'s `cookie` dependency.
@@ -51,7 +52,7 @@ Security release with a full audit. See [upgrading](upgrading.md) for migration 
 
 - Two-factor sign-in with TOTP and recovery codes, email verification and password reset in API and browser.
 - Email service with templates in German and English; without `SMTP_URL` development writes them to the log.
-- English UI next to German (`src/locales/en.js`), language switch, `DEFAULT_LOCALE`.
+- English UI (default) next to German (`src/locales/de.js`), language switch, `DEFAULT_LOCALE` (default `en`).
 - User administration in the browser, API sessions and activity log per account (`AUDIT_RETENTION_DAYS`).
 - Request ids, Prometheus endpoint `/metrics` (`METRICS_TOKEN`), shared rate-limit store in MongoDB
   (`RATE_LIMIT_STORE=mongo`).
@@ -74,7 +75,7 @@ Security release with a full audit. See [upgrading](upgrading.md) for migration 
 - GDPR self-service: data export, profile correction and account deletion in API and browser.
 - Account page in the browser: change name, email (with current password) and password.
 - New browser UI: own logo, light and dark theme, start page that lists the security headers of its own
-  response, German error pages for every status, messages that stay until closed.
+  response, error pages for every status in both languages, messages that stay until closed.
 - Modular views (layouts, components), layered CSS with design tokens, UI texts in `src/locales/de.js`,
   browser routers split into site, auth and account.
 - Imprint placeholder, skip link, visible focus, WCAG AA contrast, reduced motion.

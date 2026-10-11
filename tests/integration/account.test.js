@@ -117,7 +117,7 @@ describe('account self-service in the browser', () => {
     expect(done.headers.location).toBe('/?deleted=1');
     expect(await User.findById(user.id)).toBeNull();
     const home = await client.agent.get('/?deleted=1');
-    expect(home.text).toContain('Dein Konto und alle zugehörigen Daten sind gelöscht.');
+    expect(home.text).toContain('Your account and all its data are deleted.');
   });
 
   const flashOn = async (client, path = '/dashboard') => (await client.agent.get(path).set('Accept', 'text/html')).text;
@@ -129,8 +129,8 @@ describe('account self-service in the browser', () => {
     const res = await client.submit('/account/profile', { name: 'Renamed User', email: user.email }, '/dashboard');
     expect(res.headers.location).toBe('/dashboard');
     const page = await flashOn(client);
-    expect(page).toContain('Dein Profil ist gespeichert.');
-    expect(page).toContain('Hallo, Renamed User');
+    expect(page).toContain('Your profile is saved.');
+    expect(page).toContain('Hello, Renamed User');
     expect((await User.findById(user.id)).name).toBe('Renamed User');
   });
 
@@ -139,10 +139,10 @@ describe('account self-service in the browser', () => {
     const client = await signIn(user);
 
     await client.submit('/account/profile', { name: user.name, email: user.email }, '/dashboard');
-    expect(await flashOn(client)).toContain('Es gab nichts zu ändern.');
+    expect(await flashOn(client)).toContain('There was nothing to change.');
 
     await client.submit('/account/profile', { name: 'x', email: user.email }, '/dashboard');
-    expect(await flashOn(client)).toContain('Der Name muss 3 bis 120 Zeichen lang sein.');
+    expect(await flashOn(client)).toContain('The name must be 3 to 120 characters long.');
   });
 
   it('changes the email only with the current password and never to a taken address', async () => {
@@ -151,18 +151,18 @@ describe('account self-service in the browser', () => {
     const client = await signIn(user);
 
     await client.submit('/account/profile', { name: user.name, email: 'new@example.com' }, '/dashboard');
-    expect(await flashOn(client)).toContain('gib dein aktuelles Passwort ein');
+    expect(await flashOn(client)).toContain('enter your current password');
 
     const form = { name: user.name, email: 'new@example.com', currentPassword: 'Wrong-Password-1' };
     await client.submit('/account/profile', form, '/dashboard');
-    expect(await flashOn(client)).toContain('Das aktuelle Passwort stimmt nicht.');
+    expect(await flashOn(client)).toContain('The current password is incorrect.');
 
     await client.submit('/account/profile', { ...form, email: other.email, currentPassword: PASSWORD }, '/dashboard');
-    expect(await flashOn(client)).toContain('Diese E-Mail-Adresse kann nicht verwendet werden.');
+    expect(await flashOn(client)).toContain('This email address cannot be used.');
     expect((await User.findById(user.id)).email).toBe(user.email);
 
     await client.submit('/account/profile', { ...form, currentPassword: PASSWORD }, '/dashboard');
-    expect(await flashOn(client)).toContain('Dein Profil ist gespeichert.');
+    expect(await flashOn(client)).toContain('Your profile is saved.');
     expect((await User.findById(user.id)).email).toBe('new@example.com');
   });
 
@@ -178,21 +178,21 @@ describe('account self-service in the browser', () => {
       { currentPassword: PASSWORD, password: next, passwordConfirm: 'Brand-New-Secret-43' },
       '/dashboard'
     );
-    expect(await flashOn(client)).toContain('Die beiden neuen Passwörter stimmen nicht überein.');
+    expect(await flashOn(client)).toContain('The two new passwords do not match.');
 
     await client.submit(
       '/account/password',
       { currentPassword: 'Wrong-Password-1', password: next, passwordConfirm: next },
       '/dashboard'
     );
-    expect(await flashOn(client)).toContain('Das aktuelle Passwort stimmt nicht.');
+    expect(await flashOn(client)).toContain('The current password is incorrect.');
 
     await client.submit(
       '/account/password',
       { currentPassword: PASSWORD, password: 'short', passwordConfirm: 'short' },
       '/dashboard'
     );
-    expect(await flashOn(client)).toContain('Das Passwort braucht 12 bis 128 Zeichen');
+    expect(await flashOn(client)).toContain('The password needs 12 to 128 characters');
 
     // Credential changes are compared at second precision, so the change must land in a later second.
     await new Promise((resolve) => {
@@ -203,7 +203,7 @@ describe('account self-service in the browser', () => {
       { currentPassword: PASSWORD, password: next, passwordConfirm: next },
       '/dashboard'
     );
-    expect(await flashOn(client)).toContain('Dein Passwort ist geändert.');
+    expect(await flashOn(client)).toContain('Your password is changed.');
 
     await otherBrowser.agent.get('/dashboard').set('Accept', 'text/html').expect(302);
     await request(app).post('/v1/auth/refresh-tokens').send({ refreshToken: refresh.token }).expect(401);

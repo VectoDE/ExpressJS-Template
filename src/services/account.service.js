@@ -126,10 +126,7 @@ const revokeSession = async (userId, sessionId, context = {}) => {
  */
 const revokeAllSessions = async (userId, context = {}) => {
   await tokenService.revokeAllForUser(userId);
-  await User.updateOne(
-    { _id: userId },
-    { $set: { credentialsChangedAt: new Date(Math.floor(Date.now() / 1000) * 1000) } }
-  );
+  await User.updateOne({ _id: userId }, { $set: { credentialsChangedAt: new Date() } });
   await auditService.record(userId, 'allSessionsRevoked', context);
   return User.findById(userId);
 };

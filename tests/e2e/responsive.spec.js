@@ -35,10 +35,10 @@ test('the menu folds behind a button on small screens and closes with Escape', a
   await page.goto('/');
   const toggle = page.locator('[data-menu-toggle]');
   await expect(toggle).toBeVisible();
-  await expect(page.locator('#site-menu').getByRole('link', { name: 'Sicherheit' })).toBeHidden();
+  await expect(page.locator('#site-menu').getByRole('link', { name: 'Security' })).toBeHidden();
   await toggle.click();
   await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-  await expect(page.locator('#site-menu').getByRole('link', { name: 'Sicherheit' })).toBeVisible();
+  await expect(page.locator('#site-menu').getByRole('link', { name: 'Security' })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   await expect(toggle).toBeFocused();

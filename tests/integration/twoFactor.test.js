@@ -261,7 +261,7 @@ describe('two-factor in the browser', () => {
     const done = await fresh.submit('/login/2fa', { code: codes[3][1] });
     expect(done.headers.location).toBe('/dashboard');
     const dashboard = await fresh.agent.get('/dashboard').set('Accept', 'text/html').expect(200);
-    expect(dashboard.text).toContain('Wiederherstellungscode');
+    expect(dashboard.text).toContain('recovery code');
   });
 
   it('sends the code step back to the password step when nothing is pending', async () => {

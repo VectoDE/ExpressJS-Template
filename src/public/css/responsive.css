@@ -95,6 +95,13 @@
 
 /* Phones: the five motion styles sit in two rows of three and two, never four and a lone one. */
 @media (max-width: 480px) {
+  /* Long labels ("Delete account permanently") wrap instead of widening the column; wider system fonts on Linux
+     or Android would otherwise push the page sideways. */
+  .button {
+    white-space: normal;
+    text-align: center;
+  }
+
   .motion-switch {
     width: 100%;
   }
@@ -264,5 +271,13 @@
   a[href^='http']::after {
     content: ' (' attr(href) ')';
     font-size: 0.85em;
+  }
+}
+
+/* Very small phones: the brand name shrinks so logo, name and menu button stay on one row with wide fonts. */
+@media (max-width: 360px) {
+  .brand {
+    min-width: 0;
+    font-size: var(--text-sm);
   }
 }

@@ -145,7 +145,7 @@ const completeTwoFactorLogin = async (userId, code, context = {}) => {
 const loginWithTwoFactorChallenge = async (challengeToken, code, context = {}) => {
   const payload = tokenService.decodeToken(challengeToken, tokenTypes.TWO_FACTOR);
   const user = await userService.getUserById(payload.sub);
-  if (!user || payload.iat * 1000 < user.credentialsChangedAt.getTime()) {
+  if (!user || tokenService.issuedBeforeCredentialChange(payload, user)) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid or expired token');
   }
   return completeTwoFactorLogin(user.id, code, context);
@@ -165,9 +165,9 @@ const refreshAuth = async (refreshToken, context = {}) => {
     }
     throw error;
   }
-  const { userId, issuedAt, session } = consumed;
+  const { userId, payload, session } = consumed;
   const user = await userService.getUserById(userId);
-  if (!user || issuedAt * 1000 < user.credentialsChangedAt.getTime()) {
+  if (!user || tokenService.issuedBeforeCredentialChange(payload, user)) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid or expired token');
   }
   const tokens = await tokenService.generateAuthTokens(user, { ...session, device: context.device || session.device });

@@ -25,7 +25,7 @@ describe('i18n', () => {
     expect(i18n.translate('en', 'flash.signedIn', { name: 'Ada' })).toBe('Welcome back, Ada.');
     expect(i18n.translate('en', 'flash.signedIn')).toBe('Welcome back, {name}.');
     expect(i18n.translate('en', 'does.not.exist')).toBe('does.not.exist');
-    expect(i18n.translate('fr', 'nav.signIn')).toBe(i18n.translate('de', 'nav.signIn'));
+    expect(i18n.translate('fr', 'nav.signIn')).toBe('Sign in');
   });
 
   it('does not walk into prototype properties', () => {

@@ -38,7 +38,7 @@ const fields = {
     Joi.string()
       .trim()
       .pattern(/^\d{6}$/),
-  locale: () => Joi.string().valid('de', 'en'),
+  locale: () => Joi.string().valid('en', 'de'),
 };
 
 module.exports = {

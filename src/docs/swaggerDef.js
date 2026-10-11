@@ -35,7 +35,7 @@ module.exports = {
           email: { type: 'string', format: 'email' },
           role: { type: 'string', enum: ['user', 'admin'] },
           isEmailVerified: { type: 'boolean' },
-          locale: { type: 'string', enum: ['de', 'en'] },
+          locale: { type: 'string', enum: ['en', 'de'] },
           twoFactorEnabled: { type: 'boolean' },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
@@ -71,7 +71,7 @@ module.exports = {
             maxLength: 128,
             description: 'Upper and lower case letters, a digit and a symbol',
           },
-          locale: { type: 'string', enum: ['de', 'en'], description: 'Language for emails' },
+          locale: { type: 'string', enum: ['en', 'de'], description: 'Language for emails' },
         },
       },
       CreateUser: {

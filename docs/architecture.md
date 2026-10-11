@@ -16,7 +16,7 @@
 │   │   └── web/             HTTP handlers for the browser UI (site, auth, account, admin)
 │   ├── docs/                OpenAPI definition and Swagger UI
 │   ├── i18n/                Translation lookup, language negotiation
-│   ├── locales/             UI texts in German (de.js) and English (en.js)
+│   ├── locales/             UI texts in English (en.js, default) and German (de.js)
 │   ├── middlewares/         auth, csrf, error, i18n, rateLimit, requestId, requestLogger, sanitize,
 │   │                        saveSessionBeforeRedirect, validate, viewAuth, viewLocals
 │   ├── models/              Mongoose models (User, Token, AuditEvent)
@@ -32,7 +32,7 @@
 │   └── views/
 │       ├── layouts/         top/bottom page frame, head, header, footer
 │       ├── components/      Partials such as flash, field, csrf, page-intro, story, motion-switch
-│       ├── content/         Long static texts per language (de/, en/): home, imprint, privacy, security
+│       ├── content/         Long static texts per language (en/, de/): home, imprint, privacy, security
 │       ├── emails/          HTML frame of all emails
 │       ├── pages/           auth/, account/, admin/ and site/ pages
 │       └── error/           one error page for every status
@@ -98,11 +98,11 @@ The browser UI is built from small parts, so a new page needs only its own conte
 
 ```ejs
 <%- include('../../layouts/top', { width: 'narrow' }) %>
-<%- include('../../components/page-intro', { heading: 'Neue Seite', lead: 'Kurzer Einstieg.' }) %>
-<form method="post" action="/beispiel" class="form">
+<%- include('../../components/page-intro', { heading: 'New page', lead: 'A short introduction.' }) %>
+<form method="post" action="/example" class="form">
   <%- include('../../components/csrf') %>
   <%- include('../../components/field', { id: 'name', name: 'name', label: 'Name', required: true }) %>
-  <button type="submit" class="button button--primary">Speichern</button>
+  <button type="submit" class="button button--primary">Save</button>
 </form>
 <%- include('../../layouts/bottom') %>
 ```

@@ -19,7 +19,7 @@ node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
 | `PORT`                           | `8080`                                         |                                                                             |
 | `APP_NAME`                       | `Express.js Template`                          | Shown in the header, page titles and emails                                 |
 | `APP_URL`                        | `http://localhost:<PORT>`                      | Public address for links in emails. Required in production, must be `https` |
-| `DEFAULT_LOCALE`                 | `de`                                           | `de` or `en`, used when the browser asks for neither                        |
+| `DEFAULT_LOCALE`                 | `en`                                           | `en` or `de`, used when the browser asks for neither                        |
 | `MONGODB_URI`                    | `mongodb://127.0.0.1:27017/expressjs_template` | `mongodb://` or `mongodb+srv://`                                            |
 | `MONGODB_DB_NAME`                | `expressjs_template`                           | Letters, digits, `_` and `-`                                                |
 | `JWT_SECRET`                     | random per process outside production          | Required in production, 32 to 512 characters                                |

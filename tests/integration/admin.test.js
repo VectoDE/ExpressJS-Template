@@ -20,7 +20,7 @@ describe('user administration in the browser', () => {
   it('is only for administrators', async () => {
     const client = await signIn(await createUser());
     const res = await page(client, '/admin/users').expect(403);
-    expect(res.text).toContain('Zugriff verweigert');
+    expect(res.text).toContain('Access denied');
     const dashboard = await page(client, '/dashboard');
     expect(dashboard.text).not.toContain('href="/admin/users"');
     const guest = await page(browser(app), '/admin/users');
@@ -34,7 +34,7 @@ describe('user administration in the browser', () => {
     const client = await signIn(admin);
 
     const all = await page(client, '/admin/users').expect(200);
-    expect(all.text).toContain('3 Konten');
+    expect(all.text).toContain('3 accounts');
     expect(all.text).toContain('href="/admin/users"');
 
     const search = await page(client, '/admin/users?q=LOVE').expect(200);
@@ -43,14 +43,14 @@ describe('user administration in the browser', () => {
 
     // Regex characters are matched literally.
     const literal = await page(client, '/admin/users?q=.*').expect(200);
-    expect(literal.text).toContain('0 Konten');
+    expect(literal.text).toContain('0 accounts');
 
     const admins = await page(client, '/admin/users?role=admin').expect(200);
     expect(admins.text).toContain('Grace Admin');
     expect(admins.text).not.toContain('Ada Lovelace');
 
     const invalid = await page(client, '/admin/users?page=-4&role=root').expect(200);
-    expect(invalid.text).toContain('3 Konten');
+    expect(invalid.text).toContain('3 accounts');
   });
 
   it('paginates', async () => {
@@ -58,7 +58,7 @@ describe('user administration in the browser', () => {
     await Promise.all(Array.from({ length: 21 }, () => createUser()));
     const client = await signIn(admin);
     const first = await page(client, '/admin/users').expect(200);
-    expect(first.text).toContain('Seite 1 von 2');
+    expect(first.text).toContain('Page 1 of 2');
     expect(first.text).toContain('href="/admin/users?page=2"');
   });
 

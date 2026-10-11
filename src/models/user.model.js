@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
+const config = require('../config/config');
 const { roles } = require('../config/roles');
 const { hashPassword, comparePassword } = require('../utils/password');
 
 const PUBLIC_FIELDS = ['name', 'email', 'role', 'isEmailVerified', 'locale', 'createdAt', 'updatedAt'];
 
-const LOCALES = ['de', 'en'];
+const LOCALES = ['en', 'de'];
 
 const userSchema = new mongoose.Schema(
   {
@@ -40,7 +41,7 @@ const userSchema = new mongoose.Schema(
     locale: {
       type: String,
       enum: LOCALES,
-      default: 'de',
+      default: () => config.defaultLocale,
     },
     // Time-based one-time passwords. Secrets are encrypted (utils/crypto), recovery codes stored as SHA-256.
     twoFactor: {
@@ -70,7 +71,7 @@ const userSchema = new mongoose.Schema(
     // Tokens and sessions issued before this moment are rejected.
     credentialsChangedAt: {
       type: Date,
-      default: () => new Date(Math.floor(Date.now() / 1000) * 1000),
+      default: () => new Date(),
     },
   },
   {
@@ -90,7 +91,7 @@ userSchema.pre('save', async function hashOnChange() {
     this.password = await hashPassword(this.password);
   }
   if (!this.isNew && (this.isModified('password') || this.isModified('role') || this.isModified('email'))) {
-    this.credentialsChangedAt = new Date(Math.floor(Date.now() / 1000) * 1000);
+    this.credentialsChangedAt = new Date();
   }
 });
 

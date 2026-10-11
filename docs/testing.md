@@ -48,7 +48,7 @@ look at the interface without installing MongoDB.
 
 The tests run in four projects: `chromium`, `firefox`, `webkit` and `mobile` (Pixel 7). The mobile project
 skips tests tagged `@desktop` and `responsive.spec.js`, because those set their own viewport and would only
-repeat the desktop runs. The browser locale is `de-DE`, so the tests use the German labels; the English texts
+repeat the desktop runs. The browser locale is `en-US`, so the tests use the English labels; the German texts
 are covered by the i18n tests.
 
 ```bash

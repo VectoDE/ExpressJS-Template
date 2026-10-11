@@ -15,8 +15,10 @@ const INVALID_TOKEN = 'Invalid or expired token';
 
 const hashToken = sha256;
 
+// ims: issue time in milliseconds. iat only has whole seconds, which is too coarse to tell whether a token
+// came before or after a credential change in the same second.
 const generateToken = (userId, expiresAt, type, claims = {}) =>
-  jwt.sign({ ...claims, type }, config.jwt.secret, {
+  jwt.sign({ ...claims, type, ims: Date.now() }, config.jwt.secret, {
     algorithm: ALGORITHM,
     subject: String(userId),
     issuer: config.jwt.issuer,
@@ -49,6 +51,11 @@ const decodeToken = (token, type) => {
   return payload;
 };
 
+const issuedAtMs = (payload) => (Number.isSafeInteger(payload.ims) ? payload.ims : payload.iat * 1000);
+
+// True when the token predates the last password, email or role change of the user and must not be accepted.
+const issuedBeforeCredentialChange = (payload, user) => issuedAtMs(payload) < user.credentialsChangedAt.getTime();
+
 const revokeAllForUser = async (userId) => {
   await Token.deleteMany({ user: userId, type: tokenTypes.REFRESH });
 };
@@ -80,7 +87,7 @@ const consumeRefreshToken = async (token) => {
   }
   return {
     userId: payload.sub,
-    issuedAt: payload.iat,
+    payload,
     session: { family: tokenDoc.family, device: tokenDoc.device, startedAt: tokenDoc.startedAt },
   };
 };
@@ -192,6 +199,7 @@ module.exports = {
   generateAuthTokens,
   removeRefreshToken,
   revokeAllForUser,
+  issuedBeforeCredentialChange,
   generateTwoFactorChallenge,
   createEmailToken,
   consumeEmailToken,

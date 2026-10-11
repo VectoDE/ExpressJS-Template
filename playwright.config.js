@@ -14,7 +14,7 @@ module.exports = defineConfig({
   use: {
     baseURL,
     // The tests read German labels; the English texts are covered by the i18n unit tests.
-    locale: 'de-DE',
+    locale: 'en-US',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },

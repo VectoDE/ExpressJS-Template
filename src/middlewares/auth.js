@@ -22,7 +22,7 @@ const auth =
 
       const payload = tokenService.decodeToken(match[1], tokenTypes.ACCESS);
       const user = await userService.getUserById(payload.sub);
-      if (!user || payload.iat * 1000 < user.credentialsChangedAt.getTime()) {
+      if (!user || tokenService.issuedBeforeCredentialChange(payload, user)) {
         throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid or expired token');
       }
 

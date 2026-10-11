@@ -16,7 +16,7 @@ by default; you loosen them where your project needs it, not the other way round
 
 - **API** under `/v1`: register, login with optional second factor, token rotation, logout, email verification,
   password reset, account self-service, sessions and activity log, user admin
-- **Browser pages** with EJS in German and English: sign-in, account page with profile, password, two-factor
+- **Browser pages** with EJS in English (default) and German: sign-in, account page with profile, password, two-factor
   and session management, data export, account deletion, user administration, privacy and imprint
   placeholders. Light and dark theme, WCAG 2.1 AA, no external fonts or scripts
 - **Responsive and animated:** layouts for phones, tablets, large monitors and TVs up to 3840 px; five motion

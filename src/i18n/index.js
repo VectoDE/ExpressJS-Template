@@ -1,6 +1,6 @@
 const config = require('../config/config');
-const de = require('../locales/de');
 const en = require('../locales/en');
+const de = require('../locales/de');
 
 /**
  * Small translation layer without a library: nested dictionaries per locale, dotted keys,
@@ -8,8 +8,8 @@ const en = require('../locales/en');
  * so a gap shows up as visible text instead of an exception. tests/unit/i18n.test.js keeps both files in sync.
  */
 const dictionaries = new Map([
-  ['de', de],
   ['en', en],
+  ['de', de],
 ]);
 const SUPPORTED = [...dictionaries.keys()];
 

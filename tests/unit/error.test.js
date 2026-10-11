@@ -49,7 +49,7 @@ describe('error handling', () => {
       .get('/boom')
       .set('Accept', 'text/html')
       .expect(500);
-    expect(res.text).toContain('Etwas ist schiefgelaufen');
+    expect(res.text).toContain('Something went wrong');
     expect(res.text).not.toContain('secret detail');
     expect(res.text).not.toContain('at ');
   });
@@ -58,7 +58,7 @@ describe('error handling', () => {
     const csrf = Object.assign(new ApiError(403, 'Invalid CSRF token'), { code: 'EBADCSRFTOKEN' });
     await request(appThrowing(csrf)).get('/v1/boom').expect(403);
     const html = await request(appThrowing(csrf)).get('/boom').set('Accept', 'text/html').expect(403);
-    expect(html.text).toContain('Zugriff verweigert');
+    expect(html.text).toContain('Access denied');
   });
 
   it('falls back to plain text when the error page itself cannot be rendered', async () => {
@@ -67,7 +67,7 @@ describe('error handling', () => {
       .set('Accept', 'text/html')
       .expect(500);
     expect(res.headers['content-type']).toContain('text/plain');
-    expect(res.text).toContain('Etwas ist schiefgelaufen');
+    expect(res.text).toContain('Something went wrong');
     expect(res.text).not.toContain('missing-views');
   });
 });

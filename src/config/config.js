@@ -64,7 +64,7 @@ const envSchema = Joi.object({
   RATE_LIMIT_STORE: Joi.string().valid('memory', 'mongo').default('memory'),
   APP_NAME: Joi.string().trim().min(1).max(60).default('Express.js Template'),
   APP_URL: Joi.string().uri({ scheme: ['http', 'https'] }),
-  DEFAULT_LOCALE: Joi.string().valid('de', 'en').default('de'),
+  DEFAULT_LOCALE: Joi.string().valid('en', 'de').default('en'),
   ENCRYPTION_KEY: secret(),
   SMTP_URL: Joi.string()
     .uri({ scheme: ['smtp', 'smtps'] })

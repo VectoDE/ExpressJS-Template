@@ -23,7 +23,7 @@ describe('public pages', () => {
 
   it('renders an HTML 404 for browsers and JSON for API clients', async () => {
     const html = await request(app).get('/nope').set('Accept', 'text/html').expect(404);
-    expect(html.text).toContain('Seite nicht gefunden');
+    expect(html.text).toContain('Page not found');
     const json = await request(app).get('/nope').set('Accept', 'application/json').expect(404);
     expect(json.body).toEqual({ code: 404, message: 'Not found', requestId: json.headers['x-request-id'] });
   });
@@ -64,7 +64,7 @@ describe('sign-in flow', () => {
     const res = await client.submit('/login', { email: user.email, password: 'Wrong-Password-1' });
     expect(res.headers.location).toBe('/login');
     const page = await client.agent.get('/login');
-    expect(page.text).toContain('E-Mail-Adresse oder Passwort ist falsch.');
+    expect(page.text).toContain('Email address or password is incorrect.');
   });
 
   it('registers a regular user and ignores a smuggled role', async () => {
@@ -94,11 +94,11 @@ describe('sign-in flow', () => {
     expect(bad.headers.location).toBe('/login');
   });
 
-  it('explains errors in German and keeps what was typed, except the password', async () => {
+  it('explains errors and keeps what was typed, except the password', async () => {
     const client = browser(app);
     await client.submit('/register', { name: 'Ada <b>', email: 'ada@example.com', password: 'short' });
     const page = (await client.agent.get('/register').set('Accept', 'text/html')).text;
-    expect(page).toContain('Das Passwort braucht 12 bis 128 Zeichen');
+    expect(page).toContain('The password needs 12 to 128 characters');
     expect(page).not.toContain('must be');
     expect(page).toContain('value="Ada &lt;b&gt;"');
     expect(page).toContain('value="ada@example.com"');
@@ -112,7 +112,7 @@ describe('sign-in flow', () => {
   it('marks the current page in the navigation', async () => {
     const res = await request(app).get('/security').set('Accept', 'text/html').expect(200);
     expect(res.text).toMatch(/href="\/security" aria-current="page"/);
-    expect(res.text).toContain('<title>Sicherheit · Express.js Template</title>');
+    expect(res.text).toContain('<title>Security · Express.js Template</title>');
     const home = await request(app).get('/').set('Accept', 'text/html').expect(200);
     expect(home.text).toContain('<title>Express.js Template</title>');
     expect(home.text).toContain('content-security-policy');
