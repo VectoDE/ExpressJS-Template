@@ -5,6 +5,13 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Contributing guide: coding standards and how dependencies are chosen. Security policy: handling of secrets and
+  of vulnerable dependencies. Roadmap for 4.x. OpenSSF Best Practices badge in the README.
+
+## [4.0.0] - 2026-10-12
+
 Major release: the template now runs on MongoDB and on every common SQL database. See
 [upgrading](docs/upgrading.md#upgrading-to-40).
 
@@ -168,7 +175,8 @@ Security release with a full audit. See [upgrading](docs/upgrading.md) for migra
 
 - First release.
 
-[Unreleased]: https://github.com/VectoDE/ExpressJS-Template/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/VectoDE/ExpressJS-Template/compare/v4.0.0...HEAD
+[4.0.0]: https://github.com/VectoDE/ExpressJS-Template/compare/v3.0.0...v4.0.0
 [3.0.0]: https://github.com/VectoDE/ExpressJS-Template/compare/1.0.1...v3.0.0
 [1.0.1]: https://github.com/VectoDE/ExpressJS-Template/compare/v1.0...1.0.1
 [1.0]: https://github.com/VectoDE/ExpressJS-Template/releases/tag/v1.0

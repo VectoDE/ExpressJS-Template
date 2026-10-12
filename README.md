@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/VectoDE/ExpressJS-Template/actions/workflows/ci.yml/badge.svg)](https://github.com/VectoDE/ExpressJS-Template/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/VectoDE/ExpressJS-Template/actions/workflows/codeql.yml/badge.svg)](https://github.com/VectoDE/ExpressJS-Template/actions/workflows/codeql.yml)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/15418/badge)](https://www.bestpractices.dev/projects/15418)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/VectoDE/ExpressJS-Template/badge)](https://securityscorecards.dev/viewer/?uri=github.com/VectoDE/ExpressJS-Template)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 

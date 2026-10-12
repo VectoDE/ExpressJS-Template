@@ -11,14 +11,16 @@ objections are welcome in [Discussions](https://github.com/VectoDE/ExpressJS-Tem
 - Keep the template working on every active Node.js LTS line and on the database versions listed in
   [configuration](configuration.md#database), tested in CI.
 
+## Done in 4.0
+
+Node.js 26 and MongoDB 9 in Docker and CI, the copy script between databases, passkeys as a second factor and
+separate database accounts for migrations. See the [changelog](../CHANGELOG.md#400---2026-10-12).
+
 ## 4.x
 
-- Docker image and CI on Node.js 26 once it is the active LTS line (planned for late October 2026).
-- MongoDB 9 in Docker Compose and CI, with an upgrade note for existing data volumes.
-
-- A copy script from MongoDB to a SQL database and back, for projects that switch.
-- Passkeys (WebAuthn) as a second factor next to one-time codes.
-- Separate database accounts for migrations and for the running app, as an option.
+- Passkeys as the only sign-in step (passwordless), as an option next to password plus second factor.
+- Signed version tags, so a tag can be verified without the release files.
+- A second maintainer, so that pull requests get a review by someone other than the author.
 
 ## Not planned
 

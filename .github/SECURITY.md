@@ -20,7 +20,7 @@ Please include:
 - impact as you see it
 
 You get an answer within 7 days. Confirmed issues are fixed in a patch release and published as an advisory
-with credit, unless you prefer to stay anonymous.
+with credit, unless you prefer to stay anonymous. The changelog lists the fix under "Security".
 
 ## Scope
 
@@ -37,6 +37,24 @@ Only test against your own installation. Do not test against systems you do not 
 Every release since 4.0.0 carries a signed build provenance. Check a downloaded archive or the Docker image
 with `gh attestation verify <file or oci://image> --repo VectoDE/ExpressJS-Template`; see
 [deployment](../docs/deployment.md#releases).
+
+## Secrets and credentials
+
+- The repository holds no secrets. gitleaks runs in CI and GitHub secret scanning with push protection is on.
+  Tests generate their passwords and keys at run time.
+- The release workflow needs no stored secret: it signs with GitHub's OIDC identity and pushes the image with the
+  short-lived repository token. The repository has no Actions secrets; SonarQube Cloud analyses through its
+  GitHub app.
+- Should a secret become necessary, only the maintainer can read or change it (see [governance](GOVERNANCE.md)).
+  It is rotated at least once a year, at once when someone with access leaves, and whenever it may have leaked.
+- Applications built from the template keep their secrets in environment variables; `npm run setup` generates
+  them and production refuses placeholders. See [configuration](../docs/configuration.md).
+
+## Vulnerabilities in dependencies
+
+`npm audit`, OSV-Scanner and Dependabot alerts are checked on every pull request and weekly. A vulnerable
+dependency is updated in a patch release. If a finding does not affect the template (for example a function it
+never calls), the reasoning is written in the pull request that dismisses the alert.
 
 ## How the project handles security
 
