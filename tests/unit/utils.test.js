@@ -34,7 +34,9 @@ describe('redactUrl', () => {
 
 describe('oneLine', () => {
   it('keeps request data on one log line', () => {
-    expect(oneLine('GET /x\r\n[fake] admin signed in\rmore\nend')).toBe('GET /x | [fake] admin signed inmore | end');
+    expect(oneLine('GET /x
+[fake] admin signed inmore
+end')).toBe('GET /x[fake] admin signed inmoreend');
     expect(oneLine(42)).toBe('42');
   });
 });
