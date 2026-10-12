@@ -1,5 +1,5 @@
 const { deviceLabel } = require('../../src/utils/device');
-const { redactUrl } = require('../../src/utils/redact');
+const { redactUrl, oneLine } = require('../../src/utils/redact');
 const describeFormErrors = require('../../src/utils/formErrors');
 const i18n = require('../../src/i18n');
 const Joi = require('joi');
@@ -29,6 +29,13 @@ describe('redactUrl', () => {
     expect(redactUrl('/reset-password?token=abc123&x=1')).toBe('/reset-password?token=[redacted]&x=1');
     expect(redactUrl('/verify-email?a=1&token=abc')).toBe('/verify-email?a=1&token=[redacted]');
     expect(redactUrl('/dashboard?tab=2')).toBe('/dashboard?tab=2');
+  });
+});
+
+describe('oneLine', () => {
+  it('keeps request data on one log line', () => {
+    expect(oneLine('GET /x\r\n[fake] admin signed in\rmore\nend')).toBe('GET /x | [fake] admin signed inmore | end');
+    expect(oneLine(42)).toBe('42');
   });
 });
 

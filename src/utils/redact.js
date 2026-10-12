@@ -4,6 +4,6 @@ const SECRET_PARAMS = /([?&](?:token|code)=)[^&#]*/gi;
 const redactUrl = (url) => String(url).replaceAll(SECRET_PARAMS, '$1[redacted]');
 
 // Request data in log lines stays on one line, so nobody can forge an extra log entry with CR/LF.
-const oneLine = (value) => String(value).replaceAll(/[\r\n]+/g, ' | ');
+const oneLine = (value) => String(value).replaceAll('\r', '').replaceAll('\n', ' | ');
 
 module.exports = { redactUrl, oneLine };

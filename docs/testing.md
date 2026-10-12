@@ -73,8 +73,14 @@ Outside CI a server already running on the test port (3100, or `E2E_PORT`) is re
 contains the JavaScript rules of SonarQube's "Sonar way" profile, so most findings show up in the editor and
 in CI before a scanner sees the code. Hard-coded password and IP rules are off for `tests/`, as in SonarQube.
 
-`sonar-project.properties` configures SonarQube and SonarQube Cloud: sources in `src`, `scripts` and `docker`,
-tests in `tests`, coverage from `coverage/lcov.info` (written by `npm run test:coverage`). Set
+This repository is analysed by [SonarQube Cloud](https://sonarcloud.io/project/overview?id=VectoDE_ExpressJS-Template)
+with Automatic Analysis, which reads `.sonarcloud.properties`. Every pull request gets the check "SonarCloud Code
+Analysis", and `main` only accepts pull requests that pass its quality gate. Automatic Analysis does not import
+test coverage; the coverage thresholds in `jest.config.js` guard it instead.
+
+For your own project, import the repository at sonarcloud.io (free for public repositories) and keep
+`.sonarcloud.properties`, or run a scanner in CI with `sonar-project.properties`: sources in `src`, `scripts` and
+`docker`, tests in `tests`, coverage from `coverage/lcov.info` (written by `npm run test:coverage`). Set
 `sonar.projectKey`, and `sonar.organization` for SonarQube Cloud, before the first scan.
 
 ## Pre-commit hook
