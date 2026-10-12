@@ -25,6 +25,7 @@ TEST_DATABASE_URL=postgres://postgres:pw@127.0.0.1:5432/app npm test
 | Folder                                     | What it tests                                                                                                                                   |
 | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `tests/unit`                               | Configuration rules, password hashing, TOTP, encryption, i18n, metrics, redirects, sanitizer, error pages, saving the session before a redirect |
+| `tests/unit/properties.test.js`            | Property-based tests with fast-check: redirects, sanitizer, LIKE patterns, TOTP, encryption, log lines, ids and form fields get random input    |
 | `tests/integration/auth.test.js`           | Sign-up, sign-in, lockout, token rotation and reuse, forged JWTs                                                                                |
 | `tests/integration/twoFactor.test.js`      | Two-factor setup, sign-in with code or recovery code, disabling, renewing recovery codes                                                        |
 | `tests/integration/passkeys.test.js`       | Passkeys in API and browser with a software authenticator: adding, signing in, replays, other origins, limits, removal                          |

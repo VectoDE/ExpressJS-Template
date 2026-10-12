@@ -43,6 +43,8 @@ Major release: the template now runs on MongoDB and on every common SQL database
 - CI job "Database": the full test suite against MongoDB, PostgreSQL, MySQL, MariaDB, SQL Server and Oracle,
   plus a generated resource on each.
 - Contract tests for the data layer that every adapter has to pass.
+- Property-based tests with fast-check that feed random input to the redirect check, the sanitizer, LIKE patterns,
+  TOTP, encryption, log lines, ids and form fields.
 - `MIGRATION_DATABASE_URL` and `npm run migrate`: the running app can use a database account without the right to
   change the schema (#22).
 - `npm run copy-database` copies accounts, second factors, activity and valid tokens between any two supported
@@ -51,6 +53,11 @@ Major release: the template now runs on MongoDB and on every common SQL database
 - Signed releases: source archive, CycloneDX SBOM and Docker image on ghcr.io with build provenance
   (Sigstore), verifiable with `gh attestation verify`.
 - DCO sign-off check on pull requests, governance, assurance case and roadmap.
+
+### Fixed
+
+- Checking a one-time code at the very start of the Unix epoch threw instead of answering; found by the new
+  property tests.
 
 ## [3.0.0] - 2026-10-11
 
