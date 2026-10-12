@@ -17,9 +17,15 @@ working: collection and field names did not change.
 | Error pages       | Stack trace in development            | Never a stack trace                                    | Read it in the log                                                         |
 | `create-admin`    | Promoted every account                | Promotes verified accounts, others only with `--force` | Verify the address first or pass `--force`                                 |
 
-To move from MongoDB to a SQL database, start the new version once against the empty SQL database so the
-migrations create the tables, then copy users, tokens and audit events with a script of your own. Sessions
-and rate-limit counters do not need to be copied.
+To move from MongoDB to a SQL database (or back), copy the data with `npm run copy-database`:
+
+```bash
+SOURCE_DATABASE_URL=mongodb://… TARGET_DATABASE_URL=postgres://… npm run copy-database
+```
+
+It copies accounts with password hashes, second factors and recovery codes, the activity log and valid tokens,
+and keeps ids and timestamps, so everybody signs in as before. The target must be empty. Sessions and rate-limit
+counters are not copied, and records of your own resources need their own step.
 
 ## Upgrading to 3.0
 

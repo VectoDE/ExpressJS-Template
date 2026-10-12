@@ -130,6 +130,34 @@ const createMongoAdapter = ({ url, dbName, auditRetentionDays, migrate = true })
       await col('users').insertOne(doc);
       return fromUserDoc(doc);
     },
+    // Stores a complete record from another database: id, timestamps, password hash and second factor as they are.
+    async restore(user) {
+      const twoFactor = user.twoFactor || {};
+      const doc = {
+        _id: oid(user.id),
+        name: String(user.name),
+        email: String(user.email),
+        password: String(user.password),
+        role: String(user.role),
+        isEmailVerified: Boolean(user.isEmailVerified),
+        locale: String(user.locale),
+        twoFactor: {
+          ...emptyTwoFactor(),
+          enabled: Boolean(twoFactor.enabled),
+          secret: twoFactor.secret ?? null,
+          pendingSecret: twoFactor.pendingSecret ?? null,
+          lastUsedStep: Number(twoFactor.lastUsedStep ?? -1),
+          recoveryCodes: (twoFactor.recoveryCodes || []).map(String),
+          enabledAt: twoFactor.enabledAt ?? null,
+        },
+        failedLoginAttempts: Number(user.failedLoginAttempts) || 0,
+        credentialsChangedAt: user.credentialsChangedAt,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
+      if (user.lockUntil) doc.lockUntil = user.lockUntil;
+      await col('users').insertOne(doc);
+    },
     async findById(id) {
       return fromUserDoc(await col('users').findOne({ _id: oid(id) }));
     },
@@ -265,6 +293,11 @@ const createMongoAdapter = ({ url, dbName, auditRetentionDays, migrate = true })
   const audit = {
     async add({ userId, type, device }) {
       const doc = { user: oid(userId), type: String(type), createdAt: new Date() };
+      if (device) doc.device = String(device);
+      await col('auditevents').insertOne(doc);
+    },
+    async restore({ userId, type, device, createdAt }) {
+      const doc = { user: oid(userId), type: String(type), createdAt };
       if (device) doc.device = String(device);
       await col('auditevents').insertOne(doc);
     },

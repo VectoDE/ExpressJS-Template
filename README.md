@@ -75,6 +75,7 @@ docker compose up -d --build
 | `npm run setup`                   | Create `.env` with random secrets                                   |
 | `npm run dev`                     | Start with reload on changes in `src/`                              |
 | `npm start`                       | Start without reload                                                |
+| `npm run copy-database`           | Copy accounts and activity to another database (MongoDB ↔ SQL)      |
 | `npm run create-admin`            | Create an administrator or promote an existing account              |
 | `npm run migrate`                 | Apply database migrations, see `MIGRATION_DATABASE_URL`             |
 | `npm run seed`                    | Demo accounts for development (refuses production)                  |

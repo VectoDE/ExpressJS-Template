@@ -40,6 +40,8 @@ Major release: the template now runs on MongoDB and on every common SQL database
 - Contract tests for the data layer that every adapter has to pass.
 - `MIGRATION_DATABASE_URL` and `npm run migrate`: the running app can use a database account without the right to
   change the schema (#22).
+- `npm run copy-database` copies accounts, second factors, activity and valid tokens between any two supported
+  databases, keeping ids and password hashes (#20).
 - Static preview of every page in English and German on GitHub Pages (`npm run build:preview`).
 - Signed releases: source archive, CycloneDX SBOM and Docker image on ghcr.io with build provenance
   (Sigstore), verifiable with `gh attestation verify`.

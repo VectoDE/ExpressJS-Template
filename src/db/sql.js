@@ -124,6 +124,31 @@ const createSqlAdapter = ({ knexConfig, dialect, migrate = true }) => {
       await knex('users').insert(row);
       return fromUserRow(row, []);
     },
+    // Stores a complete record from another database: id, timestamps, password hash and second factor as they are.
+    restore(user) {
+      const row = {
+        id: String(user.id),
+        name: String(user.name),
+        email: String(user.email),
+        password: String(user.password),
+        role: String(user.role),
+        is_email_verified: Boolean(user.isEmailVerified),
+        locale: String(user.locale),
+        credentials_changed_at: ms(user.credentialsChangedAt),
+        failed_login_attempts: Number(user.failedLoginAttempts) || 0,
+        lock_until: ms(user.lockUntil),
+        ...twoFactorColumns(user.twoFactor || {}),
+        created_at: ms(user.createdAt),
+        updated_at: ms(user.updatedAt),
+      };
+      const codes = user.twoFactor?.recoveryCodes || [];
+      return knex.transaction(async (trx) => {
+        await trx('users').insert(row);
+        if (codes.length) {
+          await trx('recovery_codes').insert(codes.map((hash) => ({ user_id: row.id, code_hash: String(hash) })));
+        }
+      });
+    },
     findById(id) {
       return loadUser(knex('users').where({ id: String(id) }));
     },
@@ -310,6 +335,15 @@ const createSqlAdapter = ({ knexConfig, dialect, migrate = true }) => {
         type: String(type),
         device: device ? String(device) : null,
         created_at: Date.now(),
+      });
+    },
+    async restore({ id, userId, type, device, createdAt }) {
+      await knex('audit_events').insert({
+        id,
+        user_id: String(userId),
+        type: String(type),
+        device: device ? String(device) : null,
+        created_at: ms(createdAt),
       });
     },
     async list(userId, limit) {

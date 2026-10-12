@@ -81,6 +81,8 @@ containers (job "Database").
 - On SQL databases the server removes expired tokens, sessions, rate-limit counters and old activity entries
   every ten minutes.
 - Characters in user names and passwords inside the URL must be percent-encoded (`@` as `%40`).
+- `npm run copy-database` moves accounts, second factors, activity and valid tokens to another database; see
+  [upgrading](upgrading.md#upgrading-to-40).
 - Version 3.0 used `MONGODB_URI` and `MONGODB_DB_NAME`. Both still work when `DATABASE_URL` is not set.
 
 ## Production rules
