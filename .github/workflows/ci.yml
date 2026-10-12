@@ -40,7 +40,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [22, 24]
+        node: [22, 24, 26]
     steps:
       - uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
@@ -54,7 +54,7 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: npm run test:coverage
-      - if: matrix.node == 24
+      - if: matrix.node == 26
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: coverage
@@ -70,7 +70,7 @@ jobs:
       matrix:
         include:
           - name: MongoDB
-            image: mongo:8.0@sha256:d0d926f94df099bff534b7ee5b5986458131a22489dfff8664509af0c1e2ca9c
+            image: mongo:9.0@sha256:bac22ea7710d774103dcad3ec8ac13cba1eb378f488e3ce8a6b3a1adf2ba9dcc
             port: 27017
             health: mongosh --quiet --eval 'db.runCommand({ping:1})'
             url: mongodb://127.0.0.1:27017

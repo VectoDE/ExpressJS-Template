@@ -27,6 +27,44 @@ It copies accounts with password hashes, second factors and recovery codes, the 
 and keeps ids and timestamps, so everybody signs in as before. The target must be empty. Sessions and rate-limit
 counters are not copied, and records of your own resources need their own step.
 
+### MongoDB 9 in Docker Compose
+
+`docker-compose.yml` now starts `mongo:9.0`. MongoDB 9.0 only starts on data files of 8.0 or 8.3 whose
+feature compatibility version (FCV) matches, so an existing volume needs these steps before you pull the new
+compose file. Back up the volume first (`docker compose exec mongo mongodump --archive > backup.archive`).
+
+1. Check the version and FCV of the running container:
+
+   ```bash
+   docker compose exec mongo mongosh --quiet --eval 'db.version(); db.adminCommand({ getParameter: 1, featureCompatibilityVersion: 1 })'
+   ```
+
+2. Coming from 8.2 (the image of 3.0): set the image to `mongo:8.3`, run `docker compose up -d mongo`, then set the
+   FCV to 8.3:
+
+   ```bash
+   docker compose exec mongo mongosh --quiet --eval 'db.adminCommand({ setFeatureCompatibilityVersion: "8.3", confirm: true })'
+   ```
+
+   Coming from 8.0 with FCV 8.0, skip this step.
+
+3. Switch to the image of this version (`mongo:9.0`) and run `docker compose up -d mongo`. The data stays
+   readable by the previous version until you raise the FCV.
+4. After a test period, raise the FCV:
+
+   ```bash
+   docker compose exec mongo mongosh --quiet --eval 'db.adminCommand({ setFeatureCompatibilityVersion: "9.0", confirm: true })'
+   ```
+
+The compose file enables authentication, so add `-u root -p` after `mongosh` in each command; mongosh then asks for
+`MONGO_ROOT_PASSWORD` from `.env` (use your `MONGO_ROOT_USERNAME` if you changed it). New installations need none of
+this. Details: [Upgrade a standalone to 9.0](https://www.mongodb.com/docs/manual/release-notes/9.0-upgrade-standalone/).
+
+### Node.js 26
+
+The Docker image and the dev container run on Node.js 26. Version 22 and 24 stay supported (`engines` is
+unchanged, CI tests all three).
+
 ## Upgrading to 3.0
 
 3.0.0 is a major release. It replaces 1.0.1, whose `package.json` already said 2.0.0. To avoid two different

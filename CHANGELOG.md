@@ -23,6 +23,9 @@ Major release: the template now runs on MongoDB and on every common SQL database
 - `npm test` uses an in-memory SQLite database. `TEST_DATABASE_URL` runs the suite against any other database.
 - The Docker image has one writable folder, `/app/data`, for SQLite.
 - Error pages no longer show a stack trace, also not in development; the log has it.
+- Docker Compose and the dev container use MongoDB 9.0; existing 8.x volumes need the upgrade steps in
+  [upgrading](docs/upgrading.md#mongodb-9-in-docker-compose) (#19).
+- The Docker image, the dev container and `.nvmrc` use Node.js 26. CI tests Node.js 22, 24 and 26 (#18).
 
 ### Security
 
