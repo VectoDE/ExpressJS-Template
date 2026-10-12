@@ -1,14 +1,15 @@
-# Local production-like stack: the app and MongoDB on an internal network.
+# Local production-like stack: the app and MongoDB on an internal network. For another database, remove the
+# mongo service and set DATABASE_URL in .env (see docs/deployment.md).
 # Put a TLS-terminating reverse proxy in front for real deployments (see docs/deployment.md).
 name: expressjs-template
 
 services:
   app:
     build: .
-    image: expressjs-template:3.0.0
+    image: expressjs-template:4.0.0
     env_file: .env
     environment:
-      MONGODB_URI: mongodb://${MONGO_APP_USERNAME:-app}:${MONGO_APP_PASSWORD:?set MONGO_APP_PASSWORD in .env}@mongo:27017/expressjs_template?authSource=expressjs_template
+      DATABASE_URL: mongodb://${MONGO_APP_USERNAME:-app}:${MONGO_APP_PASSWORD:?set MONGO_APP_PASSWORD in .env}@mongo:27017/expressjs_template?authSource=expressjs_template
       # The app never needs the database root account; blank it out instead of inheriting it from .env.
       MONGO_ROOT_USERNAME: ''
       MONGO_ROOT_PASSWORD: ''

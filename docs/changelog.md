@@ -5,6 +5,40 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+Major release: the template now runs on MongoDB and on every common SQL database. See
+[upgrading](upgrading.md#upgrading-to-40).
+
+### Changed
+
+- **Breaking:** Mongoose is gone. Services use the data layer in `src/db`, which talks to MongoDB through the
+  official driver or to PostgreSQL, MySQL, MariaDB, SQLite, SQL Server and Oracle through Knex. `DATABASE_URL`
+  picks the database; `MONGODB_URI` and `MONGODB_DB_NAME` keep working when it is not set.
+- **Breaking:** Without any database setting the app now uses the SQLite file `data/app.db` instead of
+  `mongodb://127.0.0.1:27017`.
+- **Breaking:** Browser sessions moved to the collection or table `web_sessions` with a new encryption format.
+  Everybody signed in has to sign in once more after the update.
+- SQL databases get their schema from versioned migrations that run on start.
+- `npm run generate` writes a migration instead of a Mongoose model; the resource works on every database.
+- `RATE_LIMIT_STORE=database` shares rate limits through the configured database. `mongo` still works.
+- `npm test` uses an in-memory SQLite database. `TEST_DATABASE_URL` runs the suite against any other database.
+- The Docker image has one writable folder, `/app/data`, for SQLite.
+- Error pages no longer show a stack trace, also not in development; the log has it.
+
+### Security
+
+- `npm run create-admin` refuses to promote an account whose email address is not verified, unless `--force`
+  is given (#12).
+- Redirect targets are rebuilt from a list of known pages instead of being passed through.
+- Log lines cannot be split by line breaks in logged values.
+- `npm run setup` creates `.env` in one step, so it never overwrites a file created at the same moment.
+- The Scorecard workflow runs with read-only permissions at the top level.
+
+### Added
+
+- CI job "Database": the full test suite against MongoDB, PostgreSQL, MySQL, MariaDB, SQL Server and Oracle,
+  plus a generated resource on each.
+- Contract tests for the data layer that every adapter has to pass.
+
 ## [3.0.0] - 2026-10-11
 
 Security release with a full audit. See [upgrading](upgrading.md) for migration steps and

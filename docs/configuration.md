@@ -13,43 +13,71 @@ Generate secrets by hand with:
 node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
 ```
 
-| Variable                         | Default                                        | Notes                                                                       |
-| -------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------- |
-| `NODE_ENV`                       | `development`                                  | `production`, `development` or `test`                                       |
-| `PORT`                           | `8080`                                         |                                                                             |
-| `APP_NAME`                       | `Express.js Template`                          | Shown in the header, page titles and emails                                 |
-| `APP_URL`                        | `http://localhost:<PORT>`                      | Public address for links in emails. Required in production, must be `https` |
-| `DEFAULT_LOCALE`                 | `en`                                           | `en` or `de`, used when the browser asks for neither                        |
-| `MONGODB_URI`                    | `mongodb://127.0.0.1:27017/expressjs_template` | `mongodb://` or `mongodb+srv://`                                            |
-| `MONGODB_DB_NAME`                | `expressjs_template`                           | Letters, digits, `_` and `-`                                                |
-| `JWT_SECRET`                     | random per process outside production          | Required in production, 32 to 512 characters                                |
-| `JWT_ISSUER`                     | `expressjs-template`                           | Checked on every token                                                      |
-| `JWT_AUDIENCE`                   | `expressjs-template-api`                       | Checked on every token                                                      |
-| `JWT_ACCESS_EXPIRATION_MINUTES`  | `15`                                           | 1 to 60                                                                     |
-| `JWT_REFRESH_EXPIRATION_DAYS`    | `7`                                            | 1 to 30                                                                     |
-| `SESSION_SECRET`                 | random per process outside production          | Required in production, 32 to 512 characters                                |
-| `ENCRYPTION_KEY`                 | random per process outside production          | Encrypts two-factor secrets. Changing it makes existing 2FA setups unusable |
-| `SESSION_NAME`                   | `sid`                                          | Gets the `__Host-` prefix when cookies are secure                           |
-| `SESSION_IDLE_TIMEOUT_MINUTES`   | `30`                                           | Inactivity timeout                                                          |
-| `SESSION_ABSOLUTE_TIMEOUT_HOURS` | `12`                                           | Maximum session age, independent of activity                                |
-| `SESSION_COOKIE_SECURE`          | `true` in production                           | Cannot be disabled in production                                            |
-| `TRUST_PROXY`                    | `0`                                            | Number of reverse proxies in front of the app. At least 1 in production     |
-| `CORS_ORIGIN`                    | empty                                          | Comma-separated origins for `/v1`. Empty means no cross-origin access       |
-| `API_DOCS_ENABLED`               | `false` in production                          | Swagger UI and `/docs/openapi.json`                                         |
-| `RATE_LIMIT_WINDOW_MINUTES`      | `15`                                           | Window for both limiters                                                    |
-| `RATE_LIMIT_MAX`                 | `300`                                          | Requests per IP and window, all routes except assets, health and metrics    |
-| `AUTH_RATE_LIMIT_MAX`            | `10`                                           | Failed sign-in, sign-up, refresh and account requests per IP and window     |
-| `RATE_LIMIT_STORE`               | `memory`                                       | `memory` counts per process, `mongo` shares the counters between instances  |
-| `LOGIN_MAX_ATTEMPTS`             | `5`                                            | Failed logins before the account is locked                                  |
-| `LOGIN_LOCK_MINUTES`             | `15`                                           | Lock duration                                                               |
-| `SMTP_URL`                       | empty                                          | `smtps://` or `smtp://` URL. Required in production, see [Email](#email)    |
-| `MAIL_FROM`                      | `Express.js Template <no-reply@localhost>`     | Sender of all emails                                                        |
-| `AUTH_REQUIRE_VERIFIED_EMAIL`    | `false`                                        | `true` allows sign-in only after the email address is confirmed             |
-| `AUDIT_RETENTION_DAYS`           | `180`                                          | How long the activity log keeps events, 1 to 3650                           |
-| `METRICS_TOKEN`                  | empty                                          | Bearer token for `GET /metrics`. Empty switches the endpoint off (404)      |
-| `MOTION_STYLE`                   | `film`                                         | Animation style of the web pages, see [Motion](#motion)                     |
-| `MOTION_SWITCH`                  | `true`                                         | Shows the style switch in the footer                                        |
-| `LOG_LEVEL`                      | `info`                                         | Winston level. JSON lines in production                                     |
+| Variable                         | Default                                    | Notes                                                                                |
+| -------------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------ |
+| `NODE_ENV`                       | `development`                              | `production`, `development` or `test`                                                |
+| `PORT`                           | `8080`                                     |                                                                                      |
+| `APP_NAME`                       | `Express.js Template`                      | Shown in the header, page titles and emails                                          |
+| `APP_URL`                        | `http://localhost:<PORT>`                  | Public address for links in emails. Required in production, must be `https`          |
+| `DEFAULT_LOCALE`                 | `en`                                       | `en` or `de`, used when the browser asks for neither                                 |
+| `DATABASE_URL`                   | `sqlite:data/app.db`                       | Which database to use, see [Database](#database)                                     |
+| `DATABASE_NAME`                  | `expressjs_template`                       | MongoDB only: the database, takes precedence over the URL. Letters, digits, `_`, `-` |
+| `JWT_SECRET`                     | random per process outside production      | Required in production, 32 to 512 characters                                         |
+| `JWT_ISSUER`                     | `expressjs-template`                       | Checked on every token                                                               |
+| `JWT_AUDIENCE`                   | `expressjs-template-api`                   | Checked on every token                                                               |
+| `JWT_ACCESS_EXPIRATION_MINUTES`  | `15`                                       | 1 to 60                                                                              |
+| `JWT_REFRESH_EXPIRATION_DAYS`    | `7`                                        | 1 to 30                                                                              |
+| `SESSION_SECRET`                 | random per process outside production      | Required in production, 32 to 512 characters                                         |
+| `ENCRYPTION_KEY`                 | random per process outside production      | Encrypts two-factor secrets. Changing it makes existing 2FA setups unusable          |
+| `SESSION_NAME`                   | `sid`                                      | Gets the `__Host-` prefix when cookies are secure                                    |
+| `SESSION_IDLE_TIMEOUT_MINUTES`   | `30`                                       | Inactivity timeout                                                                   |
+| `SESSION_ABSOLUTE_TIMEOUT_HOURS` | `12`                                       | Maximum session age, independent of activity                                         |
+| `SESSION_COOKIE_SECURE`          | `true` in production                       | Cannot be disabled in production                                                     |
+| `TRUST_PROXY`                    | `0`                                        | Number of reverse proxies in front of the app. At least 1 in production              |
+| `CORS_ORIGIN`                    | empty                                      | Comma-separated origins for `/v1`. Empty means no cross-origin access                |
+| `API_DOCS_ENABLED`               | `false` in production                      | Swagger UI and `/docs/openapi.json`                                                  |
+| `RATE_LIMIT_WINDOW_MINUTES`      | `15`                                       | Window for both limiters                                                             |
+| `RATE_LIMIT_MAX`                 | `300`                                      | Requests per IP and window, all routes except assets, health and metrics             |
+| `AUTH_RATE_LIMIT_MAX`            | `10`                                       | Failed sign-in, sign-up, refresh and account requests per IP and window              |
+| `RATE_LIMIT_STORE`               | `memory`                                   | `memory` counts per process, `database` shares the counters (alias `mongo`)          |
+| `LOGIN_MAX_ATTEMPTS`             | `5`                                        | Failed logins before the account is locked                                           |
+| `LOGIN_LOCK_MINUTES`             | `15`                                       | Lock duration                                                                        |
+| `SMTP_URL`                       | empty                                      | `smtps://` or `smtp://` URL. Required in production, see [Email](#email)             |
+| `MAIL_FROM`                      | `Express.js Template <no-reply@localhost>` | Sender of all emails                                                                 |
+| `AUTH_REQUIRE_VERIFIED_EMAIL`    | `false`                                    | `true` allows sign-in only after the email address is confirmed                      |
+| `AUDIT_RETENTION_DAYS`           | `180`                                      | How long the activity log keeps events, 1 to 3650                                    |
+| `METRICS_TOKEN`                  | empty                                      | Bearer token for `GET /metrics`. Empty switches the endpoint off (404)               |
+| `MOTION_STYLE`                   | `film`                                     | Animation style of the web pages, see [Motion](#motion)                              |
+| `MOTION_SWITCH`                  | `true`                                     | Shows the style switch in the footer                                                 |
+| `LOG_LEVEL`                      | `info`                                     | Winston level. JSON lines in production                                              |
+
+## Database
+
+`DATABASE_URL` picks the database. The services only talk to the interface in `src/db`, so switching needs no
+code change.
+
+| Database                | `DATABASE_URL`                         | Notes                                                                              |
+| ----------------------- | -------------------------------------- | ---------------------------------------------------------------------------------- |
+| SQLite                  | `sqlite:data/app.db`                   | Default. Path relative to the project, or `sqlite:///abs`                          |
+| SQLite in memory        | `sqlite::memory:`                      | Lost on restart, for tests and previews                                            |
+| MongoDB 6 or newer      | `mongodb://user:pass@host:27017/name`  | Also `mongodb+srv://` (Atlas)                                                      |
+| PostgreSQL 13+          | `postgres://user:pass@host:5432/name`  | Also wire-compatible servers such as CockroachDB                                   |
+| MySQL 8 / MariaDB 10.6+ | `mysql://user:pass@host:3306/name`     | `mariadb://` works as well                                                         |
+| SQL Server 2019+        | `mssql://user:pass@host:1433/name`     | `npm install tedious`; `?trustServerCertificate=true` for self-signed certificates |
+| Oracle 19c+             | `oracle://user:pass@host:1521/service` | `npm install oracledb` (thin mode, no client libraries)                            |
+
+CI runs the full test suite against each of them: SQLite in the regular test jobs, the others in service
+containers (job "Database").
+
+- **SQL databases** get their tables from versioned migrations in `src/db/migrations`. They run on every start,
+  pending ones only, recorded in the table `knex_migrations`. Add a schema change as a new file and list it in
+  `src/db/migrations/index.js`; `npm run generate` does both for new resources.
+- **MongoDB** needs no migration. Indexes are created on start, expired tokens, sessions and activity entries
+  are removed by TTL indexes.
+- On SQL databases the server removes expired tokens, sessions, rate-limit counters and old activity entries
+  every ten minutes.
+- Characters in user names and passwords inside the URL must be percent-encoded (`@` as `%40`).
+- Version 3.0 used `MONGODB_URI` and `MONGODB_DB_NAME`. Both still work when `DATABASE_URL` is not set.
 
 ## Production rules
 
@@ -67,6 +95,16 @@ In production the app refuses to start when:
 Outside production a missing secret is replaced by a random value for the lifetime of the process, and the
 server logs a warning. Sessions, tokens and two-factor setups then become invalid on every restart, which is
 intended.
+
+## First administrator
+
+`npm run create-admin` asks for name, email and password, or reads `ADMIN_NAME`, `ADMIN_EMAIL` and
+`ADMIN_PASSWORD` from the environment. A new account is created as a verified administrator.
+
+For an email that already has an account, the account is promoted instead, and its sessions end. This only
+happens when the account has verified its email address: someone could have registered with an address they do
+not own. `npm run create-admin -- --force` promotes an unverified account anyway; use it only when you know who
+the account belongs to.
 
 ## Email
 
@@ -106,7 +144,7 @@ JavaScript every element is shown in its final state.
 
 ## Docker Compose only
 
-These variables are read by `docker-compose.yml`, not by the app.
+These variables are read by `docker-compose.yml`, not by the app. The bundled stack uses MongoDB.
 
 | Variable              | Default  | Purpose                                                                |
 | --------------------- | -------- | ---------------------------------------------------------------------- |

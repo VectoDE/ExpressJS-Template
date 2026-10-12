@@ -18,3 +18,7 @@ playwright-report
 test-results
 .impeccable
 .devcontainer
+
+# SQLite database of local runs
+data/
+preview-dist

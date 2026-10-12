@@ -170,7 +170,8 @@ const createMongoAdapter = ({ url, dbName, auditRetentionDays }) => {
     },
     async advanceTotpStep(id, step) {
       const { modifiedCount } = await col('users').updateOne(
-        { _id: oid(id), 'twoFactor.lastUsedStep': { $lt: Number(step) } },
+        // $not also matches documents without the field, which then get it; a used or older step never matches.
+        { _id: oid(id), 'twoFactor.lastUsedStep': { $not: { $gte: Number(step) } } },
         { $set: { 'twoFactor.lastUsedStep': Number(step) } }
       );
       return modifiedCount === 1;

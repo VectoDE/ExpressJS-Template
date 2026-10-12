@@ -37,7 +37,9 @@ const main = () => {
     return;
   }
   process.stdout.write(`.env created with new values for ${SECRETS.join(', ')}.\n`);
-  process.stdout.write('Next: start MongoDB, then "npm run create-admin" and "npm run dev".\n');
+  process.stdout.write(
+    'Next: "npm run create-admin" and "npm run dev". Without DATABASE_URL the data goes to data/app.db.\n'
+  );
 };
 
 if (require.main?.filename === __filename) {

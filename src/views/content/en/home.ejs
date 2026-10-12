@@ -24,7 +24,7 @@
   steps: [
     { title: 'Arrival', code: 'X-Request-Id: 7c1e…', text: 'Every request gets an ID that shows up in each log line and on error pages. Anything larger than 100 KB is rejected before the server reads it.' },
     { title: 'Headers', code: "Content-Security-Policy: default-src 'self'", text: 'A Content Security Policy without inline scripts, HSTS, COOP, COEP and a Permissions-Policy that blocks camera, microphone and location.' },
-    { title: 'Rate limit', code: 'RateLimit-Policy: 300;w=900', text: '300 requests per 15 minutes and IP, 10 failed attempts on sign-in and password forms. With RATE_LIMIT_STORE=mongo several instances share the counters.' },
+    { title: 'Rate limit', code: 'RateLimit-Policy: 300;w=900', text: '300 requests per 15 minutes and IP, 10 failed attempts on sign-in and password forms. With RATE_LIMIT_STORE=database several instances share the counters.' },
     { title: 'Origin', code: 'Sec-Fetch-Site: same-origin', text: 'Forms carry a CSRF token that is masked anew each time it is rendered. Posts from other sites already fail the Fetch Metadata check.' },
     { title: 'Input', code: '400 "email" must be a valid email', text: 'Joi checks every field against a schema and rejects unknown ones. MongoDB operators and prototype keys are stripped first.' },
     { title: 'Identity', code: 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9…', text: 'Session cookie or JWT, the role comes from the database, with a second factor if the user turned it on. After a password change, old tokens and sessions stop working.' },
@@ -48,7 +48,7 @@
 <%- include('../../components/quickstart', {
   id: 'quickstart',
   heading: 'Running locally in three commands',
-  lead: 'Node.js 22 and a MongoDB are enough. Setup writes a .env with random keys.',
+  lead: 'Node.js 22 is enough: the data goes to SQLite until DATABASE_URL names MongoDB, PostgreSQL, MySQL or another server. Setup writes a .env with random keys.',
   commands: [
     { command: 'npm run setup', text: 'Create .env with your own keys' },
     { command: 'npm run create-admin', text: 'Create the first administrator' },

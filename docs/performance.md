@@ -6,7 +6,8 @@ measured for an existing account and for a wrong password), API and browser.
 ## How it works
 
 1. Starts an in-memory MongoDB and the real server as a separate process with `NODE_ENV=production`,
-   the encrypted MongoDB session store and a simulated TLS proxy (`X-Forwarded-Proto: https`).
+   the encrypted session store and a simulated TLS proxy (`X-Forwarded-Proto: https`). Set `PERF_DATABASE_URL`
+   to measure against another database.
 2. Prepares data per endpoint. Endpoints that consume something get a fresh item per request:
    refresh tokens for rotation and logout, accounts for deletion, browser sessions for sign-out.
 3. Runs [autocannon](https://github.com/mcollina/autocannon) against each endpoint and checks the status code

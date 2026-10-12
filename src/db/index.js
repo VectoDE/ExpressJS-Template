@@ -112,3 +112,4 @@ module.exports = createDatabase({
 });
 module.exports.createDatabase = createDatabase;
 module.exports.sqliteFile = sqliteFile;
+module.exports.knexConfigFor = knexConfigFor;

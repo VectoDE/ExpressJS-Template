@@ -17,7 +17,8 @@ npm run setup   # writes .env with fresh secrets, never overwrites
 npm run dev
 ```
 
-Node.js 22.12 or newer is required (`.nvmrc` pins 24). Tests start their own in-memory MongoDB.
+Node.js 22.12 or newer is required (`.nvmrc` pins 24). Tests use an in-memory SQLite database; see
+[testing](../docs/testing.md) for other databases.
 
 ## Making a change
 

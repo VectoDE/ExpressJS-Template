@@ -8,15 +8,15 @@ and your processing reviewed by a lawyer before going live.
 
 ### GDPR (EU 2016/679)
 
-| Requirement                                   | Implementation                                                                                                                    |
-| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Data minimisation (Art. 5(1)(c))              | Only name, email, role and password hash are stored. Logs contain method, path, status and timing, no bodies and no IP addresses. |
-| Storage limitation (Art. 5(1)(e))             | Sessions expire after inactivity and after an absolute limit; refresh tokens expire. MongoDB TTL indexes delete both.             |
-| Right of access and portability (Art. 15, 20) | `GET /v1/account/export` and "Export herunterladen" on the dashboard return all account data as JSON.                             |
-| Right to rectification (Art. 16)              | `PATCH /v1/account` changes name, email and password.                                                                             |
-| Right to erasure (Art. 17)                    | `DELETE /v1/account` and the dashboard form delete the account, its tokens and sessions immediately.                              |
-| Security of processing (Art. 32)              | See [security](security.md): hashing, encryption of the session store, access control, logging.                                   |
-| Privacy by default (Art. 25)                  | No tracking, no third-party requests, no external fonts or scripts.                                                               |
+| Requirement                                   | Implementation                                                                                                                                               |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Data minimisation (Art. 5(1)(c))              | Only name, email, role and password hash are stored. Logs contain method, path, status and timing, no bodies and no IP addresses.                            |
+| Storage limitation (Art. 5(1)(e))             | Sessions expire after inactivity and after an absolute limit; refresh tokens expire. TTL indexes (MongoDB) or a cleanup every ten minutes (SQL) delete both. |
+| Right of access and portability (Art. 15, 20) | `GET /v1/account/export` and "Export herunterladen" on the dashboard return all account data as JSON.                                                        |
+| Right to rectification (Art. 16)              | `PATCH /v1/account` changes name, email and password.                                                                                                        |
+| Right to erasure (Art. 17)                    | `DELETE /v1/account` and the dashboard form delete the account, its tokens and sessions immediately.                                                         |
+| Security of processing (Art. 32)              | See [security](security.md): hashing, encryption of the session store, access control, logging.                                                              |
+| Privacy by default (Art. 25)                  | No tracking, no third-party requests, no external fonts or scripts.                                                                                          |
 
 ### ePrivacy / TDDDG § 25 (cookies)
 

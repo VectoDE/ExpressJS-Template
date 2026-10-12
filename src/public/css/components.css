@@ -384,7 +384,7 @@ select.field__input:disabled {
   width: 0.9rem;
   height: 0.9rem;
   background: var(--color-surface);
-  mask: url('/assets/img/check.svg') center / contain no-repeat;
+  mask: url('../img/check.svg') center / contain no-repeat;
 }
 
 .flash--success {
@@ -527,7 +527,7 @@ select.field__input:disabled {
   border-radius: 50%;
   background: var(--color-accent);
   mask:
-    url('/assets/img/check.svg') center / 70% no-repeat,
+    url('../img/check.svg') center / 70% no-repeat,
     radial-gradient(circle, #000 0 0);
   mask-composite: exclude;
 }
@@ -658,7 +658,7 @@ select.field__input:disabled {
   border-radius: 50%;
   background: var(--color-accent);
   mask:
-    url('/assets/img/check.svg') center / 70% no-repeat,
+    url('../img/check.svg') center / 70% no-repeat,
     radial-gradient(circle, #000 0 0);
   mask-composite: exclude;
 }
@@ -752,7 +752,7 @@ select.field__input:disabled {
   position: absolute;
   inset: 0.45rem;
   background: var(--color-accent-ink);
-  mask: url('/assets/img/check.svg') center / contain no-repeat;
+  mask: url('../img/check.svg') center / contain no-repeat;
 }
 
 .code-timer {

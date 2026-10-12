@@ -24,7 +24,7 @@
   steps: [
     { title: 'Ankunft', code: 'X-Request-Id: 7c1e…', text: 'Jede Anfrage bekommt eine ID, die in jedem Log-Eintrag und auf Fehlerseiten auftaucht. Was größer als 100 KB ist, lehnt der Server ab, bevor er es liest.' },
     { title: 'Header', code: "Content-Security-Policy: default-src 'self'", text: 'Content Security Policy ohne Inline-Skripte, HSTS, COOP, COEP und eine Permissions-Policy, die Kamera, Mikrofon und Standort sperrt.' },
-    { title: 'Tempolimit', code: 'RateLimit-Policy: 300;w=900', text: '300 Anfragen pro 15 Minuten und IP, bei Anmeldung und Passwortformularen 10 Fehlversuche. Mit RATE_LIMIT_STORE=mongo teilen sich mehrere Instanzen die Zähler.' },
+    { title: 'Tempolimit', code: 'RateLimit-Policy: 300;w=900', text: '300 Anfragen pro 15 Minuten und IP, bei Anmeldung und Passwortformularen 10 Fehlversuche. Mit RATE_LIMIT_STORE=database teilen sich mehrere Instanzen die Zähler.' },
     { title: 'Herkunft', code: 'Sec-Fetch-Site: same-origin', text: 'Formulare tragen ein CSRF-Token, das bei jeder Ausgabe neu maskiert wird. Posts von fremden Seiten scheitern schon an der Fetch-Metadata-Prüfung.' },
     { title: 'Eingaben', code: '400 "email" must be a valid email', text: 'Joi prüft jedes Feld gegen ein Schema und lehnt unbekannte Felder ab. MongoDB-Operatoren und Prototype-Schlüssel werden vorher entfernt.' },
     { title: 'Identität', code: 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9…', text: 'Session-Cookie oder JWT, die Rolle kommt aus der Datenbank, auf Wunsch mit zweitem Faktor. Nach einer Passwortänderung sind alte Tokens und Sessions ungültig.' },
@@ -48,7 +48,7 @@
 <%- include('../../components/quickstart', {
   id: 'quickstart',
   heading: 'In drei Befehlen lokal',
-  lead: 'Node.js 22 und eine MongoDB reichen. Die Einrichtung erzeugt eine .env mit zufälligen Schlüsseln.',
+  lead: 'Node.js 22 reicht. Die Daten landen in SQLite, bis DATABASE_URL auf MongoDB, PostgreSQL, MySQL oder einen anderen Server zeigt. Die Einrichtung erzeugt eine .env mit zufälligen Schlüsseln.',
   commands: [
     { command: 'npm run setup', text: '.env mit eigenen Schlüsseln anlegen' },
     { command: 'npm run create-admin', text: 'Erstes Administratorkonto erstellen' },

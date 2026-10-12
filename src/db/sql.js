@@ -45,7 +45,7 @@ const isUniqueViolation = (error) =>
   error.errorNum === 1; // Oracle ORA-00001
 
 const fromUserRow = (row, recoveryCodes) =>
-  row &&
+  (row ?? null) &&
   userRecord({
     id: row.id,
     name: row.name,
@@ -70,7 +70,7 @@ const fromUserRow = (row, recoveryCodes) =>
   });
 
 const fromTokenRow = (row) =>
-  row &&
+  (row ?? null) &&
   tokenRecord({
     id: row.id,
     tokenHash: row.token_hash,
@@ -425,7 +425,7 @@ const createSqlAdapter = ({ knexConfig, dialect }) => {
   const owned = (table) => {
     ownedTables.add(table);
     const fromRow = (row) =>
-      row &&
+      (row ?? null) &&
       Object.fromEntries(
         Object.entries(row)
           .filter(([column]) => column !== 'owner_id')
@@ -483,6 +483,8 @@ const createSqlAdapter = ({ knexConfig, dialect }) => {
   return {
     kind: 'sql',
     dialect,
+    // The Knex instance, for own queries and schema changes beyond the methods below.
+    knex,
     async connect() {
       const filename = knexConfig.connection?.filename;
       if (filename && filename !== ':memory:') {
@@ -514,7 +516,11 @@ const createSqlAdapter = ({ knexConfig, dialect }) => {
     },
     async clear() {
       // One table after the other: recovery codes before users, in case a database enforces the order.
-      const tables = [...ownedTables, ...TABLES];
+      // Tables of generated resources count only while their migration is applied.
+      const owned = await Promise.all(
+        [...ownedTables].map(async (table) => (await knex.schema.hasTable(table)) && table)
+      );
+      const tables = [...owned.filter(Boolean), ...TABLES];
       await tables.reduce((previous, table) => previous.then(() => knex(table).del()), Promise.resolve());
     },
     async drop() {

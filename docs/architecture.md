@@ -11,7 +11,7 @@
 ├── src/
 │   ├── app.js               Express app: headers, CORS, parsers, sessions, routes, error handling
 │   ├── server.js            Start, timeouts, graceful shutdown
-│   ├── config/              Environment validation, logger, MongoDB, roles, token types
+│   ├── config/              Environment validation, logger, roles, token types
 │   ├── controllers/         HTTP handlers for the API (account, auth, health, metrics, users)
 │   │   └── web/             HTTP handlers for the browser UI (site, auth, account, admin)
 │   ├── docs/                OpenAPI definition and Swagger UI
@@ -19,7 +19,7 @@
 │   ├── locales/             UI texts in English (en.js, default) and German (de.js)
 │   ├── middlewares/         auth, csrf, error, i18n, rateLimit, requestId, requestLogger, sanitize,
 │   │                        saveSessionBeforeRedirect, validate, viewAuth, viewLocals
-│   ├── models/              Mongoose models (User, Token, AuditEvent)
+│   ├── db/                  Data layer: MongoDB and SQL adapters, migrations, session and rate-limit stores
 │   ├── public/
 │   │   ├── css/             tokens → base → layout → components → motion → responsive, story (home page only)
 │   │   ├── img/             Logo/favicon and icons (SVG)
@@ -39,7 +39,7 @@
 └── tests/
     ├── e2e/                 Playwright browser tests
     ├── helpers/             Database, fixtures, mail and browser helpers
-    ├── integration/         HTTP tests against the real app and an in-memory MongoDB
+    ├── integration/         HTTP tests against the real app and an in-memory database
     ├── performance/         Load test of every endpoint (autocannon)
     ├── setup/               Jest environment, global setup and teardown
     └── unit/                Tests of single modules

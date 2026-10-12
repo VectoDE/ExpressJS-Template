@@ -1,14 +1,37 @@
-# Upgrading to 3.0
+# Upgrading
+
+## Upgrading to 4.0
+
+4.0 replaces Mongoose with a data layer for MongoDB and SQL databases. Data stored by 3.0 in MongoDB keeps
+working: collection and field names did not change.
+
+| Area              | 3.0                                   | 4.0                                                    | What to do                                                                 |
+| ----------------- | ------------------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------- |
+| Database setting  | `MONGODB_URI`, `MONGODB_DB_NAME`      | `DATABASE_URL`, `DATABASE_NAME`                        | Nothing; the old names still work. Rename when convenient                  |
+| No setting at all | `mongodb://127.0.0.1:27017`           | SQLite file `data/app.db`                              | Set `DATABASE_URL` if you relied on the local MongoDB default              |
+| Browser sessions  | collection `sessions` (connect-mongo) | collection or table `web_sessions`                     | Users sign in once more. Drop the old `sessions` collection afterwards     |
+| Rate-limit store  | `RATE_LIMIT_STORE=mongo`              | `RATE_LIMIT_STORE=database`                            | Nothing; `mongo` is an alias                                               |
+| Own models        | `src/models/*.model.js` (Mongoose)    | `db.owned('<table>')` or own methods in `src/db`       | Port own models; see a resource made with `npm run generate` as an example |
+| Own queries       | `Model.find(...)`                     | Methods of `require('src/db')`, or `db.knex` on SQL    | Replace direct Mongoose calls                                              |
+| Tests             | in-memory MongoDB                     | in-memory SQLite, `TEST_DATABASE_URL` for others       | Use `db` from `tests/helpers/db.js` instead of models                      |
+| Error pages       | Stack trace in development            | Never a stack trace                                    | Read it in the log                                                         |
+| `create-admin`    | Promoted every account                | Promotes verified accounts, others only with `--force` | Verify the address first or pass `--force`                                 |
+
+To move from MongoDB to a SQL database, start the new version once against the empty SQL database so the
+migrations create the tables, then copy users, tokens and audit events with a script of your own. Sessions
+and rate-limit counters do not need to be copied.
+
+## Upgrading to 3.0
 
 3.0.0 is a major release. It replaces 1.0.1, whose `package.json` already said 2.0.0. To avoid two different
 codebases with the same number, the next version is 3.0.0.
 
-## Requirements
+### Requirements
 
 - Node.js 22.12 or newer (24 recommended)
 - MongoDB 6.0 or newer (driver 7)
 
-## Breaking changes
+### Breaking changes
 
 | Area            | Before                              | Now                                                                                      | What to do                                                             |
 | --------------- | ----------------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
@@ -37,7 +60,7 @@ codebases with the same number, the next version is 3.0.0.
 | Scripts         | `public/js/main.js`                 | `motion-init.js` in `<head>` plus `main.js`                                              | Keep both in custom layouts; set `MOTION_STYLE=off` for no animation   |
 | Helpers         | `utils/catchAsync`                  | Removed                                                                                  | Use plain `async` handlers (Express 5)                                 |
 
-## Email in production
+### Email in production
 
 Production refuses to start without `SMTP_URL`, and the connection to the mail server must be encrypted. If
 your mail relay only speaks plain SMTP (often port 25 inside a private network), the app starts, but every
@@ -45,7 +68,7 @@ email fails and only the log shows it. Switch the relay to TLS, or send through 
 `smtps://` on port 465 or STARTTLS on port 587. Details in [configuration](configuration.md#email) and
 [deployment](deployment.md#email).
 
-## New tools
+### New tools
 
 - `npm run setup` writes `.env` with fresh secrets and never overwrites an existing file.
 - `npm run create-admin` creates the first administrator or promotes an existing account.
@@ -53,7 +76,7 @@ email fails and only the log shows it. Switch the relay to TLS, or send through 
 - `npm run generate -- <name>` scaffolds an owner-scoped REST resource with tests.
 - `npm run preview` and `npm run test:e2e` start the app against an in-memory MongoDB.
 
-## Removed dependencies
+### Removed dependencies
 
 `csurf`, `xss-clean`, `hpp`, `express-mongo-sanitize`, `cookie-parser`, `dayjs`, `http-status` and `nodemon`.
 `npm run dev` now uses `node --watch`.

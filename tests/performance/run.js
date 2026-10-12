@@ -1,13 +1,14 @@
 /**
  * Load test for every HTTP endpoint.
  *
- * Starts an in-memory MongoDB and the real server (NODE_ENV=production, encrypted session store),
+ * Starts an in-memory MongoDB (or uses PERF_DATABASE_URL) and the real server (NODE_ENV=production, encrypted session store),
  * prepares fresh tokens, sessions and users for endpoints that consume them, then measures each
  * endpoint with autocannon and checks status codes and latency budgets.
  *
  *   npm run test:perf                 all endpoints
  *   PERF_DURATION=10 npm run test:perf
  *   PERF_ONLY=auth npm run test:perf  only endpoints whose name contains "auth"
+ *   PERF_DATABASE_URL=postgres://... npm run test:perf  measure against another (empty) database
  *
  * Results: reports/performance.json and reports/performance.md. Exit code 1 if a budget is missed.
  */
@@ -49,10 +50,10 @@ const inSequence = (items, fn) =>
   items.reduce(async (previous, item) => [...(await previous), await fn(item)], Promise.resolve([]));
 
 // The same secrets go to the server and to the helpers that sign tokens for it.
-const serverEnv = (mongoUri, port) => ({
+const serverEnv = (databaseUrl, port) => ({
   NODE_ENV: 'production',
   PORT: String(port),
-  DATABASE_URL: mongoUri,
+  DATABASE_URL: databaseUrl,
   DATABASE_NAME: 'perf',
   JWT_SECRET: crypto.randomBytes(48).toString('base64url'),
   SESSION_SECRET: crypto.randomBytes(48).toString('base64url'),
@@ -71,9 +72,9 @@ const serverEnv = (mongoUri, port) => ({
   TRUST_PROXY: '1',
 });
 
-const startServer = async (mongoUri) => {
+const startServer = async (databaseUrl) => {
   const port = 20000 + crypto.randomInt(20000);
-  const settings = serverEnv(mongoUri, port);
+  const settings = serverEnv(databaseUrl, port);
   // The helpers in this process sign tokens, so they need exactly the server's settings.
   Object.assign(process.env, settings);
   const child = spawn(process.execPath, ['src/server.js'], {
@@ -175,8 +176,8 @@ const writeReport = (rows) => {
 };
 
 const main = async () => {
-  const mongod = await MongoMemoryServer.create();
-  const { child, base } = await startServer(mongod.getUri());
+  const mongod = process.env.PERF_DATABASE_URL ? null : await MongoMemoryServer.create();
+  const { child, base } = await startServer(process.env.PERF_DATABASE_URL || mongod.getUri());
   const rows = [];
   let helpers;
   try {
@@ -198,7 +199,7 @@ const main = async () => {
   } finally {
     await helpers?.close();
     child.kill('SIGTERM');
-    await mongod.stop();
+    await mongod?.stop();
   }
   writeReport(rows);
   const failed = rows.filter((r) => !r.passed);

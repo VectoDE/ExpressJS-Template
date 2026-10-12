@@ -18,6 +18,9 @@ RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack 
 COPY --from=deps --chown=root:root /app/node_modules ./node_modules
 COPY --chown=root:root package.json ./
 COPY --chown=root:root src ./src
+# The only folder the process may write to: the default SQLite database lives here. Mount a volume on it.
+RUN mkdir data && chown node:node data
+VOLUME ["/app/data"]
 # Runs as the unprivileged "node" user; the code is owned by root and therefore read-only for the process.
 USER node
 EXPOSE 8080

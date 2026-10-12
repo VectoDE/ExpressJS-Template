@@ -18,7 +18,7 @@ The 3.0.0 audit found these problems in 2.0.0 / 1.0.1. All are fixed and covered
 | High     | No brute-force protection beyond 100 requests per 15 minutes                                                                       | Auth rate limit per IP plus account lock after failed logins                              |
 | High     | Query validation never ran under Express 5 (`req.query` is a getter)                                                               | Validation reads the getter; query values are replaced with validated copies              |
 | Medium   | `csurf` (deprecated, vulnerable `cookie` dependency)                                                                               | Own synchronizer token with per-render masking and Fetch Metadata check                   |
-| Medium   | `xss-clean`, `hpp`, `express-mongo-sanitize` unmaintained or incompatible with Express 5                                           | Removed; schema validation, own sanitizer and mongoose `sanitizeFilter`                   |
+| Medium   | `xss-clean`, `hpp`, `express-mongo-sanitize` unmaintained or incompatible with Express 5                                           | Removed; schema validation, own sanitizer and typed queries in the data layer             |
 | Medium   | Internal error messages (database, driver) were sent to clients                                                                    | Only operational messages leave the server                                                |
 | Medium   | CSRF failure redirected to the `Referer` header (open redirect)                                                                    | Fixed redirect targets; `returnTo` only accepts local paths                               |
 | Medium   | 10 MB JSON bodies, no password length limit (CPU exhaustion through hashing)                                                       | 100 kB bodies, 128-character passwords                                                    |
@@ -55,7 +55,9 @@ The 3.0.0 audit found these problems in 2.0.0 / 1.0.1. All are fixed and covered
 **Input and output**
 
 - Joi schema per route; unknown keys rejected; flat query parsing.
-- `$`-keys, dotted keys and prototype keys removed from bodies; mongoose `sanitizeFilter` as second layer.
+- `$`-keys, dotted keys and prototype keys removed from bodies. The data layer converts every value to the
+  expected type before it reaches a query, and SQL queries are parameterised, so request data never becomes an
+  operator or SQL text.
 - EJS escapes all output; no inline scripts; only local redirects.
 
 **Operations**
@@ -90,6 +92,6 @@ The 3.0.0 audit found these problems in 2.0.0 / 1.0.1. All are fixed and covered
 
 ## Limits
 
-- Rate limits use in-memory counters by default. With several instances, set `RATE_LIMIT_STORE=mongo`,
+- Rate limits use in-memory counters by default. With several instances, set `RATE_LIMIT_STORE=database`,
   otherwise each instance counts separately.
 - TLS is expected at a reverse proxy. See [deployment](deployment.md).
