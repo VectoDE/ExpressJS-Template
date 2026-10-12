@@ -17,13 +17,12 @@ const clean = (value, depth = 0) => {
   if (Array.isArray(value)) {
     return value.map((item) => clean(item, depth + 1));
   }
-  const result = Object.create(null);
-  Object.keys(value).forEach((key) => {
-    if (!isUnsafeKey(key)) {
-      result[key] = clean(value[key], depth + 1);
-    }
-  });
-  return { ...result };
+  // fromEntries defines own properties, so even a key the filter missed could not reach a prototype.
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([key]) => !isUnsafeKey(key))
+      .map(([key, item]) => [key, clean(item, depth + 1)])
+  );
 };
 
 const sanitize = (req, res, next) => {

@@ -12,7 +12,8 @@ ENV NODE_ENV=production \
     NPM_CONFIG_UPDATE_NOTIFIER=false
 WORKDIR /app
 # Remove npm and corepack from the final image: the app never needs them at runtime.
-RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+        /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
     && apk upgrade --no-cache
 COPY --from=deps --chown=root:root /app/node_modules ./node_modules
 COPY --chown=root:root package.json ./

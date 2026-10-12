@@ -22,23 +22,31 @@ const ROOT = path.join(__dirname, '../..');
 const DURATION = Number(process.env.PERF_DURATION) || 5;
 const ONLY = process.env.PERF_ONLY || '';
 
-const waitForServer = async (base, child) => {
-  for (let i = 0; i < 100; i += 1) {
-    if (child.exitCode !== null) {
-      throw new Error(`Server exited with code ${child.exitCode}`);
-    }
-    try {
-      const res = await fetch(`${base}/health/ready`);
-      if (res.ok) {
-        return;
-      }
-    } catch {
-      // not listening yet
-    }
-    await new Promise((resolve) => setTimeout(resolve, 200));
+const isReady = async (base) => {
+  try {
+    return (await fetch(`${base}/health/ready`)).ok;
+  } catch {
+    return false; // not listening yet
   }
-  throw new Error('Server did not become ready');
 };
+
+const waitForServer = async (base, child, attemptsLeft = 100) => {
+  if (child.exitCode !== null) {
+    throw new Error(`Server exited with code ${child.exitCode}`);
+  }
+  if (await isReady(base)) {
+    return;
+  }
+  if (attemptsLeft <= 1) {
+    throw new Error('Server did not become ready');
+  }
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  await waitForServer(base, child, attemptsLeft - 1);
+};
+
+// Endpoints are measured one after the other, so they never compete for the server.
+const inSequence = (items, fn) =>
+  items.reduce(async (previous, item) => [...(await previous), await fn(item)], Promise.resolve([]));
 
 // The same secrets go to the server and to the helpers that sign tokens for it.
 const serverEnv = (mongoUri, port) => ({
@@ -176,7 +184,7 @@ const main = async () => {
     const { createHelpers } = require('./helpers');
     helpers = await createHelpers(base);
     const selected = require('./endpoints')(helpers).filter((e) => e.name.includes(ONLY));
-    for (const endpoint of selected) {
+    await inSequence(selected, async (endpoint) => {
       const ctx = endpoint.prepare ? await endpoint.prepare() : {};
       const row = evaluate(endpoint, await measure(base, endpoint, ctx));
       rows.push(row);
@@ -186,7 +194,7 @@ const main = async () => {
       console.log(
         `${verdict}  ${route.padEnd(34)} ${String(row.rps).padStart(6)} req/s  p99 ${String(row.p99).padStart(5)} ms  (budget ${row.budgetP99})${reasons}`
       );
-    }
+    });
   } finally {
     await helpers?.close();
     child.kill('SIGTERM');

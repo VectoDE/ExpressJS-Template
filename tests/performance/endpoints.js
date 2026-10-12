@@ -38,7 +38,7 @@ const page = (name, path, p99 = 150) => ({
   p99,
 });
 
-module.exports = (h) => [
+const endpoints = (h) => [
   // Infrastructure and static files
   { name: 'health:live', method: 'GET', path: () => '/health', expect: 200, p99: 100 },
   { name: 'health:ready', method: 'GET', path: () => '/health/ready', expect: 200, p99: 100 },
@@ -308,3 +308,5 @@ module.exports = (h) => [
     request: () => ({ headers: { accept: 'text/html' } }),
   },
 ];
+
+module.exports = endpoints;

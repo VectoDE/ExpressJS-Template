@@ -5,7 +5,7 @@
   const STYLES = ['film', 'precise', 'playful', 'calm', 'off'];
   root.classList.add('js');
   // A style picked in the footer wins over the server default. Storage can be blocked; then the default stays.
-  if (root.hasAttribute('data-motion-switchable')) {
+  if ('motionSwitchable' in root.dataset) {
     try {
       const saved = window.localStorage.getItem('motion-style');
       if (STYLES.includes(saved)) {

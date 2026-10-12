@@ -1219,19 +1219,6 @@ select.field__input:disabled {
   font-size: var(--text-sm);
 }
 
-.stack {
-  margin-top: var(--space-6);
-  text-align: left;
-}
-
-.stack pre {
-  overflow-x: auto;
-  padding: var(--space-4);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-sunken);
-  font-size: var(--text-xs);
-}
-
 /* Long-form text */
 .prose h2 {
   margin-top: var(--space-6);

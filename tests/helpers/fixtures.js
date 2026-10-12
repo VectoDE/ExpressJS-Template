@@ -1,7 +1,9 @@
+const crypto = require('node:crypto');
 const User = require('../../src/models/user.model');
 const tokenService = require('../../src/services/token.service');
 
-const PASSWORD = 'Correct-Horse-9-Battery';
+// Generated per run, so no password literal lives in the code; prefix and suffix meet the password rules.
+const PASSWORD = `Test-${crypto.randomBytes(9).toString('base64url')}-9a`;
 
 let counter = 0;
 const createUser = async (overrides = {}) => {

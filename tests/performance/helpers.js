@@ -26,12 +26,13 @@ const csrfFrom = (html) => {
   return match[1];
 };
 
-const inBatches = async (count, size, fn) => {
-  const results = [];
-  for (let i = 0; i < count; i += size) {
-    results.push(...(await Promise.all(Array.from({ length: Math.min(size, count - i) }, (_, j) => fn(i + j)))));
+// Runs fn(0..count-1) in batches of `size`, one batch after the other.
+const inBatches = async (count, size, fn, start = 0) => {
+  if (start >= count) {
+    return [];
   }
-  return results;
+  const batch = await Promise.all(Array.from({ length: Math.min(size, count - start) }, (_, j) => fn(start + j)));
+  return [...batch, ...(await inBatches(count, size, fn, start + size))];
 };
 
 const createHelpers = async (base) => {

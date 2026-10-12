@@ -5,15 +5,15 @@ const emailService = require('../../src/services/email.service');
  * every message in the outbox instead of sending it.
  */
 const waitForMail = async (predicate, timeoutMs = 3000) => {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    const mail = emailService.outbox.find(predicate);
-    if (mail) {
-      return mail;
-    }
-    await new Promise((resolve) => setTimeout(resolve, 20));
+  const mail = emailService.outbox.find((message) => predicate(message));
+  if (mail) {
+    return mail;
   }
-  throw new Error('Expected email was not sent');
+  if (timeoutMs <= 0) {
+    throw new Error('Expected email was not sent');
+  }
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  return waitForMail(predicate, timeoutMs - 20);
 };
 
 const mailTo = (address, template) => (mail) => mail.to === address && (!template || mail.template === template);

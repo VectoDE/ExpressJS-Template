@@ -146,7 +146,6 @@ module.exports = {
   errorPage: {
     requestId: 'Fehler-ID',
     requestIdHelp: 'Nenne diese ID, wenn du den Fehler meldest.',
-    stack: 'Stacktrace (nur in der Entwicklung sichtbar)',
   },
 
   fields: {
