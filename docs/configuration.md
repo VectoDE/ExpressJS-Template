@@ -21,6 +21,7 @@ node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
 | `APP_URL`                        | `http://localhost:<PORT>`                  | Public address for links in emails. Required in production, must be `https`          |
 | `DEFAULT_LOCALE`                 | `en`                                       | `en` or `de`, used when the browser asks for neither                                 |
 | `DATABASE_URL`                   | `sqlite:data/app.db`                       | Which database to use, see [Database](#database)                                     |
+| `MIGRATION_DATABASE_URL`         | empty                                      | Account for schema changes, see [Database](#database)                                |
 | `DATABASE_NAME`                  | `expressjs_template`                       | MongoDB only: the database, takes precedence over the URL. Letters, digits, `_`, `-` |
 | `JWT_SECRET`                     | random per process outside production      | Required in production, 32 to 512 characters                                         |
 | `JWT_ISSUER`                     | `expressjs-template`                       | Checked on every token                                                               |
@@ -74,6 +75,9 @@ containers (job "Database").
   `src/db/migrations/index.js`; `npm run generate` does both for new resources.
 - **MongoDB** needs no migration. Indexes are created on start, expired tokens, sessions and activity entries
   are removed by TTL indexes.
+- With `MIGRATION_DATABASE_URL` the app does not change the schema itself. It refuses to start while migrations
+  are pending, and `npm run migrate` applies them with that account (on MongoDB: creates the indexes). The
+  account in `DATABASE_URL` then only needs to read and write rows.
 - On SQL databases the server removes expired tokens, sessions, rate-limit counters and old activity entries
   every ten minutes.
 - Characters in user names and passwords inside the URL must be percent-encoded (`@` as `%40`).

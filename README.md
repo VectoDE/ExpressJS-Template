@@ -76,6 +76,7 @@ docker compose up -d --build
 | `npm run dev`                     | Start with reload on changes in `src/`                              |
 | `npm start`                       | Start without reload                                                |
 | `npm run create-admin`            | Create an administrator or promote an existing account              |
+| `npm run migrate`                 | Apply database migrations, see `MIGRATION_DATABASE_URL`             |
 | `npm run seed`                    | Demo accounts for development (refuses production)                  |
 | `npm run generate -- <name>`      | Scaffold an owner-scoped REST resource with tests                   |
 | `npm run preview`                 | Start the app with an in-memory database and demo accounts          |
@@ -112,7 +113,7 @@ The layers and the request flow are described in [docs/architecture.md](docs/arc
 | [Testing](docs/testing.md) / [Performance](docs/performance.md) | Test suites and load tests                      |
 | [Deployment](docs/deployment.md)                                | Docker, reverse proxy, go-live checklist        |
 | [Upgrading](docs/upgrading.md)                                  | Breaking changes in 4.0 and 3.0                 |
-| [Changelog](docs/changelog.md)                                  | Release history                                 |
+| [Changelog](CHANGELOG.md)                                       | Release history                                 |
 
 ## Before going live
 

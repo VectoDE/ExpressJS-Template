@@ -6,7 +6,7 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 Major release: the template now runs on MongoDB and on every common SQL database. See
-[upgrading](upgrading.md#upgrading-to-40).
+[upgrading](docs/upgrading.md#upgrading-to-40).
 
 ### Changed
 
@@ -38,6 +38,8 @@ Major release: the template now runs on MongoDB and on every common SQL database
 - CI job "Database": the full test suite against MongoDB, PostgreSQL, MySQL, MariaDB, SQL Server and Oracle,
   plus a generated resource on each.
 - Contract tests for the data layer that every adapter has to pass.
+- `MIGRATION_DATABASE_URL` and `npm run migrate`: the running app can use a database account without the right to
+  change the schema (#22).
 - Static preview of every page in English and German on GitHub Pages (`npm run build:preview`).
 - Signed releases: source archive, CycloneDX SBOM and Docker image on ghcr.io with build provenance
   (Sigstore), verifiable with `gh attestation verify`.
@@ -45,8 +47,8 @@ Major release: the template now runs on MongoDB and on every common SQL database
 
 ## [3.0.0] - 2026-10-11
 
-Security release with a full audit. See [upgrading](upgrading.md) for migration steps and
-[security](security.md) for every finding.
+Security release with a full audit. See [upgrading](docs/upgrading.md) for migration steps and
+[security](docs/security.md) for every finding.
 
 ### Security
 

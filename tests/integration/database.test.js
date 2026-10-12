@@ -79,6 +79,22 @@ describe.each(targets)('%s', (label, urlFor) => {
     expect(await db.ping()).toBe(true);
   });
 
+  it('has nothing left to migrate, and an app without schema rights connects', async () => {
+    expect(await db.migrate()).toEqual(db.kind === 'sql' ? [] : ['indexes']);
+    const url = await urlFor();
+    // An in-memory SQLite database exists only inside its own connection.
+    if (url === 'sqlite::memory:') return;
+    const app = createDatabase({
+      url,
+      name: `contract_${process.env.JEST_WORKER_ID}`,
+      auditRetentionDays: 30,
+      migrate: false,
+    });
+    await app.connect();
+    expect(await app.ping()).toBe(true);
+    await app.disconnect();
+  });
+
   describe('users', () => {
     it('stores, finds and hides secret fields from enumeration', async () => {
       const created = await user({ name: 'Grace' });

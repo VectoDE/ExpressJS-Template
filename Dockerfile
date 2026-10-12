@@ -18,6 +18,8 @@ RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack 
 COPY --from=deps --chown=root:root /app/node_modules ./node_modules
 COPY --chown=root:root package.json ./
 COPY --chown=root:root src ./src
+# For deployments with a separate migration account: docker run ... node scripts/migrate.js
+COPY --chown=root:root scripts/migrate.js ./scripts/migrate.js
 # The only folder the process may write to: the default SQLite database lives here. Mount a volume on it.
 RUN mkdir data && chown node:node data
 VOLUME ["/app/data"]

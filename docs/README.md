@@ -13,7 +13,7 @@
 | [Assurance case](assurance.md)                | Threat model, trust boundaries, design principles              |
 | [Roadmap](roadmap.md)                         | Plans for the next twelve months                               |
 | [Upgrading](upgrading.md)                     | Breaking changes in 4.0 and 3.0, migration from 1.x/2.0        |
-| [Changelog](changelog.md)                     | All releases                                                   |
+| [Changelog](../CHANGELOG.md)                  | All releases                                                   |
 | [Third-party notices](third-party-notices.md) | Licenses of all runtime dependencies (generated)               |
 
 Community guidelines live in [`.github/`](../.github): [contributing](../.github/CONTRIBUTING.md),

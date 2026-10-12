@@ -97,18 +97,20 @@ const DIALECTS = {
   oracle: 'oracle',
 };
 
-const createDatabase = ({ url, name, auditRetentionDays }) => {
+// `migrate: false` only checks that the schema is current on connect, for apps that run without DDL rights.
+const createDatabase = ({ url, name, auditRetentionDays, migrate = true }) => {
   const scheme = schemeOf(url);
   if (scheme === 'mongodb' || scheme === 'mongodb+srv') {
-    return createMongoAdapter({ url, dbName: name, auditRetentionDays });
+    return createMongoAdapter({ url, dbName: name, auditRetentionDays, migrate });
   }
-  return createSqlAdapter({ knexConfig: knexConfigFor(scheme, url), dialect: DIALECTS[scheme] });
+  return createSqlAdapter({ knexConfig: knexConfigFor(scheme, url), dialect: DIALECTS[scheme], migrate });
 };
 
 module.exports = createDatabase({
   url: config.database.url,
   name: config.database.name,
   auditRetentionDays: config.audit.retentionDays,
+  migrate: config.database.migrateOnStart,
 });
 module.exports.createDatabase = createDatabase;
 module.exports.sqliteFile = sqliteFile;

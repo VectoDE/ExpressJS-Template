@@ -30,7 +30,7 @@ const USER_FIELDS = new Set([
   'twoFactor',
 ]);
 
-const createMongoAdapter = ({ url, dbName, auditRetentionDays }) => {
+const createMongoAdapter = ({ url, dbName, auditRetentionDays, migrate = true }) => {
   // Jest's sandbox cannot run the driver's dynamic import('os'); hand the module over directly.
   const client = new MongoClient(url, { serverSelectionTimeoutMS: 10000, runtimeAdapters: { os } });
   let db;
@@ -346,7 +346,13 @@ const createMongoAdapter = ({ url, dbName, auditRetentionDays }) => {
     async connect() {
       await client.connect();
       db = client.db(dbName);
+      // Without the right to create indexes the app relies on `npm run migrate` having created them.
+      if (migrate) await ensureIndexes();
+    },
+    // MongoDB has no schema; its counterpart of a migration is creating the indexes.
+    async migrate() {
       await ensureIndexes();
+      return ['indexes'];
     },
     async disconnect() {
       await client.close();

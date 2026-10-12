@@ -21,6 +21,9 @@ const envSchema = Joi.object({
   PORT: Joi.number().port().default(8080),
   // Picks the database, see src/db/index.js. MONGODB_URI and MONGODB_DB_NAME are the names from version 3.0.
   DATABASE_URL: Joi.string().pattern(DATABASE_SCHEMES, 'supported database URL'),
+  // Account with the right to change the schema. When set, the app only checks the schema and `npm run migrate`
+  // applies changes with this account, so the running app can use one without DDL rights.
+  MIGRATION_DATABASE_URL: Joi.string().pattern(DATABASE_SCHEMES, 'supported database URL'),
   MONGODB_URI: Joi.string().uri({ scheme: ['mongodb', 'mongodb+srv'] }),
   DATABASE_NAME: Joi.string().pattern(/^[A-Za-z0-9_-]{1,63}$/),
   MONGODB_DB_NAME: Joi.string().pattern(/^[A-Za-z0-9_-]{1,63}$/),
@@ -165,6 +168,9 @@ module.exports = {
     url: envVars.DATABASE_URL || envVars.MONGODB_URI || 'sqlite:data/app.db',
     // Database name for MongoDB; SQL databases take it from the URL.
     name: envVars.DATABASE_NAME || envVars.MONGODB_DB_NAME || 'expressjs_template',
+    migrationUrl: envVars.MIGRATION_DATABASE_URL,
+    // Without a separate migration account the app brings the schema up to date itself on start.
+    migrateOnStart: !envVars.MIGRATION_DATABASE_URL,
   },
   jwt: {
     secret: secretOrRandom('JWT_SECRET'),

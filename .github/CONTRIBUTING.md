@@ -26,7 +26,7 @@ Node.js 22.12 or newer is required (`.nvmrc` pins 24). Tests use an in-memory SQ
 2. Keep the change focused. Follow the existing structure: route → validation → controller → service → data
    layer (`src/db`). Database access goes through the adapter methods, so it works on every database.
 3. Add or update tests. Security-relevant code needs a test for the attack it prevents.
-4. Update the documentation in `docs/` and add an entry under "Unreleased" in `docs/changelog.md`.
+4. Update the documentation in `docs/` and add an entry under "Unreleased" in `CHANGELOG.md`.
 5. Run `npm run check`. It runs lint, format check, tests and `npm audit`, the same as CI.
 6. If you touched request handling, run `npm run test:perf` as well.
 

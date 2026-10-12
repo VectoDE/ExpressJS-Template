@@ -84,7 +84,7 @@ const fromTokenRow = (row) =>
     createdAt: row.created_at,
   });
 
-const createSqlAdapter = ({ knexConfig, dialect }) => {
+const createSqlAdapter = ({ knexConfig, dialect, migrate = true }) => {
   const knex = knexFactory(knexConfig);
 
   const recoveryCodesOf = async (trx, userId) =>
@@ -492,7 +492,20 @@ const createSqlAdapter = ({ knexConfig, dialect }) => {
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         fs.mkdirSync(path.dirname(path.resolve(filename)), { recursive: true });
       }
-      await knex.migrate.latest({ migrationSource: migrations });
+      if (migrate) {
+        await knex.migrate.latest({ migrationSource: migrations });
+        return;
+      }
+      const [, pending] = await knex.migrate.list({ migrationSource: migrations });
+      if (pending.length) {
+        const names = pending.map((migration) => migration.name).join(', ');
+        throw new Error(`The database schema is not up to date (${names}). Run "npm run migrate" first.`);
+      }
+    },
+    // Applies pending migrations; returns the names of the ones that ran.
+    async migrate() {
+      const [, applied] = await knex.migrate.latest({ migrationSource: migrations });
+      return applied;
     },
     async disconnect() {
       await knex.destroy();

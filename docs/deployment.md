@@ -71,8 +71,10 @@ password reset to yourself after deploying and check that it arrives. See [confi
 Set `DATABASE_URL`, see [configuration](configuration.md#database). For any server:
 
 - Use an account with access to this database only. On SQL databases it needs the right to create and alter
-  tables, because migrations run on start; split this into a migration account and a runtime account if
-  your policy asks for it.
+  tables, because migrations run on start. To run the app without that right, set `MIGRATION_DATABASE_URL` to a
+  second account that may change the schema and run `npm run migrate` before each start of a new version
+  (for example as an init container or a release step). The app then only checks that the schema is current.
+  The image contains the script: `docker run --rm --env-file .env expressjs-template node scripts/migrate.js`.
 - Use TLS for connections across networks (`mongodb+srv://`, `?tls=true`, `?sslmode=require`, `?ssl=true` or
   `?encrypt=true`, depending on the driver).
 - Back up regularly and encrypt the backups.
@@ -106,7 +108,7 @@ Releases are built in GitHub Actions, never on a laptop. `main` only takes pull 
 steps:
 
 1. A pull request sets the new `version` with `npm version 4.1.0 --no-git-tag-version` and moves the
-   "Unreleased" entries of [changelog.md](changelog.md) under the new version.
+   "Unreleased" entries of [CHANGELOG.md](../CHANGELOG.md) under the new version.
 2. After the merge, tag the merge commit and push only the tag:
 
    ```bash

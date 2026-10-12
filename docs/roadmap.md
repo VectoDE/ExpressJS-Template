@@ -1,7 +1,7 @@
 # Roadmap
 
 What is planned for the next twelve months. Plans change; the current state is in the
-[issues](https://github.com/VectoDE/ExpressJS-Template/issues) and the [changelog](changelog.md). Ideas and
+[issues](https://github.com/VectoDE/ExpressJS-Template/issues) and the [changelog](../CHANGELOG.md). Ideas and
 objections are welcome in [Discussions](https://github.com/VectoDE/ExpressJS-Template/discussions).
 
 ## Ongoing
