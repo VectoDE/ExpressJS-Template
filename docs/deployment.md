@@ -102,14 +102,32 @@ remove the `depends_on` block of `app` and set `DATABASE_URL` in `.env`.
 
 ## Releases
 
-`.github/workflows/release.yml` runs when a tag `vX.Y.Z` is pushed. It checks that the tag matches the
-`version` in `package.json` and creates a GitHub release with generated notes. The notes are grouped by the
-labels of the merged pull requests as configured in `.github/release.yml` (security, breaking change,
-features, fixes, dependencies, documentation). Tags with a suffix such as `v4.1.0-rc.1` become pre-releases.
+Releases are built in GitHub Actions, never on a laptop. `main` only takes pull requests, so a release has two
+steps:
+
+1. A pull request sets the new `version` with `npm version 4.1.0 --no-git-tag-version` and moves the
+   "Unreleased" entries of [changelog.md](changelog.md) under the new version.
+2. After the merge, tag the merge commit and push only the tag:
+
+   ```bash
+   git switch main && git pull
+   git tag -a v4.1.0 -m "Release 4.1.0"
+   git push origin v4.1.0
+   ```
+
+`.github/workflows/release.yml` then checks that the tag is on `main` and matches `package.json`, runs
+`npm run check` again and publishes:
+
+- the source archive, a CycloneDX SBOM of the runtime dependencies and `SHA256SUMS`, with a signed build
+  provenance (`.intoto.jsonl`, Sigstore) attached to the GitHub release
+- the Docker image `ghcr.io/vectode/expressjs-template:<version>` (and `latest`) with provenance and SBOM
+- release notes grouped by the labels of the merged pull requests (`.github/release.yml`)
+
+Tags with a suffix such as `v4.1.0-rc.1` become pre-releases and do not move `latest`.
+
+Check a download or the image before using it:
 
 ```bash
-npm version 4.1.0 -m "Release %s"   # updates package.json and package-lock.json, commits and tags v4.1.0
-git push --follow-tags
+gh attestation verify expressjs-template-4.1.0.tar.gz --repo VectoDE/ExpressJS-Template
+gh attestation verify oci://ghcr.io/vectode/expressjs-template:4.1.0 --repo VectoDE/ExpressJS-Template
 ```
-
-Add the release to [changelog.md](changelog.md) before tagging.

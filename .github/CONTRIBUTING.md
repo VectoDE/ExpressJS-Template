@@ -23,7 +23,8 @@ Node.js 22.12 or newer is required (`.nvmrc` pins 24). Tests use an in-memory SQ
 ## Making a change
 
 1. Branch from `main`: `fix/short-name` or `feat/short-name`.
-2. Keep the change focused. Follow the existing structure: route → validation → controller → service → model.
+2. Keep the change focused. Follow the existing structure: route → validation → controller → service → data
+   layer (`src/db`). Database access goes through the adapter methods, so it works on every database.
 3. Add or update tests. Security-relevant code needs a test for the attack it prevents.
 4. Update the documentation in `docs/` and add an entry under "Unreleased" in `docs/changelog.md`.
 5. Run `npm run check`. It runs lint, format check, tests and `npm audit`, the same as CI.
@@ -31,10 +32,19 @@ Node.js 22.12 or newer is required (`.nvmrc` pins 24). Tests use an in-memory SQ
 
 ## Commits and pull requests
 
+- Sign off every commit (`git commit -s`). The `Signed-off-by` line certifies the
+  [Developer Certificate of Origin](https://developercertificate.org/): you have the right to submit the change
+  under the project's license. The DCO check fails on pull requests with commits that are not signed off.
 - Write commit messages in English, imperative mood, and explain why: `Reject refresh tokens as access tokens`.
 - One topic per pull request. Fill in the template.
 - New dependencies need a reason in the pull request. Prefer the standard library.
 - CI must be green before review.
+
+## Releases
+
+Only maintainers release, through a version tag on `main`; see [deployment](../docs/deployment.md#releases). The
+plans for the next versions are in the [roadmap](../docs/roadmap.md), how decisions are made in the
+[governance](GOVERNANCE.md).
 
 ## License
 

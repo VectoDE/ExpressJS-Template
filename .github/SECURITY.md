@@ -4,7 +4,8 @@
 
 | Version | Supported                                                                                                         |
 | ------- | ----------------------------------------------------------------------------------------------------------------- |
-| 3.x     | Yes                                                                                                               |
+| 4.x     | Yes                                                                                                               |
+| 3.x     | No. Upgrade with [docs/upgrading.md](../docs/upgrading.md); data in MongoDB keeps working.                        |
 | < 3.0   | No. 1.0 and 1.0.1 contain known critical vulnerabilities; upgrade with [docs/upgrading.md](../docs/upgrading.md). |
 
 ## Reporting a vulnerability
@@ -30,3 +31,14 @@ Out of scope: applications built from the template and changed afterwards, missi
 or a malicious administrator.
 
 Only test against your own installation. Do not test against systems you do not own.
+
+## Verifying releases
+
+Every release since 4.0.0 carries a signed build provenance. Check a downloaded archive or the Docker image
+with `gh attestation verify <file or oci://image> --repo VectoDE/ExpressJS-Template`; see
+[deployment](../docs/deployment.md#releases).
+
+## How the project handles security
+
+The reasoning behind the security design is in the [assurance case](../docs/assurance.md), the controls in
+[docs/security.md](../docs/security.md). Who has access to what is listed in the [governance](GOVERNANCE.md).

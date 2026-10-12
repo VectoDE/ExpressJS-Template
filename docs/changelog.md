@@ -38,6 +38,10 @@ Major release: the template now runs on MongoDB and on every common SQL database
 - CI job "Database": the full test suite against MongoDB, PostgreSQL, MySQL, MariaDB, SQL Server and Oracle,
   plus a generated resource on each.
 - Contract tests for the data layer that every adapter has to pass.
+- Static preview of every page in English and German on GitHub Pages (`npm run build:preview`).
+- Signed releases: source archive, CycloneDX SBOM and Docker image on ghcr.io with build provenance
+  (Sigstore), verifiable with `gh attestation verify`.
+- DCO sign-off check on pull requests, governance, assurance case and roadmap.
 
 ## [3.0.0] - 2026-10-11
 
