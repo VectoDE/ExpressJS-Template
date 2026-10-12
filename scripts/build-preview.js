@@ -103,6 +103,10 @@ const save = (pathname, locale, html, exported) => {
   write(path.join(OUT, folder, 'index.html'), rewrite(html, locale, exported));
 };
 
+// Runs `step` for each item, one after the other.
+const inSequence = (items, step) =>
+  items.reduce((previous, item) => previous.then(() => step(item)), Promise.resolve());
+
 const main = async () => {
   Object.assign(process.env, {
     NODE_ENV: 'development',
@@ -143,13 +147,15 @@ const main = async () => {
     ];
     const exported = new Set([...guestPages, ...ADMIN_PAGES, ...userPages].map((page) => page.split('?')[0]));
 
-    for (const locale of LOCALES) {
+    // One page after the other: the clients carry session cookies, and the language switch must come first.
+    const exportPage = async (as, page, locale) => {
+      const response = await as.request(page, { locale });
+      if (response.status !== 200) throw new Error(`${page} answered ${response.status}`);
+      save(page, locale, await response.text(), exported);
+    };
+    const exportLocale = async (locale) => {
       const guest = client(base);
-      for (const page of guestPages) {
-        const response = await guest.request(page, { locale });
-        if (response.status !== 200) throw new Error(`${page} answered ${response.status}`);
-        save(page, locale, await response.text(), exported);
-      }
+      await inSequence(guestPages, (page) => exportPage(guest, page, locale));
       // The missing page doubles as the 404 page of GitHub Pages (only the default language can be served).
       const missing = await guest.request('/this-page-does-not-exist', { locale });
       const notFound = rewrite(await missing.text(), locale, exported);
@@ -158,12 +164,9 @@ const main = async () => {
       // Switching the language leaves a confirmation for the next page; fetching that page once uses it up.
       await admin.request(`/language/${locale}?returnTo=%2Fdashboard`);
       await admin.request('/dashboard', { locale });
-      for (const page of [...ADMIN_PAGES, ...userPages]) {
-        const response = await admin.request(page, { locale });
-        if (response.status !== 200) throw new Error(`${page} answered ${response.status}`);
-        save(page, locale, await response.text(), exported);
-      }
-    }
+      await inSequence([...ADMIN_PAGES, ...userPages], (page) => exportPage(admin, page, locale));
+    };
+    await inSequence(LOCALES, exportLocale);
 
     fs.cpSync(path.join(ROOT, 'src/public'), path.join(OUT, 'assets'), { recursive: true });
     fs.copyFileSync(path.join(__dirname, 'preview/preview.js'), path.join(OUT, 'assets/js/preview.js'));

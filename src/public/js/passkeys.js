@@ -9,13 +9,13 @@
   const toBytes = (text) => {
     const base64 = text.replaceAll('-', '+').replaceAll('_', '/');
     const binary = atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, '='));
-    return Uint8Array.from(binary, (character) => character.charCodeAt(0));
+    return Uint8Array.from(binary, (character) => character.codePointAt(0));
   };
 
   const toText = (buffer) => {
     let binary = '';
     new Uint8Array(buffer).forEach((byte) => {
-      binary += String.fromCharCode(byte);
+      binary += String.fromCodePoint(byte);
     });
     // '=' only appears as padding at the end; base64url leaves it out.
     // "=" only appears as padding at the end, which base64url leaves out.
