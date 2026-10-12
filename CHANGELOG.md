@@ -5,6 +5,11 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Contributing guide: coding standards and how dependencies are chosen. Security policy: handling of secrets and
+  of vulnerable dependencies. Roadmap for 4.x. OpenSSF Best Practices badge in the README.
+
 ## [4.0.0] - 2026-10-12
 
 Major release: the template now runs on MongoDB and on every common SQL database. See
