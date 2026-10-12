@@ -13,6 +13,9 @@ objections are welcome in [Discussions](https://github.com/VectoDE/ExpressJS-Tem
 
 ## 4.x
 
+- Docker image and CI on Node.js 26 once it is the active LTS line (planned for late October 2026).
+- MongoDB 9 in Docker Compose and CI, with an upgrade note for existing data volumes.
+
 - A copy script from MongoDB to a SQL database and back, for projects that switch.
 - Passkeys (WebAuthn) as a second factor next to one-time codes.
 - Separate database accounts for migrations and for the running app, as an option.

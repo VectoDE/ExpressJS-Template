@@ -25,12 +25,17 @@ updates:
       actions:
         patterns: ['*']
 
+  # Major versions of Node.js and MongoDB are upgraded by hand: Node.js once a line reaches LTS and CI tests it,
+  # MongoDB with its upgrade procedure, because existing data volumes need it.
   - package-ecosystem: docker
     directory: /
     schedule:
       interval: weekly
       day: monday
     labels: [dependencies, docker]
+    ignore:
+      - dependency-name: node
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: docker-compose
     directory: /
@@ -38,3 +43,6 @@ updates:
       interval: weekly
       day: monday
     labels: [dependencies, docker]
+    ignore:
+      - dependency-name: mongo
+        update-types: [version-update:semver-major]
