@@ -1,11 +1,10 @@
+const userService = require('../../src/services/user.service');
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
 const app = require('../../src/app');
 const config = require('../../src/config/config');
-const User = require('../../src/models/user.model');
-const Token = require('../../src/models/token.model');
 const tokenService = require('../../src/services/token.service');
-const { useDatabase } = require('../helpers/db');
+const { useDatabase, db } = require('../helpers/db');
 const { PASSWORD, createUser, tokensFor, bearer } = require('../helpers/fixtures');
 
 useDatabase();
@@ -22,13 +21,13 @@ describe('POST /v1/auth/register', () => {
     expect(res.body.user).not.toHaveProperty('password');
     expect(res.body.user).not.toHaveProperty('failedLoginAttempts');
     expect(res.body.tokens.access.token).toEqual(expect.any(String));
-    const stored = await User.findOne({ email: 'ada@example.com' }).select('+password');
+    const stored = await db.users.findByEmail('ada@example.com');
     expect(stored.password).toMatch(/^scrypt\$/);
   });
 
   it('rejects a role in the body, so nobody can sign up as admin', async () => {
     await register({ ...valid, role: 'admin' }).expect(400);
-    expect(await User.countDocuments()).toBe(0);
+    expect(await db.users.count()).toBe(0);
   });
 
   it.each([
@@ -91,10 +90,10 @@ describe('POST /v1/auth/login', () => {
       await login(user.email, 'Wrong-Password-123').expect(401);
     }
     await login(user.email).expect(401);
-    const stored = await User.findById(user.id).select('+lockUntil');
+    const stored = await db.users.findById(user.id);
     expect(stored.lockUntil.getTime()).toBeGreaterThan(Date.now());
 
-    await User.updateOne({ _id: user.id }, { $set: { lockUntil: new Date(Date.now() - 1000) } });
+    await db.users.update(user.id, { lockUntil: new Date(Date.now() - 1000) });
     await login(user.email).expect(200);
   });
 
@@ -103,10 +102,10 @@ describe('POST /v1/auth/login', () => {
     const user = await createUser();
     const salt = crypto.randomBytes(16).toString('hex');
     const key = crypto.scryptSync(PASSWORD, salt, 64, { N: 16384, r: 8, p: 1 }).toString('hex');
-    await User.collection.updateOne({ _id: user._id }, { $set: { password: `${salt}:${key}` } });
+    await db.users.update(user.id, { password: `${salt}:${key}` });
 
     await login(user.email).expect(200);
-    const stored = await User.findById(user.id).select('+password');
+    const stored = await db.users.findById(user.id);
     expect(stored.password).toMatch(/^scrypt\$131072\$/);
   });
 });
@@ -128,14 +127,14 @@ describe('refresh tokens', () => {
     const other = await tokensFor(user);
     await request(app).post('/v1/auth/refresh-tokens').send({ refreshToken: stolen.refresh.token }).expect(200);
     await request(app).post('/v1/auth/refresh-tokens').send({ refreshToken: stolen.refresh.token }).expect(401);
-    expect(await Token.countDocuments({ user: user.id })).toBe(0);
+    expect(await db.tokens.count({ userId: user.id })).toBe(0);
     await request(app).post('/v1/auth/refresh-tokens').send({ refreshToken: other.refresh.token }).expect(401);
   });
 
   it('are stored only as SHA-256 hashes', async () => {
     const user = await createUser();
     const tokens = await tokensFor(user);
-    const doc = await Token.findOne({ user: user.id }).lean();
+    const doc = await db.tokens.find({ userId: user.id });
     expect(doc.tokenHash).toBe(tokenService.hashToken(tokens.refresh.token));
     expect(JSON.stringify(doc)).not.toContain(tokens.refresh.token);
   });
@@ -192,15 +191,14 @@ describe('access tokens', () => {
     const user = await createUser();
     const tokens = await tokensFor(user);
     await new Promise((resolve) => setTimeout(resolve, 1100));
-    user.password = 'Brand-New-Password-42';
-    await user.save();
+    await userService.saveChanges(user, { password: 'Brand-New-Password-42' });
     expect((await request(app).get('/v1/users/profile').set(bearer(tokens))).status).toBe(401);
   });
 
   it('stop working when the user is deleted', async () => {
     const user = await createUser();
     const tokens = await tokensFor(user);
-    await User.deleteOne({ _id: user.id });
+    await db.users.remove(user.id);
     expect((await request(app).get('/v1/users/profile').set(bearer(tokens))).status).toBe(401);
   });
 

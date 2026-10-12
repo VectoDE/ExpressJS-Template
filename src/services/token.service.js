@@ -1,16 +1,15 @@
 const crypto = require('node:crypto');
 const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose');
 const config = require('../config/config');
+const db = require('../db');
 const logger = require('../config/logger');
 const { tokenTypes } = require('../config/tokens');
-const Token = require('../models/token.model');
+const { newId } = require('../utils/id');
 const ApiError = require('../utils/ApiError');
 const httpStatus = require('../utils/httpStatus');
 const { randomToken, sha256 } = require('../utils/crypto');
 
 const ALGORITHM = 'HS256';
-// Filters with operators are built here, never from input; mongoose.trusted lets them pass sanitizeFilter.
 const INVALID_TOKEN = 'Invalid or expired token';
 
 const hashToken = sha256;
@@ -57,7 +56,7 @@ const issuedAtMs = (payload) => (Number.isSafeInteger(payload.ims) ? payload.ims
 const issuedBeforeCredentialChange = (payload, user) => issuedAtMs(payload) < user.credentialsChangedAt.getTime();
 
 const revokeAllForUser = async (userId) => {
-  await Token.deleteMany({ user: userId, type: tokenTypes.REFRESH });
+  await db.tokens.remove({ userId: String(userId), type: tokenTypes.REFRESH });
 };
 
 /**
@@ -68,15 +67,11 @@ const revokeAllForUser = async (userId) => {
  */
 const consumeRefreshToken = async (token) => {
   const payload = decodeToken(token, tokenTypes.REFRESH);
-  const tokenDoc = await Token.findOneAndDelete({
-    tokenHash: hashToken(token),
-    type: tokenTypes.REFRESH,
-    user: payload.sub,
-  });
-  if (!tokenDoc) {
+  const stored = await db.tokens.take({ tokenHash: hashToken(token), type: tokenTypes.REFRESH, userId: payload.sub });
+  if (!stored) {
     const rotated =
       typeof payload.fam === 'string' &&
-      (await Token.exists({ user: payload.sub, type: tokenTypes.REFRESH, family: payload.fam }));
+      (await db.tokens.exists({ userId: payload.sub, type: tokenTypes.REFRESH, family: payload.fam }));
     const error = new ApiError(httpStatus.UNAUTHORIZED, INVALID_TOKEN);
     if (rotated) {
       logger.warn('Refresh token reuse detected for user %s, revoking all refresh tokens', payload.sub);
@@ -88,7 +83,7 @@ const consumeRefreshToken = async (token) => {
   return {
     userId: payload.sub,
     payload,
-    session: { family: tokenDoc.family, device: tokenDoc.device, startedAt: tokenDoc.startedAt },
+    session: { family: stored.family, device: stored.device, startedAt: stored.startedAt },
   };
 };
 
@@ -103,9 +98,10 @@ const generateAuthTokens = async (user, session = {}) => {
   const accessToken = generateToken(user.id, accessExpires, tokenTypes.ACCESS);
   const refreshToken = generateToken(user.id, refreshExpires, tokenTypes.REFRESH, { fam: family });
 
-  await Token.create({
+  await db.tokens.create({
+    id: newId(),
     tokenHash: hashToken(refreshToken),
-    user: user.id,
+    userId: user.id,
     expires: refreshExpires,
     type: tokenTypes.REFRESH,
     family,
@@ -121,7 +117,7 @@ const generateAuthTokens = async (user, session = {}) => {
 
 const removeRefreshToken = async (token) => {
   const payload = decodeToken(token, tokenTypes.REFRESH);
-  await Token.deleteOne({ tokenHash: hashToken(token), type: tokenTypes.REFRESH, user: payload.sub });
+  await db.tokens.remove({ tokenHash: hashToken(token), type: tokenTypes.REFRESH, userId: payload.sub });
 };
 
 // Short-lived proof that the password was correct, exchanged for tokens together with a one-time code.
@@ -138,8 +134,15 @@ const generateTwoFactorChallenge = (user) =>
  */
 const createEmailToken = async (user, type, expiresAt, extra = {}) => {
   const token = randomToken();
-  await Token.deleteMany({ user: user.id, type });
-  await Token.create({ tokenHash: hashToken(token), user: user.id, type, expires: expiresAt, ...extra });
+  await db.tokens.remove({ userId: user.id, type });
+  await db.tokens.create({
+    id: newId(),
+    tokenHash: hashToken(token),
+    userId: user.id,
+    type,
+    expires: expiresAt,
+    ...extra,
+  });
   return token;
 };
 
@@ -148,11 +151,7 @@ const consumeEmailToken = async (token, type) => {
   if (typeof token !== 'string' || !/^[A-Za-z0-9_-]{20,128}$/.test(token)) {
     return null;
   }
-  return Token.findOneAndDelete({
-    tokenHash: hashToken(token),
-    type,
-    expires: mongoose.trusted({ $gt: new Date() }),
-  });
+  return db.tokens.take({ tokenHash: hashToken(token), type, validAt: new Date() });
 };
 
 // Looks a token up without using it, so a page can tell at once whether a link is still valid.
@@ -160,21 +159,16 @@ const findEmailToken = async (token, type) => {
   if (typeof token !== 'string' || !/^[A-Za-z0-9_-]{20,128}$/.test(token)) {
     return null;
   }
-  return Token.findOne({ tokenHash: hashToken(token), type, expires: mongoose.trusted({ $gt: new Date() }) });
+  return db.tokens.find({ tokenHash: hashToken(token), type, validAt: new Date() });
 };
 
-const removeEmailTokens = (userId, type) => Token.deleteMany({ user: userId, type });
+const removeEmailTokens = (userId, type) => db.tokens.remove({ userId: String(userId), type });
 
 // One entry per refresh-token family, which is one signed-in API client.
 const listSessions = async (userId) => {
-  const tokens = await Token.find(
-    { user: userId, type: tokenTypes.REFRESH, expires: mongoose.trusted({ $gt: new Date() }) },
-    { family: 1, device: 1, startedAt: 1, createdAt: 1, expires: 1 }
-  )
-    .sort({ createdAt: -1 })
-    .lean();
+  const tokens = await db.tokens.list({ userId: String(userId), type: tokenTypes.REFRESH, validAt: new Date() });
   return tokens.map((token) => ({
-    id: token.family || String(token._id),
+    id: token.family || token.id,
     device: token.device || null,
     startedAt: token.startedAt || token.createdAt,
     lastRefreshedAt: token.createdAt,
@@ -183,12 +177,12 @@ const listSessions = async (userId) => {
 };
 
 const revokeSession = async (userId, sessionId) => {
-  const { deletedCount } = await Token.deleteMany({
-    user: userId,
+  const removed = await db.tokens.remove({
+    userId: String(userId),
     type: tokenTypes.REFRESH,
     family: String(sessionId),
   });
-  return deletedCount > 0;
+  return removed > 0;
 };
 
 module.exports = {

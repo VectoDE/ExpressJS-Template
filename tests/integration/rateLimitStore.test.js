@@ -1,15 +1,15 @@
-const MongoRateLimitStore = require('../../src/utils/mongoRateLimitStore');
-const { useDatabase } = require('../helpers/db');
+const DatabaseRateLimitStore = require('../../src/db/rateLimitStore');
+const { useDatabase, db } = require('../helpers/db');
 
 useDatabase();
 
 const storeWith = (windowMs) => {
-  const store = new MongoRateLimitStore({ prefix: 'test:' });
+  const store = new DatabaseRateLimitStore({ db, prefix: 'test:' });
   store.init({ windowMs });
   return store;
 };
 
-describe('MongoRateLimitStore', () => {
+describe('DatabaseRateLimitStore', () => {
   it('counts hits per key inside one window', async () => {
     const store = storeWith(60000);
     const first = await store.increment('1.2.3.4');

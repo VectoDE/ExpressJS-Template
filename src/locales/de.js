@@ -115,6 +115,13 @@ module.exports = {
     twoFactorNotPending: 'Starte die Einrichtung bitte zuerst mit deinem Passwort.',
     recoveryCodesRenewed: 'Neue Wiederherstellungscodes sind erstellt. Die alten gelten nicht mehr.',
     recoveryCodeUsed: 'Du hast dich mit einem Wiederherstellungscode angemeldet. Es bleiben {count} Codes.',
+    passkeyReady: 'Gib dem Passkey einen Namen und erstelle ihn. Dein Browser fragt dann, wo er gespeichert wird.',
+    passkeyAdded: 'Der Passkey „{name}“ ist gespeichert. Bei der Anmeldung kann er den Code aus der App ersetzen.',
+    passkeyRemoved: 'Der Passkey ist entfernt.',
+    passkeyInvalid: 'Der Passkey konnte nicht gespeichert werden. Bitte starte noch einmal.',
+    passkeyLimit: 'Du hast schon die Höchstzahl von 10 Passkeys. Entferne zuerst einen.',
+    passkeyNeedsTwoFactor: 'Schalte zuerst die Zwei-Faktor-Anmeldung ein, dann kannst du einen Passkey hinzufügen.',
+    passkeyRejected: 'Der Passkey wurde nicht akzeptiert. Versuch es noch einmal oder gib einen Code ein.',
     sessionRevoked: 'Die Sitzung ist beendet.',
     allSessionsRevoked: 'Alle anderen Sitzungen und API-Tokens sind abgemeldet.',
     languageChanged: 'Die Sprache ist auf Deutsch umgestellt.',
@@ -146,7 +153,6 @@ module.exports = {
   errorPage: {
     requestId: 'Fehler-ID',
     requestIdHelp: 'Nenne diese ID, wenn du den Fehler meldest.',
-    stack: 'Stacktrace (nur in der Entwicklung sichtbar)',
   },
 
   fields: {
@@ -183,6 +189,10 @@ module.exports = {
       submit: 'Bestätigen',
       cancel: 'Abbrechen und neu anmelden',
       recoveryHint: 'Kein Zugriff auf die App? Gib einen deiner Wiederherstellungscodes ein.',
+      passkey: 'Mit Passkey bestätigen',
+      passkeyHint:
+        'Oder bestätige mit einem Passkey auf diesem Gerät, in deinem Passwortmanager oder auf einem Sicherheitsschlüssel.',
+      passkeyCancelled: 'Es wurde kein Passkey verwendet. Versuch es noch einmal oder gib einen Code ein.',
     },
     forgot: {
       title: 'Passwort vergessen',
@@ -270,6 +280,24 @@ module.exports = {
       codesText:
         'Jeder Code funktioniert einmal, falls du keinen Zugriff auf die App hast. Speichere sie jetzt an einem sicheren Ort, sie werden nur dieses eine Mal angezeigt.',
     },
+    passkeys: {
+      title: 'Passkeys',
+      text: 'Ein Passkey ersetzt bei der Anmeldung den Code aus der App, das Passwort brauchst du weiterhin. Er liegt auf deinem Gerät, in einem Passwortmanager oder auf einem Sicherheitsschlüssel.',
+      added: 'Hinzugefügt am {date}',
+      lastUsed: 'Zuletzt verwendet am {date}',
+      neverUsed: 'Noch nicht verwendet',
+      remove: 'Entfernen',
+      removeLabel: 'Passkey {name} entfernen',
+      startText: 'Zum Hinzufügen bestätigst du mit deinem Passwort.',
+      start: 'Passkey hinzufügen',
+      name: 'Name des Passkeys',
+      nameHelp: 'Damit du deine Passkeys auseinanderhältst, zum Beispiel „Laptop“ oder „Handy“.',
+      create: 'Passkey erstellen',
+      unsupported:
+        'Dieser Browser kann keine Passkeys erstellen. Nutze einen aktuellen Browser mit eingeschaltetem JavaScript.',
+      cancelled: 'Es wurde kein Passkey erstellt. Versuch es noch einmal, wenn du so weit bist.',
+      limit: 'Du hast die Höchstzahl von {count} Passkeys.',
+    },
     sessions: {
       title: 'Angemeldete Geräte',
       text: 'API-Clients, die mit deinem Konto angemeldet sind.',
@@ -314,6 +342,8 @@ module.exports = {
     emailVerified: 'E-Mail-Adresse bestätigt',
     twoFactorEnabled: 'Zwei-Faktor-Anmeldung eingeschaltet',
     twoFactorDisabled: 'Zwei-Faktor-Anmeldung ausgeschaltet',
+    passkeyAdded: 'Passkey hinzugefügt',
+    passkeyRemoved: 'Passkey entfernt',
     recoveryCodeUsed: 'Wiederherstellungscode verwendet',
     sessionRevoked: 'Sitzung beendet',
     allSessionsRevoked: 'Überall abgemeldet',
@@ -391,6 +421,15 @@ module.exports = {
       subject: 'Zwei-Faktor-Anmeldung ausgeschaltet',
       intro:
         'für dein Konto wurde die Zwei-Faktor-Anmeldung ausgeschaltet. Die Anmeldung braucht jetzt nur noch das Passwort.',
+    },
+    passkeyAdded: {
+      subject: 'Ein Passkey wurde hinzugefügt',
+      intro:
+        'zu deinem Konto wurde der Passkey „{passkey}“ hinzugefügt. Bei der Anmeldung kann er jetzt den Code aus der Authenticator-App ersetzen.',
+    },
+    passkeyRemoved: {
+      subject: 'Ein Passkey wurde entfernt',
+      intro: 'von deinem Konto wurde ein Passkey entfernt.',
     },
   },
 };

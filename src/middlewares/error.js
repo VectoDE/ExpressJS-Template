@@ -1,8 +1,7 @@
 const ApiError = require('../utils/ApiError');
 const httpStatus = require('../utils/httpStatus');
-const config = require('../config/config');
 const logger = require('../config/logger');
-const { redactUrl } = require('../utils/redact');
+const { redactUrl, oneLine } = require('../utils/redact');
 const i18n = require('../i18n');
 
 const CSRF_MESSAGE = 'Security verification failed. Please reload the page and try again.';
@@ -25,10 +24,10 @@ const errorPage = (res, statusCode) => {
   return pages[statusCode] || pages[statusCode >= 500 ? 500 : 400];
 };
 
-const renderErrorView = (res, statusCode, stack) => {
+const renderErrorView = (res, statusCode) => {
   const page = errorPage(res, statusCode);
   res.status(statusCode);
-  return res.render('error/error', { title: page.heading, statusCode, page, stack }, (renderError, html) => {
+  return res.render('error/error', { title: page.heading, statusCode, page }, (renderError, html) => {
     if (renderError) {
       // Never fall through to Express' default page, which would print the template error and file paths.
       logger.error('Error page could not be rendered: %s', renderError.message);
@@ -77,13 +76,12 @@ const errorConverter = (err, req, res, next) => {
 const errorHandler = (err, req, res, next) => {
   const statusCode = err.statusCode || httpStatus.INTERNAL_SERVER_ERROR;
   const message = err.isOperational ? err.message : httpStatus.message(statusCode);
-  const showStack = config.env === 'development';
-
-  const url = redactUrl(req.originalUrl);
+  // Stack traces only go to the log, in every environment; clients get the request id to quote instead.
+  const line = oneLine(`${req.method} ${redactUrl(req.originalUrl)} -> ${statusCode}`);
   if (statusCode >= 500) {
-    logger.error('[%s] %s %s -> %d: %s', req.id, req.method, url, statusCode, (err.cause || err).stack || err.message);
+    logger.error('[%s] %s: %s', req.id, line, oneLine((err.cause || err).stack || err.message));
   } else {
-    logger.warn('[%s] %s %s -> %d: %s', req.id, req.method, url, statusCode, err.message);
+    logger.warn('[%s] %s: %s', req.id, line, oneLine(err.message));
   }
 
   if (res.headersSent) {
@@ -100,15 +98,11 @@ const errorHandler = (err, req, res, next) => {
   }
 
   if (isWebRequest(req)) {
-    return renderErrorView(res, statusCode, showStack ? err.stack : undefined);
+    return renderErrorView(res, statusCode);
   }
 
   // The request id lets support match a client report to the server log without exposing anything else.
-  const response = { code: statusCode, message, requestId: req.id };
-  if (showStack) {
-    response.stack = err.stack;
-  }
-  return res.status(statusCode).json(response);
+  return res.status(statusCode).json({ code: statusCode, message, requestId: req.id });
 };
 
 module.exports = {

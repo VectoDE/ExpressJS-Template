@@ -1,8 +1,7 @@
 const request = require('supertest');
 const app = require('../../src/app');
 const config = require('../../src/config/config');
-const User = require('../../src/models/user.model');
-const { useDatabase } = require('../helpers/db');
+const { useDatabase, db } = require('../helpers/db');
 const { browser } = require('../helpers/web');
 const { PASSWORD, createUser } = require('../helpers/fixtures');
 
@@ -41,7 +40,7 @@ describe('languages', () => {
     const client = browser(app);
     await client.submit('/login', { email: user.email, password: PASSWORD });
     await client.agent.get('/language/en?returnTo=%2Fdashboard').expect(302);
-    expect((await User.findById(user.id)).locale).toBe('en');
+    expect((await db.users.findById(user.id)).locale).toBe('en');
     const dashboard = await client.agent.get('/dashboard').set('Accept', 'text/html');
     expect(dashboard.text).toContain('Hello, ');
   });

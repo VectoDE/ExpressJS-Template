@@ -1,11 +1,8 @@
 const request = require('supertest');
 const app = require('../../src/app');
 const config = require('../../src/config/config');
-const User = require('../../src/models/user.model');
-const Token = require('../../src/models/token.model');
-const AuditEvent = require('../../src/models/auditEvent.model');
 const emailService = require('../../src/services/email.service');
-const { useDatabase } = require('../helpers/db');
+const { useDatabase, db, hasAuditEvent, expireTokens } = require('../helpers/db');
 const { browser } = require('../helpers/web');
 const { waitForMail, mailTo, tokenFrom, clearOutbox } = require('../helpers/mail');
 const { PASSWORD, createUser, tokensFor, bearer } = require('../helpers/fixtures');
@@ -59,15 +56,15 @@ describe('email verification (API)', () => {
 
     const token = tokenFrom(mail);
     await request(app).post('/v1/auth/verify-email').send({ token }).expect(204);
-    expect((await User.findById(res.body.user.id)).isEmailVerified).toBe(true);
+    expect((await db.users.findById(res.body.user.id)).isEmailVerified).toBe(true);
     await request(app).post('/v1/auth/verify-email').send({ token }).expect(400);
-    expect(await AuditEvent.exists({ user: res.body.user.id, type: 'emailVerified' })).toBeTruthy();
+    expect(await hasAuditEvent(res.body.user.id, 'emailVerified')).toBeTruthy();
   });
 
   it('stores only a hash of the token', async () => {
     await register().expect(201);
     const token = tokenFrom(await waitForMail(mailTo('mail.tester@example.com', 'verifyEmail')));
-    const stored = await Token.findOne({ type: 'verifyEmail' }).lean();
+    const stored = await db.tokens.find({ type: 'verifyEmail' });
     expect(stored.tokenHash).not.toBe(token);
     expect(stored.tokenHash).toMatch(/^[0-9a-f]{64}$/);
   });
@@ -154,7 +151,7 @@ describe('password reset (API)', () => {
     await request(app).post('/v1/auth/login').send({ email: user.email, password: NEW_PASSWORD }).expect(200);
     await waitForMail(mailTo(user.email, 'passwordChanged'));
 
-    const types = (await AuditEvent.find({ user: user.id }).lean()).map((event) => event.type);
+    const types = await db.audit.types(user.id);
     expect(types).toEqual(expect.arrayContaining(['passwordResetRequested', 'passwordReset']));
   });
 
@@ -174,7 +171,7 @@ describe('password reset (API)', () => {
     const user = await createUser();
     const token = tokenFrom(await resetMailFor(user.email));
     await request(app).post('/v1/auth/reset-password').send({ token, password: 'weak' }).expect(400);
-    await Token.updateMany({ type: 'resetPassword' }, { $set: { expires: new Date(Date.now() - 1000) } });
+    await expireTokens('resetPassword');
     expect((await request(app).post('/v1/auth/reset-password').send({ token, password: NEW_PASSWORD })).status).toBe(
       400
     );
@@ -228,11 +225,11 @@ describe('password reset and verification in the browser', () => {
 
     const page = await client.agent.get(`/verify-email?token=${token}`).set('Accept', 'text/html').expect(200);
     expect(page.text).toContain('action="/verify-email"');
-    expect((await User.findById(user.id)).isEmailVerified).toBe(false);
+    expect((await db.users.findById(user.id)).isEmailVerified).toBe(false);
 
     const res = await client.submit('/verify-email', { token }, `/verify-email?token=${token}`);
     expect(res.headers.location).toBe('/dashboard');
-    expect((await User.findById(user.id)).isEmailVerified).toBe(true);
+    expect((await db.users.findById(user.id)).isEmailVerified).toBe(true);
     const dashboard = await client.agent.get('/dashboard').set('Accept', 'text/html');
     expect(dashboard.text).not.toContain('action="/account/verification"');
   });

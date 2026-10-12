@@ -37,6 +37,8 @@ const MESSAGES = {
   accountLocked: () => ({ introVars: { minutes: Math.round(config.login.lockMs / 60000) }, notYou: true }),
   twoFactorEnabled: () => ({ notYou: true }),
   twoFactorDisabled: () => ({ notYou: true }),
+  passkeyAdded: ({ passkeyName }) => ({ introVars: { passkey: passkeyName }, notYou: true }),
+  passkeyRemoved: () => ({ notYou: true }),
 };
 
 const compose = async (template, { name, locale, ...data }) => {

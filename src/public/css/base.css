@@ -5,6 +5,11 @@
   box-sizing: border-box;
 }
 
+/* Hidden stays hidden, also on elements whose component sets a display value. */
+[hidden] {
+  display: none !important;
+}
+
 html {
   /* Set on the root as well: WebKit sometimes reports the body background as transparent on long pages. */
   background: var(--color-bg);

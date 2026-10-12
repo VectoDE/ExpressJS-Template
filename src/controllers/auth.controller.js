@@ -49,6 +49,19 @@ const loginTwoFactor = async (req, res) => {
   return issueTokens(req, res, user);
 };
 
+const passkeyOptions = async (req, res) => {
+  res.json(await authService.passkeyOptionsForChallenge(req.body.challengeToken));
+};
+
+const loginPasskey = async (req, res) => {
+  const { user } = await authService.loginWithPasskeyChallenge(
+    req.body.challengeToken,
+    req.body.response,
+    requestContext(req)
+  );
+  return issueTokens(req, res, user);
+};
+
 const logout = async (req, res) => {
   await authService.logout(req.body.refreshToken);
   res.status(httpStatus.NO_CONTENT).send();
@@ -89,6 +102,8 @@ module.exports = {
   register,
   login,
   loginTwoFactor,
+  passkeyOptions,
+  loginPasskey,
   logout,
   refreshTokens,
   sendVerificationEmail,

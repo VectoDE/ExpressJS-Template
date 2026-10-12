@@ -66,7 +66,7 @@
     const blocks = [...document.querySelectorAll('[data-reveal]')];
     // Siblings that appear together are staggered; nested lists get their own sequence.
     blocks.forEach((block) => {
-      const siblings = [...block.parentElement.children].filter((child) => child.hasAttribute('data-reveal'));
+      const siblings = [...block.parentElement.children].filter((child) => 'reveal' in child.dataset);
       block.style.setProperty('--i', String(Math.min(siblings.indexOf(block), 5)));
       indexChildren(block.querySelectorAll('.check-list li, .terminal__line, .session-list__item, .timeline__item'));
     });

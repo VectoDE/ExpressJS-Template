@@ -1,18 +1,20 @@
 const config = require('../config/config');
 const logger = require('../config/logger');
 const { tokenTypes } = require('../config/tokens');
-const User = require('../models/user.model');
+const db = require('../db');
 const ApiError = require('../utils/ApiError');
 const httpStatus = require('../utils/httpStatus');
-const { burnPasswordCheck, hashPassword, needsRehash } = require('../utils/password');
+const { burnPasswordCheck, comparePassword, hashPassword, needsRehash } = require('../utils/password');
 const userService = require('./user.service');
 const tokenService = require('./token.service');
 const twoFactorService = require('./twoFactor.service');
+const passkeyService = require('./passkey.service');
 const auditService = require('./audit.service');
 const emailService = require('./email.service');
 
 const INVALID_CREDENTIALS = 'Incorrect email or password';
 const INVALID_CODE = 'Invalid two-factor code';
+const INVALID_PASSKEY = 'Invalid passkey';
 const INVALID_LINK = 'Invalid or expired link';
 
 const isLocked = (user) => user.lockUntil?.getTime() > Date.now();
@@ -40,39 +42,32 @@ const registerUser = async ({ name, email, password, locale }, context = {}) => 
 
 const verifyEmail = async (token, context = {}) => {
   const tokenDoc = await tokenService.consumeEmailToken(token, tokenTypes.VERIFY_EMAIL);
-  const user = tokenDoc && (await userService.getUserById(tokenDoc.user));
+  const user = tokenDoc && (await userService.getUserById(tokenDoc.userId));
   if (user?.email !== tokenDoc?.email || !user) {
     throw new ApiError(httpStatus.BAD_REQUEST, INVALID_LINK);
   }
   if (!user.isEmailVerified) {
-    await User.updateOne({ _id: user._id }, { $set: { isEmailVerified: true } });
+    await db.users.update(user.id, { isEmailVerified: true });
     user.isEmailVerified = true;
-    await auditService.record(user._id, 'emailVerified', context);
+    await auditService.record(user.id, 'emailVerified', context);
   }
   return user;
 };
 
 // Atomic counter, so parallel guesses cannot slip past the limit. Password and 2FA failures count together.
 const recordFailure = async (user, context) => {
-  await auditService.record(user._id, 'loginFailed', context);
-  const updated = await User.findOneAndUpdate(
-    { _id: user._id },
-    { $inc: { failedLoginAttempts: 1 } },
-    { returnDocument: 'after', projection: { failedLoginAttempts: 1 } }
-  );
-  if (updated?.failedLoginAttempts >= config.login.maxAttempts) {
-    await User.updateOne(
-      { _id: user._id },
-      { $set: { failedLoginAttempts: 0, lockUntil: new Date(Date.now() + config.login.lockMs) } }
-    );
-    logger.warn('Account %s locked after %d failed logins', user.id, updated.failedLoginAttempts);
-    await auditService.record(user._id, 'accountLocked', context);
+  await auditService.record(user.id, 'loginFailed', context);
+  const attempts = await db.users.incrementFailedLogins(user.id);
+  if (attempts >= config.login.maxAttempts) {
+    await db.users.update(user.id, { failedLoginAttempts: 0, lockUntil: new Date(Date.now() + config.login.lockMs) });
+    logger.warn('Account %s locked after %d failed logins', user.id, attempts);
+    await auditService.record(user.id, 'accountLocked', context);
     emailService.notify(user, 'accountLocked');
   }
 };
 
 const clearFailures = async (user, extra = {}) => {
-  await User.updateOne({ _id: user._id }, { $set: { failedLoginAttempts: 0, ...extra }, $unset: { lockUntil: 1 } });
+  await db.users.update(user.id, { failedLoginAttempts: 0, lockUntil: null, ...extra });
 };
 
 /**
@@ -81,14 +76,14 @@ const clearFailures = async (user, extra = {}) => {
  * Returns the user and whether a second factor is still needed.
  */
 const login = async (email, password, context = {}) => {
-  const user = await userService.getUserByEmail(email, { withSecrets: true });
+  const user = await userService.getUserByEmail(email);
   if (!user) {
     await burnPasswordCheck(password);
     throw new ApiError(httpStatus.UNAUTHORIZED, INVALID_CREDENTIALS);
   }
 
   const locked = isLocked(user);
-  const matches = await user.isPasswordMatch(password);
+  const matches = await comparePassword(password, user.password);
   if (locked || !matches) {
     if (!locked) {
       await recordFailure(user, context);
@@ -101,7 +96,7 @@ const login = async (email, password, context = {}) => {
   if (twoFactorRequired) {
     // The counter is cleared only after a valid code. Otherwise a correct password between wrong codes
     // would reset it and the lockout would never stop code guessing.
-    if (rehash.password) await User.updateOne({ _id: user._id }, { $set: rehash });
+    if (rehash.password) await db.users.update(user.id, rehash);
   } else {
     await clearFailures(user, rehash);
   }
@@ -115,7 +110,7 @@ const login = async (email, password, context = {}) => {
   }
 
   if (!twoFactorRequired) {
-    await auditService.record(user._id, 'login', context);
+    await auditService.record(user.id, 'login', context);
   }
   return { user, twoFactorRequired };
 };
@@ -124,7 +119,7 @@ const login = async (email, password, context = {}) => {
  * Second sign-in step. A wrong code counts as a failed sign-in, so the lockout also limits code guessing.
  */
 const completeTwoFactorLogin = async (userId, code, context = {}) => {
-  const user = await User.findById(userId).select('+twoFactor +failedLoginAttempts +lockUntil');
+  const user = await db.users.findById(userId);
   if (!user?.twoFactor?.enabled || isLocked(user)) {
     throw new ApiError(httpStatus.UNAUTHORIZED, INVALID_CODE);
   }
@@ -135,20 +130,57 @@ const completeTwoFactorLogin = async (userId, code, context = {}) => {
   }
   await clearFailures(user);
   if (result.recoveryCodeUsed) {
-    await auditService.record(user._id, 'recoveryCodeUsed', context);
+    await auditService.record(user.id, 'recoveryCodeUsed', context);
   }
-  await auditService.record(user._id, 'login', context);
+  await auditService.record(user.id, 'login', context);
   return { user, ...result };
 };
 
+/**
+ * Second sign-in step with a passkey instead of a code. A rejected passkey counts as a failed sign-in, like a
+ * wrong code.
+ */
+const completePasskeyLogin = async (userId, response, context = {}) => {
+  const user = await db.users.findById(userId);
+  if (!user?.twoFactor?.enabled || isLocked(user)) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, INVALID_PASSKEY);
+  }
+  if (!(await passkeyService.verifyAssertion(user, response))) {
+    await recordFailure(user, context);
+    throw new ApiError(httpStatus.UNAUTHORIZED, INVALID_PASSKEY);
+  }
+  await clearFailures(user);
+  await auditService.record(user.id, 'login', context);
+  return { user, recoveryCodeUsed: false };
+};
+
 // API variant: the challenge token from the first step proves the password; a credential change voids it.
-const loginWithTwoFactorChallenge = async (challengeToken, code, context = {}) => {
+const userOfChallenge = async (challengeToken) => {
   const payload = tokenService.decodeToken(challengeToken, tokenTypes.TWO_FACTOR);
   const user = await userService.getUserById(payload.sub);
   if (!user || tokenService.issuedBeforeCredentialChange(payload, user)) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid or expired token');
   }
+  return user;
+};
+
+const loginWithTwoFactorChallenge = async (challengeToken, code, context = {}) => {
+  const user = await userOfChallenge(challengeToken);
   return completeTwoFactorLogin(user.id, code, context);
+};
+
+const passkeyOptionsForChallenge = async (challengeToken) => {
+  const user = await userOfChallenge(challengeToken);
+  const options = await passkeyService.authenticationOptions(user.id);
+  if (!options) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'No passkey registered');
+  }
+  return options;
+};
+
+const loginWithPasskeyChallenge = async (challengeToken, response, context = {}) => {
+  const user = await userOfChallenge(challengeToken);
+  return completePasskeyLogin(user.id, response, context);
 };
 
 const logout = async (refreshToken) => {
@@ -186,7 +218,7 @@ const requestPasswordReset = (email, context = {}) => {
     }
     const expires = new Date(Date.now() + config.auth.resetPasswordExpirationMinutes * 60 * 1000);
     const token = await tokenService.createEmailToken(user, tokenTypes.RESET_PASSWORD, expires);
-    await auditService.record(user._id, 'passwordResetRequested', context);
+    await auditService.record(user.id, 'passwordResetRequested', context);
     emailService.notify(user, 'resetPassword', { token });
   };
   run().catch((error) => logger.error('Password reset could not be started: %s', error.message));
@@ -198,17 +230,15 @@ const requestPasswordReset = (email, context = {}) => {
  */
 const resetPassword = async (token, password, context = {}) => {
   const tokenDoc = await tokenService.consumeEmailToken(token, tokenTypes.RESET_PASSWORD);
-  const user = tokenDoc && (await User.findById(tokenDoc.user).select('+password'));
-  if (!user) {
+  const found = tokenDoc && (await userService.getUserById(tokenDoc.userId));
+  if (!found) {
     throw new ApiError(httpStatus.BAD_REQUEST, INVALID_LINK);
   }
-  user.password = password;
-  user.isEmailVerified = true;
-  await user.save();
+  const { user } = await userService.saveChanges(found, { password, isEmailVerified: true });
   await clearFailures(user);
   await tokenService.revokeAllForUser(user.id);
   await tokenService.removeEmailTokens(user.id, tokenTypes.RESET_PASSWORD);
-  await auditService.record(user._id, 'passwordReset', context);
+  await auditService.record(user.id, 'passwordReset', context);
   emailService.notify(user, 'passwordChanged');
   return user;
 };
@@ -219,7 +249,10 @@ module.exports = {
   verifyEmail,
   login,
   completeTwoFactorLogin,
+  completePasskeyLogin,
   loginWithTwoFactorChallenge,
+  passkeyOptionsForChallenge,
+  loginWithPasskeyChallenge,
   logout,
   refreshAuth,
   requestPasswordReset,

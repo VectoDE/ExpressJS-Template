@@ -25,15 +25,21 @@ const fillSecrets = (text) =>
 
 const main = () => {
   const target = path.join(ROOT, '.env');
-  if (fs.existsSync(target)) {
+  const example = fs.readFileSync(path.join(ROOT, '.env.example'), 'utf8');
+  try {
+    // wx creates the file or fails if it exists, in one step, so an existing .env is never overwritten.
+    fs.writeFileSync(target, fillSecrets(example), { flag: 'wx', mode: 0o600 });
+  } catch (error) {
+    if (error.code !== 'EEXIST') {
+      throw error;
+    }
     process.stdout.write('.env already exists, nothing changed.\n');
     return;
   }
-  const example = fs.readFileSync(path.join(ROOT, '.env.example'), 'utf8');
-  // wx fails instead of overwriting if the file appeared in the meantime.
-  fs.writeFileSync(target, fillSecrets(example), { flag: 'wx', mode: 0o600 });
   process.stdout.write(`.env created with new values for ${SECRETS.join(', ')}.\n`);
-  process.stdout.write('Next: start MongoDB, then "npm run create-admin" and "npm run dev".\n');
+  process.stdout.write(
+    'Next: "npm run create-admin" and "npm run dev". Without DATABASE_URL the data goes to data/app.db.\n'
+  );
 };
 
 if (require.main?.filename === __filename) {

@@ -5,10 +5,64 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+Major release: the template now runs on MongoDB and on every common SQL database. See
+[upgrading](docs/upgrading.md#upgrading-to-40).
+
+### Changed
+
+- **Breaking:** Mongoose is gone. Services use the data layer in `src/db`, which talks to MongoDB through the
+  official driver or to PostgreSQL, MySQL, MariaDB, SQLite, SQL Server and Oracle through Knex. `DATABASE_URL`
+  picks the database; `MONGODB_URI` and `MONGODB_DB_NAME` keep working when it is not set.
+- **Breaking:** Without any database setting the app now uses the SQLite file `data/app.db` instead of
+  `mongodb://127.0.0.1:27017`.
+- **Breaking:** Browser sessions moved to the collection or table `web_sessions` with a new encryption format.
+  Everybody signed in has to sign in once more after the update.
+- SQL databases get their schema from versioned migrations that run on start.
+- `npm run generate` writes a migration instead of a Mongoose model; the resource works on every database.
+- `RATE_LIMIT_STORE=database` shares rate limits through the configured database. `mongo` still works.
+- `npm test` uses an in-memory SQLite database. `TEST_DATABASE_URL` runs the suite against any other database.
+- The Docker image has one writable folder, `/app/data`, for SQLite.
+- Error pages no longer show a stack trace, also not in development; the log has it.
+- Docker Compose and the dev container use MongoDB 9.0; existing 8.x volumes need the upgrade steps in
+  [upgrading](docs/upgrading.md#mongodb-9-in-docker-compose) (#19).
+- The Docker image, the dev container and `.nvmrc` use Node.js 26. CI tests Node.js 22, 24 and 26 (#18).
+
+### Security
+
+- `npm run create-admin` refuses to promote an account whose email address is not verified, unless `--force`
+  is given (#12).
+- Redirect targets are rebuilt from a list of known pages instead of being passed through.
+- Log lines cannot be split by line breaks in logged values.
+- `npm run setup` creates `.env` in one step, so it never overwrites a file created at the same moment.
+- The Scorecard workflow runs with read-only permissions at the top level.
+
+### Added
+
+- Passkeys (WebAuthn) as a second factor next to the authenticator app, in the API and on the account page, stored
+  in every supported database. Adding one needs two-factor sign-in; at sign-in a passkey replaces the code (#21).
+- CI job "Database": the full test suite against MongoDB, PostgreSQL, MySQL, MariaDB, SQL Server and Oracle,
+  plus a generated resource on each.
+- Contract tests for the data layer that every adapter has to pass.
+- Property-based tests with fast-check that feed random input to the redirect check, the sanitizer, LIKE patterns,
+  TOTP, encryption, log lines, ids and form fields.
+- `MIGRATION_DATABASE_URL` and `npm run migrate`: the running app can use a database account without the right to
+  change the schema (#22).
+- `npm run copy-database` copies accounts, second factors, activity and valid tokens between any two supported
+  databases, keeping ids and password hashes (#20).
+- Static preview of every page in English and German on GitHub Pages (`npm run build:preview`).
+- Signed releases: source archive, CycloneDX SBOM and Docker image on ghcr.io with build provenance
+  (Sigstore), verifiable with `gh attestation verify`.
+- DCO sign-off check on pull requests, governance, assurance case and roadmap.
+
+### Fixed
+
+- Checking a one-time code at the very start of the Unix epoch threw instead of answering; found by the new
+  property tests.
+
 ## [3.0.0] - 2026-10-11
 
-Security release with a full audit. See [upgrading](upgrading.md) for migration steps and
-[security](security.md) for every finding.
+Security release with a full audit. See [upgrading](docs/upgrading.md) for migration steps and
+[security](docs/security.md) for every finding.
 
 ### Security
 

@@ -7,6 +7,7 @@ dotenv.config({ path: path.join(__dirname, '../../.env'), quiet: true });
 
 const flag = () => Joi.boolean().truthy('true', '1').falsy('false', '0');
 const secret = () => Joi.string().min(32).max(512);
+const DATABASE_SCHEMES = /^(mongodb(\+srv)?|postgres(ql)?|mysql|mariadb|sqlite|mssql|sqlserver|oracle):/i;
 const PLACEHOLDER = /change-?me|changeme|secret|example|placeholder|^(.)\1+$/i;
 
 const withoutTrailingSlash = (url) => {
@@ -18,12 +19,14 @@ const withoutTrailingSlash = (url) => {
 const envSchema = Joi.object({
   NODE_ENV: Joi.string().valid('production', 'development', 'test').default('development'),
   PORT: Joi.number().port().default(8080),
-  MONGODB_URI: Joi.string()
-    .uri({ scheme: ['mongodb', 'mongodb+srv'] })
-    .default('mongodb://127.0.0.1:27017/expressjs_template'),
-  MONGODB_DB_NAME: Joi.string()
-    .pattern(/^[A-Za-z0-9_-]{1,63}$/)
-    .default('expressjs_template'),
+  // Picks the database, see src/db/index.js. MONGODB_URI and MONGODB_DB_NAME are the names from version 3.0.
+  DATABASE_URL: Joi.string().pattern(DATABASE_SCHEMES, 'supported database URL'),
+  // Account with the right to change the schema. When set, the app only checks the schema and `npm run migrate`
+  // applies changes with this account, so the running app can use one without DDL rights.
+  MIGRATION_DATABASE_URL: Joi.string().pattern(DATABASE_SCHEMES, 'supported database URL'),
+  MONGODB_URI: Joi.string().uri({ scheme: ['mongodb', 'mongodb+srv'] }),
+  DATABASE_NAME: Joi.string().pattern(/^[A-Za-z0-9_-]{1,63}$/),
+  MONGODB_DB_NAME: Joi.string().pattern(/^[A-Za-z0-9_-]{1,63}$/),
   JWT_SECRET: secret(),
   JWT_ISSUER: Joi.string().max(200).default('expressjs-template'),
   JWT_AUDIENCE: Joi.string().max(200).default('expressjs-template-api'),
@@ -61,7 +64,8 @@ const envSchema = Joi.object({
     .min(1)
     .max(24 * 60)
     .default(15),
-  RATE_LIMIT_STORE: Joi.string().valid('memory', 'mongo').default('memory'),
+  // database shares the counters between app instances; mongo is the name from version 3.0.
+  RATE_LIMIT_STORE: Joi.string().valid('memory', 'database', 'mongo').default('memory'),
   APP_NAME: Joi.string().trim().min(1).max(60).default('Express.js Template'),
   APP_URL: Joi.string().uri({ scheme: ['http', 'https'] }),
   DEFAULT_LOCALE: Joi.string().valid('en', 'de').default('en'),
@@ -160,13 +164,13 @@ module.exports = {
   cors: {
     origins: corsOrigins,
   },
-  mongoose: {
-    url: envVars.MONGODB_URI,
-    options: {
-      dbName: envVars.MONGODB_DB_NAME,
-      autoIndex: true,
-      serverSelectionTimeoutMS: 10000,
-    },
+  database: {
+    url: envVars.DATABASE_URL || envVars.MONGODB_URI || 'sqlite:data/app.db',
+    // Database name for MongoDB; SQL databases take it from the URL.
+    name: envVars.DATABASE_NAME || envVars.MONGODB_DB_NAME || 'expressjs_template',
+    migrationUrl: envVars.MIGRATION_DATABASE_URL,
+    // Without a separate migration account the app brings the schema up to date itself on start.
+    migrateOnStart: !envVars.MIGRATION_DATABASE_URL,
   },
   jwt: {
     secret: secretOrRandom('JWT_SECRET'),
@@ -205,7 +209,7 @@ module.exports = {
     token: envVars.METRICS_TOKEN,
   },
   rateLimit: {
-    store: envVars.RATE_LIMIT_STORE,
+    store: envVars.RATE_LIMIT_STORE === 'memory' ? 'memory' : 'database',
     windowMs: envVars.RATE_LIMIT_WINDOW_MINUTES * 60 * 1000,
     max: envVars.RATE_LIMIT_MAX,
     authMax: envVars.AUTH_RATE_LIMIT_MAX,

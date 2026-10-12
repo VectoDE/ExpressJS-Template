@@ -1,4 +1,4 @@
-const User = require('../models/user.model');
+const db = require('../db');
 const ApiError = require('../utils/ApiError');
 const httpStatus = require('../utils/httpStatus');
 const { comparePassword } = require('../utils/password');
@@ -8,6 +8,7 @@ const userService = require('./user.service');
 const auditService = require('./audit.service');
 const emailService = require('./email.service');
 const twoFactorService = require('./twoFactor.service');
+const passkeyService = require('./passkey.service');
 const authService = require('./auth.service');
 
 /**
@@ -16,7 +17,7 @@ const authService = require('./auth.service');
  */
 
 const loadWithPassword = async (userId) => {
-  const user = await User.findById(userId).select('+password +twoFactor');
+  const user = await db.users.findById(userId);
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
@@ -30,13 +31,14 @@ const confirmPassword = async (user, password) => {
 };
 
 const exportData = async (userId) => {
-  const user = await User.findById(userId).select('+twoFactor');
+  const user = await db.users.findById(userId);
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
-  const [sessions, activity] = await Promise.all([
+  const [sessions, activity, passkeys] = await Promise.all([
     tokenService.listSessions(userId),
     auditService.listForUser(userId, 1000),
+    passkeyService.list(userId),
   ]);
   return {
     exportedAt: new Date().toISOString(),
@@ -53,11 +55,13 @@ const exportData = async (userId) => {
       credentialsChangedAt: user.credentialsChangedAt,
     },
     twoFactor: twoFactorService.status(user),
+    passkeys,
     activeApiSessions: sessions,
     activity,
     notes: [
       'The password is stored only as a scrypt hash and is not part of this export.',
       'The two-factor secret is stored encrypted and recovery codes only as hashes; neither is exported.',
+      'Passkeys are listed by name; their public keys only work for this site and are not exported.',
       'Browser sessions are stored encrypted and expire after inactivity.',
     ],
   };
@@ -72,43 +76,41 @@ const updateProfile = async (userId, { currentPassword, ...changes }, context = 
   if (changes.email || changes.password) {
     await confirmPassword(user, currentPassword);
   }
-  if (changes.email && (await User.isEmailTaken(changes.email, userId))) {
+  if (changes.email && (await userService.isEmailTaken(changes.email, userId))) {
     throw new ApiError(httpStatus.CONFLICT, 'Email already taken');
   }
   const previousEmail = user.email;
+  const update = {};
   ['name', 'email', 'password', 'locale'].forEach((field) => {
     if (changes[field] !== undefined) {
-      user[field] = changes[field];
+      update[field] = changes[field];
     }
   });
-  const emailChanged = user.isModified('email');
-  const passwordChanged = user.isModified('password');
-  if (emailChanged) {
-    user.isEmailVerified = false;
-  }
-  await user.save();
+  const saved = await userService.saveChanges(user, update);
+  const { emailChanged, passwordChanged } = saved;
+  const updated = saved.user;
 
   if (emailChanged || passwordChanged) {
-    await tokenService.revokeAllForUser(user.id);
+    await tokenService.revokeAllForUser(updated.id);
   }
   if (emailChanged) {
-    await tokenService.removeEmailTokens(user.id, tokenTypes.RESET_PASSWORD);
-    await auditService.record(user._id, 'emailChanged', context);
-    emailService.notify(user, 'emailChanged', { to: previousEmail, newEmail: user.email });
-    await authService.sendVerificationEmail(user);
+    await tokenService.removeEmailTokens(updated.id, tokenTypes.RESET_PASSWORD);
+    await auditService.record(updated.id, 'emailChanged', context);
+    emailService.notify(updated, 'emailChanged', { to: previousEmail, newEmail: updated.email });
+    await authService.sendVerificationEmail(updated);
   }
   if (passwordChanged) {
-    await auditService.record(user._id, 'passwordChanged', context);
-    emailService.notify(user, 'passwordChanged');
+    await auditService.record(updated.id, 'passwordChanged', context);
+    emailService.notify(updated, 'passwordChanged');
   }
-  return user;
+  return updated;
 };
 
 const setLocale = async (userId, locale) => {
-  if (!User.LOCALES.includes(locale)) {
+  if (!userService.LOCALES.includes(locale)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Unsupported locale');
   }
-  await User.updateOne({ _id: userId }, { $set: { locale } });
+  await db.users.update(userId, { locale });
 };
 
 const listSessions = (userId) => tokenService.listSessions(userId);
@@ -126,9 +128,9 @@ const revokeSession = async (userId, sessionId, context = {}) => {
  */
 const revokeAllSessions = async (userId, context = {}) => {
   await tokenService.revokeAllForUser(userId);
-  await User.updateOne({ _id: userId }, { $set: { credentialsChangedAt: new Date() } });
+  await db.users.update(userId, { credentialsChangedAt: new Date() });
   await auditService.record(userId, 'allSessionsRevoked', context);
-  return User.findById(userId);
+  return db.users.findById(userId);
 };
 
 const listActivity = (userId, limit = 20) => auditService.listForUser(userId, limit);

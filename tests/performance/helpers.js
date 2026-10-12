@@ -1,10 +1,9 @@
 /**
- * Test data for the load test. Must be required after the environment (secrets, MONGODB_URI) is set,
+ * Test data for the load test. Must be required after the environment (secrets, DATABASE_URL) is set,
  * because tokens are signed with the same configuration the server uses.
  */
-const os = require('node:os');
-const mongoose = require('mongoose');
-const User = require('../../src/models/user.model');
+const db = require('../../src/db');
+const { newId } = require('../../src/utils/id');
 const tokenService = require('../../src/services/token.service');
 const { hashPassword } = require('../../src/utils/password');
 
@@ -26,35 +25,35 @@ const csrfFrom = (html) => {
   return match[1];
 };
 
-const inBatches = async (count, size, fn) => {
-  const results = [];
-  for (let i = 0; i < count; i += size) {
-    results.push(...(await Promise.all(Array.from({ length: Math.min(size, count - i) }, (_, j) => fn(i + j)))));
+// Runs fn(0..count-1) in batches of `size`, one batch after the other.
+const inBatches = async (count, size, fn, start = 0) => {
+  if (start >= count) {
+    return [];
   }
-  return results;
+  const batch = await Promise.all(Array.from({ length: Math.min(size, count - start) }, (_, j) => fn(start + j)));
+  return [...batch, ...(await inBatches(count, size, fn, start + size))];
 };
 
 const createHelpers = async (base) => {
-  await mongoose.connect(process.env.MONGODB_URI, { dbName: process.env.MONGODB_DB_NAME, runtimeAdapters: { os } });
+  await db.connect();
   const passwordHash = await hashPassword(PASSWORD);
   let counter = 0;
 
   // One precomputed hash for all seeded users keeps preparation fast; logins still run the full scrypt check.
-  const createUsers = async (count, role = 'user') => {
-    const now = new Date(Math.floor(Date.now() / 1000) * 1000 - 2000);
-    const docs = Array.from({ length: count }, () => {
+  const createUsers = (count, role = 'user') =>
+    inBatches(count, 50, async () => {
       counter += 1;
-      return {
+      const user = await db.users.create({
+        id: newId(),
         name: `Perf User ${counter}`,
         email: `perf-${process.pid}-${counter}@example.com`,
         password: passwordHash,
         role,
-        credentialsChangedAt: now,
-      };
+        isEmailVerified: true,
+        locale: 'en',
+      });
+      return { id: user.id, email: user.email, doc: user };
     });
-    const inserted = await User.insertMany(docs);
-    return inserted.map((doc) => ({ id: doc.id, email: doc.email, doc }));
-  };
 
   const signedIn = async (role) => {
     const [user] = await createUsers(1, role);
@@ -108,7 +107,7 @@ const createHelpers = async (base) => {
     return inBatches(count, 4, (i) => webSessionFor(users[i]));
   };
 
-  const close = () => mongoose.disconnect();
+  const close = () => db.disconnect();
 
   return {
     PASSWORD,

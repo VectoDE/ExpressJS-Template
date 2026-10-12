@@ -1,8 +1,7 @@
 const crypto = require('node:crypto');
-const mongoose = require('mongoose');
 const { renderSVG } = require('uqr');
 const config = require('../config/config');
-const User = require('../models/user.model');
+const db = require('../db');
 const ApiError = require('../utils/ApiError');
 const httpStatus = require('../utils/httpStatus');
 const totp = require('../utils/totp');
@@ -33,7 +32,7 @@ const hashRecoveryCode = (code) =>
   );
 
 const loadUser = async (userId) => {
-  const user = await User.findById(userId).select('+password +twoFactor');
+  const user = await db.users.findById(userId);
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
@@ -59,7 +58,7 @@ const startSetup = async (userId, password) => {
   }
   const secret = totp.generateSecret();
   user.twoFactor = { enabled: false, pendingSecret: encrypt(secret), recoveryCodes: [], lastUsedStep: -1 };
-  await user.save();
+  await db.users.update(user.id, { twoFactor: user.twoFactor });
   return describeSecret(user, secret);
 };
 
@@ -91,8 +90,8 @@ const enable = async (userId, code, context = {}) => {
     recoveryCodes: recoveryCodes.map((code) => hashRecoveryCode(code)),
     enabledAt: new Date(),
   };
-  await user.save();
-  await auditService.record(user._id, 'twoFactorEnabled', context);
+  await db.users.update(user.id, { twoFactor: user.twoFactor });
+  await auditService.record(user.id, 'twoFactorEnabled', context);
   emailService.notify(user, 'twoFactorEnabled');
   return recoveryCodes;
 };
@@ -111,19 +110,11 @@ const verifyCode = async (user, code = '') => {
     if (step === null) {
       return { ok: false };
     }
-    const { modifiedCount } = await User.updateOne(
-      { _id: user._id, 'twoFactor.lastUsedStep': mongoose.trusted({ $lt: step }) },
-      { $set: { 'twoFactor.lastUsedStep': step } }
-    );
-    return { ok: modifiedCount === 1, recoveryCodeUsed: false };
+    return { ok: await db.users.advanceTotpStep(user.id, step), recoveryCodeUsed: false };
   }
   const hash = hashRecoveryCode(value);
-  const { modifiedCount } = await User.updateOne(
-    { _id: user._id, 'twoFactor.recoveryCodes': hash },
-    { $pull: { 'twoFactor.recoveryCodes': hash } }
-  );
   return {
-    ok: modifiedCount === 1,
+    ok: await db.users.useRecoveryCode(user.id, hash),
     recoveryCodeUsed: true,
     remainingRecoveryCodes: Math.max(user.twoFactor.recoveryCodes.length - 1, 0),
   };
@@ -144,11 +135,10 @@ const disable = async (userId, { password, code }, context = {}) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Two-factor authentication is not enabled');
   }
   await requireCode(user, code);
-  await User.updateOne(
-    { _id: user._id },
-    { $set: { twoFactor: { enabled: false, recoveryCodes: [], lastUsedStep: -1 } } }
-  );
-  await auditService.record(user._id, 'twoFactorDisabled', context);
+  await db.users.update(user.id, { twoFactor: { enabled: false, recoveryCodes: [], lastUsedStep: -1 } });
+  // Passkeys are a second factor next to the codes; without two-factor sign-in they would never be asked for.
+  await db.passkeys.removeForUser(user.id);
+  await auditService.record(user.id, 'twoFactorDisabled', context);
   emailService.notify(user, 'twoFactorDisabled');
 };
 
@@ -159,10 +149,9 @@ const regenerateRecoveryCodes = async (userId, code) => {
   }
   await requireCode(user, code);
   const recoveryCodes = newRecoveryCodes();
-  await User.updateOne(
-    { _id: user._id },
-    { $set: { 'twoFactor.recoveryCodes': recoveryCodes.map((code) => hashRecoveryCode(code)) } }
-  );
+  await db.users.update(user.id, {
+    twoFactor: { ...user.twoFactor, recoveryCodes: recoveryCodes.map((code) => hashRecoveryCode(code)) },
+  });
   return recoveryCodes;
 };
 
@@ -183,5 +172,6 @@ module.exports = {
   regenerateRecoveryCodes,
   status,
   loadUser,
+  confirmPassword,
   RECOVERY_CODE_COUNT,
 };

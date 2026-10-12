@@ -8,7 +8,10 @@ when `API_DOCS_ENABLED` is on (default outside production). Without it both path
 1. `POST /v1/auth/login` (or `/register`) returns an access token (15 minutes) and a refresh token (7 days).
 2. With two-factor sign-in on, `/login` returns `twoFactorRequired`, a short-lived `challengeToken` and
    `expiresIn` (seconds) instead. Send `challengeToken` and a code from the app or a recovery code to
-   `POST /v1/auth/login/2fa` to get the tokens.
+   `POST /v1/auth/login/2fa` to get the tokens. Accounts with a passkey can answer with it instead: get options
+   from `POST /v1/auth/login/passkey/options` with the `challengeToken`, pass them to
+   `navigator.credentials.get()` and send the JSON form of the result as `response` together with the
+   `challengeToken` to `POST /v1/auth/login/passkey`.
 3. Send the access token as `Authorization: Bearer <token>`.
 4. When it expires, call `POST /v1/auth/refresh-tokens`. You get a new pair; the old refresh token is spent.
 5. Presenting a spent refresh token again ends every API session of that user. Treat it as theft.
@@ -62,6 +65,10 @@ of a user with the `manageUsers` right (role `admin`).
 | POST   | `/v1/account/2fa/enable`           | bearer token + code            | auth       | Confirm setup, returns ten recovery codes once                |
 | POST   | `/v1/account/2fa/disable`          | bearer token + password + code | auth       | Turn two-factor sign-in off                                   |
 | POST   | `/v1/account/2fa/recovery-codes`   | bearer token + code            | auth       | Replace all recovery codes                                    |
+| GET    | `/v1/account/passkeys`             | bearer token                   | general    | List passkeys (name and dates, no key material)               |
+| POST   | `/v1/account/passkeys/options`     | bearer token + password        | auth       | Start adding a passkey, needs two-factor sign-in on           |
+| POST   | `/v1/account/passkeys`             | bearer token + credential      | auth       | Store the passkey created with those options                  |
+| DELETE | `/v1/account/passkeys/:passkeyId`  | bearer token                   | general    | Remove a passkey                                              |
 | GET    | `/v1/users`                        | admin                          | general    | List users, `limit` ≤ 100, `sortBy` from an allow-list        |
 | POST   | `/v1/users`                        | admin                          | general    | Create a user with a role                                     |
 | GET    | `/v1/users/:userId`                | admin                          | general    | Read a user                                                   |
@@ -69,7 +76,8 @@ of a user with the `manageUsers` right (role `admin`).
 | DELETE | `/v1/users/:userId`                | admin                          | general    | Delete a user                                                 |
 
 Changing email or password through `PATCH /v1/account` requires `currentPassword` in the same body.
-Wrong 2FA codes on `/v1/auth/login/2fa` count towards the account lockout. When a recovery code was used,
+Wrong 2FA codes on `/v1/auth/login/2fa` and rejected passkeys on `/v1/auth/login/passkey` count towards the
+account lockout. When a recovery code was used,
 the response carries the number left in `X-Recovery-Codes-Remaining`.
 
 Admins cannot change their own role or delete their own account through `/v1/users`, so the last admin
@@ -90,6 +98,7 @@ with the `manageUsers` right.
 | POST   | `/login`, `/register`                 | guests              | auth       | Sign in or sign up, new session id                       |
 | GET    | `/login/2fa`                          | guests, pending 2FA | general    | Form for the second factor after the password step       |
 | POST   | `/login/2fa`                          | guests, pending 2FA | auth       | Finish the sign-in with a code or recovery code          |
+| POST   | `/login/2fa/passkey`                  | guests, pending 2FA | auth       | Finish the sign-in with a passkey                        |
 | POST   | `/logout`                             | signed in           | general    | End the session                                          |
 | GET    | `/forgot-password`                    | guests              | general    | Form                                                     |
 | POST   | `/forgot-password`                    | guests              | email      | Request a reset link                                     |
@@ -106,6 +115,9 @@ with the `manageUsers` right.
 | POST   | `/account/2fa/enable`                 | signed in           | auth       | Confirm the setup with a code, shows recovery codes once |
 | POST   | `/account/2fa/disable`                | signed in           | auth       | Turn 2FA off with password and code                      |
 | POST   | `/account/2fa/recovery-codes`         | signed in           | auth       | Replace all recovery codes                               |
+| POST   | `/account/passkeys/options`           | signed in           | auth       | Start adding a passkey with password confirmation        |
+| POST   | `/account/passkeys`                   | signed in           | auth       | Store the passkey the browser created                    |
+| POST   | `/account/passkeys/:passkeyId/delete` | signed in           | general    | Remove a passkey                                         |
 | POST   | `/account/sessions/revoke-all`        | signed in           | auth       | Sign out everywhere, then start a fresh session          |
 | POST   | `/account/sessions/:sessionId/revoke` | signed in           | general    | Sign out one API client                                  |
 | POST   | `/account/delete`                     | signed in           | auth       | Delete the account with password confirmation (Art. 17)  |

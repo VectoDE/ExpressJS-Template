@@ -1,8 +1,6 @@
 const request = require('supertest');
 const app = require('../../src/app');
-const User = require('../../src/models/user.model');
-const Token = require('../../src/models/token.model');
-const { useDatabase } = require('../helpers/db');
+const { useDatabase, db } = require('../helpers/db');
 const { browser } = require('../helpers/web');
 const { PASSWORD, createUser, tokensFor, bearer } = require('../helpers/fixtures');
 
@@ -59,7 +57,7 @@ describe('PATCH /v1/account (GDPR Art. 16)', () => {
       .set(headers)
       .send({ password: 'Fresh-Password-2025', currentPassword: PASSWORD })
       .expect(200);
-    expect(await Token.countDocuments({ user: user.id })).toBe(0);
+    expect(await db.tokens.count({ userId: user.id })).toBe(0);
     await request(app).post('/v1/auth/login').send({ email: user.email, password: 'Fresh-Password-2025' }).expect(200);
   });
 
@@ -79,8 +77,8 @@ describe('DELETE /v1/account (GDPR Art. 17)', () => {
     await request(app).delete('/v1/account').set(headers).send({ password: 'Wrong-Password-1' }).expect(403);
     await request(app).delete('/v1/account').set(headers).send({}).expect(400);
     await request(app).delete('/v1/account').set(headers).send({ password: PASSWORD }).expect(204);
-    expect(await User.findById(user.id)).toBeNull();
-    expect(await Token.countDocuments({ user: user.id })).toBe(0);
+    expect(await db.users.findById(user.id)).toBeNull();
+    expect(await db.tokens.count({ userId: user.id })).toBe(0);
     await request(app).get('/v1/users/profile').set(headers).expect(401);
   });
 });
@@ -105,17 +103,17 @@ describe('account self-service in the browser', () => {
     const client = await signIn(user);
 
     await client.agent.post('/account/delete').type('form').send({ password: PASSWORD }).expect(302);
-    expect(await User.findById(user.id)).not.toBeNull();
+    expect(await db.users.findById(user.id)).not.toBeNull();
 
     const wrong = await client.submit('/account/delete', { password: 'Wrong-Password-1' }, '/dashboard');
     expect(wrong.headers.location).toBe('/dashboard');
     const empty = await client.submit('/account/delete', {}, '/dashboard');
     expect(empty.headers.location).toBe('/dashboard');
-    expect(await User.findById(user.id)).not.toBeNull();
+    expect(await db.users.findById(user.id)).not.toBeNull();
 
     const done = await client.submit('/account/delete', { password: PASSWORD }, '/dashboard');
     expect(done.headers.location).toBe('/?deleted=1');
-    expect(await User.findById(user.id)).toBeNull();
+    expect(await db.users.findById(user.id)).toBeNull();
     const home = await client.agent.get('/?deleted=1');
     expect(home.text).toContain('Your account and all its data are deleted.');
   });
@@ -131,7 +129,7 @@ describe('account self-service in the browser', () => {
     const page = await flashOn(client);
     expect(page).toContain('Your profile is saved.');
     expect(page).toContain('Hello, Renamed User');
-    expect((await User.findById(user.id)).name).toBe('Renamed User');
+    expect((await db.users.findById(user.id)).name).toBe('Renamed User');
   });
 
   it('reports an unchanged profile and German validation errors', async () => {
@@ -159,11 +157,11 @@ describe('account self-service in the browser', () => {
 
     await client.submit('/account/profile', { ...form, email: other.email, currentPassword: PASSWORD }, '/dashboard');
     expect(await flashOn(client)).toContain('This email address cannot be used.');
-    expect((await User.findById(user.id)).email).toBe(user.email);
+    expect((await db.users.findById(user.id)).email).toBe(user.email);
 
     await client.submit('/account/profile', { ...form, currentPassword: PASSWORD }, '/dashboard');
     expect(await flashOn(client)).toContain('Your profile is saved.');
-    expect((await User.findById(user.id)).email).toBe('new@example.com');
+    expect((await db.users.findById(user.id)).email).toBe('new@example.com');
   });
 
   it('changes the password, keeps this browser signed in and ends every other session and token', async () => {

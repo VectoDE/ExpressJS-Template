@@ -73,7 +73,8 @@ const verify = (secret, code, { afterStep = -1, now = Date.now() } = {}) => {
     return null;
   }
   const step = currentStep(now);
-  for (const candidate of [step - 1, step, step + 1]) {
+  // There is no step before the first one; at the very start of the epoch the window only looks forward.
+  for (const candidate of [step - 1, step, step + 1].filter((value) => value >= 0)) {
     const expected = Buffer.from(hotp(secret, candidate));
     if (candidate > afterStep && crypto.timingSafeEqual(expected, Buffer.from(String(code)))) {
       return candidate;

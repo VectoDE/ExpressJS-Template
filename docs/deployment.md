@@ -16,6 +16,8 @@ The image:
 - removes npm and corepack from the final stage
 - runs as the unprivileged `node` user; the code belongs to root and is read-only for the process
 - has a `HEALTHCHECK` against `/health`
+- has one writable folder, `/app/data`, for the default SQLite database; mount a volume there
+  (`docker run -v app-data:/app/data …`) or set `DATABASE_URL` to a database server
 
 `docker-compose.yml` adds a read-only root file system, drops all Linux capabilities, sets
 `no-new-privileges` and publishes the app only on `127.0.0.1:8080`. MongoDB:
@@ -64,11 +66,24 @@ A relay without TLS (for example plain SMTP on port 25 inside a private network)
 not sent. The app still starts; the failure appears in the log as `Email "..." could not be sent`. Send a
 password reset to yourself after deploying and check that it arrives. See [configuration](configuration.md#email).
 
-## MongoDB
+## Database
 
-- Enable authentication and use a user with access to this database only.
-- Use TLS for connections across networks (`mongodb+srv://` or `?tls=true`).
+Set `DATABASE_URL`, see [configuration](configuration.md#database). For any server:
+
+- Use an account with access to this database only. On SQL databases it needs the right to create and alter
+  tables, because migrations run on start. To run the app without that right, set `MIGRATION_DATABASE_URL` to a
+  second account that may change the schema and run `npm run migrate` before each start of a new version
+  (for example as an init container or a release step). The app then only checks that the schema is current.
+  The image contains the script: `docker run --rm --env-file .env expressjs-template node scripts/migrate.js`.
+- Use TLS for connections across networks (`mongodb+srv://`, `?tls=true`, `?sslmode=require`, `?ssl=true` or
+  `?encrypt=true`, depending on the driver).
 - Back up regularly and encrypt the backups.
+
+SQLite fits a single instance with a persistent volume. With several instances behind a load balancer, use a
+database server, because every instance must see the same sessions and accounts.
+
+To use Compose with another database, delete the `mongo` service and its volume from `docker-compose.yml`,
+remove the `depends_on` block of `app` and set `DATABASE_URL` in `.env`.
 
 ## Checklist before going live
 
@@ -79,7 +94,7 @@ password reset to yourself after deploying and check that it arrives. See [confi
 - [ ] `TRUST_PROXY` matches the proxy setup; HTTPS only
 - [ ] `CORS_ORIGIN` lists exactly the front-end origins, or is empty
 - [ ] `API_DOCS_ENABLED` off unless the docs are meant to be public
-- [ ] `RATE_LIMIT_STORE=mongo` when running more than one instance
+- [ ] `RATE_LIMIT_STORE=database` and a database server (not SQLite) when running more than one instance
 - [ ] Imprint and privacy policy replaced (see [compliance](compliance.md))
 - [ ] Monitoring on `/health/ready` and alerts on 5xx rates (`/metrics` with `METRICS_TOKEN` for Prometheus)
 - [ ] First admin created with `npm run create-admin` (asks for name, email and password, or reads
@@ -89,14 +104,32 @@ password reset to yourself after deploying and check that it arrives. See [confi
 
 ## Releases
 
-`.github/workflows/release.yml` runs when a tag `vX.Y.Z` is pushed. It checks that the tag matches the
-`version` in `package.json` and creates a GitHub release with generated notes. The notes are grouped by the
-labels of the merged pull requests as configured in `.github/release.yml` (security, breaking change,
-features, fixes, dependencies, documentation). Tags with a suffix such as `v3.1.0-rc.1` become pre-releases.
+Releases are built in GitHub Actions, never on a laptop. `main` only takes pull requests, so a release has two
+steps:
+
+1. A pull request sets the new `version` with `npm version 4.1.0 --no-git-tag-version` and moves the
+   "Unreleased" entries of [CHANGELOG.md](../CHANGELOG.md) under the new version.
+2. After the merge, tag the merge commit and push only the tag:
+
+   ```bash
+   git switch main && git pull
+   git tag -a v4.1.0 -m "Release 4.1.0"
+   git push origin v4.1.0
+   ```
+
+`.github/workflows/release.yml` then checks that the tag is on `main` and matches `package.json`, runs
+`npm run check` again and publishes:
+
+- the source archive, a CycloneDX SBOM of the runtime dependencies and `SHA256SUMS`, with a signed build
+  provenance (`.intoto.jsonl`, Sigstore) attached to the GitHub release
+- the Docker image `ghcr.io/vectode/expressjs-template:<version>` (and `latest`) with provenance and SBOM
+- release notes grouped by the labels of the merged pull requests (`.github/release.yml`)
+
+Tags with a suffix such as `v4.1.0-rc.1` become pre-releases and do not move `latest`.
+
+Check a download or the image before using it:
 
 ```bash
-npm version 3.1.0 -m "Release %s"   # updates package.json and package-lock.json, commits and tags v3.1.0
-git push --follow-tags
+gh attestation verify expressjs-template-4.1.0.tar.gz --repo VectoDE/ExpressJS-Template
+gh attestation verify oci://ghcr.io/vectode/expressjs-template:4.1.0 --repo VectoDE/ExpressJS-Template
 ```
-
-Add the release to [changelog.md](changelog.md) before tagging.

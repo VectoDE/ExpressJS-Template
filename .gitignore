@@ -139,3 +139,9 @@ blob-report/
 # Editor and dev container setup stays local
 .vscode/
 .devcontainer/
+
+# SQLite database of local runs
+data/
+
+# Static preview for GitHub Pages (npm run build:preview)
+preview-dist/

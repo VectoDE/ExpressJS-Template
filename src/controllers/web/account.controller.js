@@ -2,6 +2,7 @@ const config = require('../../config/config');
 const accountService = require('../../services/account.service');
 const authService = require('../../services/auth.service');
 const twoFactorService = require('../../services/twoFactor.service');
+const passkeyService = require('../../services/passkey.service');
 const i18n = require('../../i18n');
 const accountValidation = require('../../validations/account.validation');
 const httpStatus = require('../../utils/httpStatus');
@@ -36,9 +37,10 @@ const attempt = async (req, res, anchor, known, action) => {
 
 const renderDashboard = async (req, res) => {
   const user = req.currentUserDoc;
-  const [sessions, activity] = await Promise.all([
+  const [sessions, activity, passkeys] = await Promise.all([
     accountService.listSessions(user.id),
     accountService.listActivity(user.id, 10),
+    passkeyService.list(user.id),
   ]);
   // Recovery codes are shown exactly once, right after they were created.
   const recoveryCodes = req.session.recoveryCodes || null;
@@ -49,6 +51,11 @@ const renderDashboard = async (req, res) => {
     twoFactor: twoFactorService.status(user),
     pendingSetup: twoFactorService.pendingSetup(user),
     recoveryCodes,
+    passkeys,
+    maxPasskeys: passkeyService.MAX_PASSKEYS,
+    // Options of a started "add passkey", until the browser answered or the five minutes are over.
+    passkeyOptions: req.session.passkeyOptions || null,
+    scripts: ['passkeys'],
     sessions,
     activity,
     retentionDays: config.audit.retentionDays,
@@ -228,6 +235,70 @@ const handleRecoveryCodes = async (req, res) => {
   }
 };
 
+const PASSKEYS = '#passkeys';
+
+// First step: the password unlocks the options for navigator.credentials.create(), kept in the session.
+const handlePasskeyOptions = async (req, res) => {
+  const { error, value } = validate(accountValidation.passkeyOptions.body, req.body);
+  if (error) {
+    flash(req, 'error', 'fieldErrors.currentPassword');
+    return back(res, PASSKEYS);
+  }
+  const result = await attempt(
+    req,
+    res,
+    PASSKEYS,
+    {
+      [httpStatus.FORBIDDEN]: 'flash.passwordWrong',
+      [httpStatus.BAD_REQUEST]: 'flash.passkeyNeedsTwoFactor',
+      [httpStatus.CONFLICT]: 'flash.passkeyLimit',
+    },
+    () => passkeyService.registrationOptions(req.currentUserDoc.id, value.password)
+  );
+  if (result.ok) {
+    req.session.passkeyOptions = result.value;
+    flash(req, 'info', 'flash.passkeyReady');
+    back(res, PASSKEYS);
+  }
+};
+
+// Second step: the browser posts the new credential as JSON in the form field "response".
+const handlePasskeyAdd = async (req, res) => {
+  delete req.session.passkeyOptions;
+  const { error, value } = validate(accountValidation.addPasskeyForm.body, req.body);
+  if (error) {
+    flash(req, 'error', 'flash.passkeyInvalid');
+    return back(res, PASSKEYS);
+  }
+  const result = await attempt(
+    req,
+    res,
+    PASSKEYS,
+    { [httpStatus.BAD_REQUEST]: 'flash.passkeyInvalid', [httpStatus.CONFLICT]: 'flash.passkeyLimit' },
+    () => passkeyService.register(req.currentUserDoc.id, value, requestContext(req))
+  );
+  if (result.ok) {
+    flash(req, 'success', 'flash.passkeyAdded', { name: result.value.name });
+    back(res, PASSKEYS);
+  }
+};
+
+// A passkey that is already gone counts as removed, so the message is the same either way.
+const handlePasskeyRemove = async (req, res) => {
+  const { error, value } = accountValidation.passkeyId.params.validate(req.params);
+  if (!error) {
+    try {
+      await passkeyService.remove(req.currentUserDoc.id, value.passkeyId, requestContext(req));
+    } catch (err) {
+      if (err.statusCode !== httpStatus.NOT_FOUND) {
+        throw err;
+      }
+    }
+  }
+  flash(req, 'success', 'flash.passkeyRemoved');
+  return back(res, PASSKEYS);
+};
+
 // A session that is already gone counts as ended, so the message is the same either way.
 const handleRevokeSession = async (req, res) => {
   const { error, value } = accountValidation.sessionId.params.validate(req.params);
@@ -301,6 +372,9 @@ module.exports = {
   handleTwoFactorEnable,
   handleTwoFactorDisable,
   handleRecoveryCodes,
+  handlePasskeyOptions,
+  handlePasskeyAdd,
+  handlePasskeyRemove,
   handleRevokeSession,
   handleRevokeAllSessions,
   handleDelete,

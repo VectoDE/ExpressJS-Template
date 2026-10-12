@@ -1,8 +1,6 @@
 const request = require('supertest');
 const app = require('../../src/app');
-const AuditEvent = require('../../src/models/auditEvent.model');
-const Token = require('../../src/models/token.model');
-const { useDatabase } = require('../helpers/db');
+const { useDatabase, db, hasAuditEvent } = require('../helpers/db');
 const { browser } = require('../helpers/web');
 const { PASSWORD, createUser } = require('../helpers/fixtures');
 
@@ -67,9 +65,9 @@ describe('API sessions', () => {
     const other = await createUser();
     await login(owner);
     const otherLogin = await login(other);
-    const [ownerSession] = (await Token.find({ user: owner.id }).lean()).map((token) => token.family);
+    const [ownerSession] = (await db.tokens.list({ userId: owner.id })).map((token) => token.family);
     await request(app).delete(`/v1/account/sessions/${ownerSession}`).set(bearer(otherLogin)).expect(404);
-    expect(await Token.countDocuments({ user: owner.id })).toBe(1);
+    expect(await db.tokens.count({ userId: owner.id })).toBe(1);
   });
 
   it('signs out everywhere, including access tokens', async () => {
@@ -83,7 +81,7 @@ describe('API sessions', () => {
       .post('/v1/auth/refresh-tokens')
       .send({ refreshToken: second.body.tokens.refresh.token })
       .expect(401);
-    expect(await AuditEvent.exists({ user: user.id, type: 'allSessionsRevoked' })).toBeTruthy();
+    expect(await hasAuditEvent(user.id, 'allSessionsRevoked')).toBeTruthy();
   });
 });
 
@@ -104,7 +102,7 @@ describe('activity log', () => {
     const { refresh } = first.body.tokens;
     await request(app).post('/v1/auth/refresh-tokens').send({ refreshToken: refresh.token }).expect(200);
     await request(app).post('/v1/auth/refresh-tokens').send({ refreshToken: refresh.token }).expect(401);
-    expect(await AuditEvent.exists({ user: user.id, type: 'refreshTokenReuse' })).toBeTruthy();
+    expect(await hasAuditEvent(user.id, 'refreshTokenReuse')).toBeTruthy();
   });
 
   it('is part of the export and removed with the account', async () => {
@@ -115,8 +113,8 @@ describe('activity log', () => {
     expect(exported.body.format).toBe('expressjs-template/account-export@2');
 
     await request(app).delete('/v1/account').set(bearer(res)).send({ password: PASSWORD }).expect(204);
-    expect(await AuditEvent.countDocuments({ user: user.id })).toBe(0);
-    expect(await Token.countDocuments({ user: user.id })).toBe(0);
+    expect(await (await db.audit.types(user.id)).length).toBe(0);
+    expect(await db.tokens.count({ userId: user.id })).toBe(0);
   });
 });
 
@@ -134,7 +132,7 @@ describe('sessions and activity in the browser', () => {
 
     const revoked = await client.submit(`/account/sessions/${sessionId}/revoke`, {}, '/dashboard');
     expect(revoked.headers.location).toBe('/dashboard#sessions');
-    expect(await Token.countDocuments({ user: user.id })).toBe(0);
+    expect(await db.tokens.count({ userId: user.id })).toBe(0);
 
     const other = browser(app);
     await other.submit('/login', { email: user.email, password: PASSWORD });

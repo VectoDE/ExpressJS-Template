@@ -37,6 +37,26 @@ const loginTwoFactor = {
   }),
 };
 
+const passkeyChallenge = {
+  body: Joi.object().keys({
+    challengeToken: fields.token().required(),
+  }),
+};
+
+const loginPasskey = {
+  body: Joi.object().keys({
+    challengeToken: fields.token().required(),
+    response: fields.passkeyResponse().required(),
+  }),
+};
+
+// Browser form: the answer of navigator.credentials.get() as JSON text.
+const passkeyForm = {
+  body: Joi.object().keys({
+    response: fields.passkeyResponseText().required(),
+  }),
+};
+
 const forgotPassword = {
   body: Joi.object().keys({
     email: fields.email().required(),
@@ -77,6 +97,9 @@ module.exports = {
   logout,
   refreshTokens,
   loginTwoFactor,
+  passkeyChallenge,
+  loginPasskey,
+  passkeyForm,
   forgotPassword,
   resetPassword,
   resetPasswordForm,

@@ -2,6 +2,7 @@ const httpStatus = require('../utils/httpStatus');
 const requestContext = require('../utils/requestContext');
 const accountService = require('../services/account.service');
 const twoFactorService = require('../services/twoFactor.service');
+const passkeyService = require('../services/passkey.service');
 const userService = require('../services/user.service');
 
 const exportData = async (req, res) => {
@@ -62,6 +63,23 @@ const renewRecoveryCodes = async (req, res) => {
   res.status(httpStatus.OK).json({ recoveryCodes });
 };
 
+const listPasskeys = async (req, res) => {
+  res.json({ results: await passkeyService.list(req.user.id) });
+};
+
+const passkeyOptions = async (req, res) => {
+  res.json(await passkeyService.registrationOptions(req.user.id, req.body.password));
+};
+
+const addPasskey = async (req, res) => {
+  res.status(httpStatus.CREATED).json(await passkeyService.register(req.user.id, req.body, requestContext(req)));
+};
+
+const removePasskey = async (req, res) => {
+  await passkeyService.remove(req.user.id, req.params.passkeyId, requestContext(req));
+  res.status(httpStatus.NO_CONTENT).send();
+};
+
 module.exports = {
   exportData,
   updateProfile,
@@ -75,4 +93,8 @@ module.exports = {
   enableTwoFactor,
   disableTwoFactor,
   renewRecoveryCodes,
+  listPasskeys,
+  passkeyOptions,
+  addPasskey,
+  removePasskey,
 };

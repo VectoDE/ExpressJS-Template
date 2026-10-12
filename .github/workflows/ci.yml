@@ -40,7 +40,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [22, 24]
+        node: [22, 24, 26]
     steps:
       - uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
@@ -54,12 +54,96 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: npm run test:coverage
-      - if: matrix.node == 24
+      - if: matrix.node == 26
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: coverage
           path: coverage/
           retention-days: 14
+
+  databases:
+    name: Database (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: MongoDB
+            image: mongo:9.0@sha256:bac22ea7710d774103dcad3ec8ac13cba1eb378f488e3ce8a6b3a1adf2ba9dcc
+            port: 27017
+            health: mongosh --quiet --eval 'db.runCommand({ping:1})'
+            url: mongodb://127.0.0.1:27017
+          - name: PostgreSQL
+            image: postgres:18-alpine@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873
+            port: 5432
+            health: pg_isready -U postgres
+            url: postgres://postgres:ci-only-Passw0rd@127.0.0.1:5432/app
+          - name: MySQL
+            image: mysql:8.4@sha256:6ea90827b1100f8f2ae306a539f86d2c264a26ed435a2a9f75551dd5c3aeb242
+            port: 3306
+            health: mysqladmin ping -h 127.0.0.1 -uroot -pci-only-Passw0rd
+            url: mysql://root:ci-only-Passw0rd@127.0.0.1:3306/app
+          - name: MariaDB
+            image: mariadb:11.8@sha256:6422478cb8e159f080fb1d8ccf65101e26fe51385787fde7d16c3b165a331f15
+            port: 3306
+            health: healthcheck.sh --connect --innodb_initialized
+            url: mariadb://root:ci-only-Passw0rd@127.0.0.1:3306/app
+          - name: SQL Server
+            image: mcr.microsoft.com/mssql/server:2022-latest@sha256:4402d880dd4c34bfa7d8705e56a86cd6c88da80a1f6bbbe741f999e76264a090
+            port: 1433
+            health: /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P ci-only-Passw0rd -Q 'SELECT 1'
+            url: mssql://sa:ci-only-Passw0rd@127.0.0.1:1433/master?trustServerCertificate=true
+          - name: Oracle
+            image: gvenzl/oracle-free:23-slim-faststart@sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093
+            port: 1521
+            health: healthcheck.sh
+            url: oracle://app:ci-only-Passw0rd@127.0.0.1:1521/FREEPDB1
+    services:
+      db:
+        image: ${{ matrix.image }}
+        ports:
+          - ${{ matrix.port }}:${{ matrix.port }}
+        # Throwaway credentials for a container that lives only as long as this job. Every image reads its own.
+        env:
+          POSTGRES_PASSWORD: ci-only-Passw0rd
+          POSTGRES_DB: app
+          MYSQL_ROOT_PASSWORD: ci-only-Passw0rd
+          MYSQL_DATABASE: app
+          MARIADB_ROOT_PASSWORD: ci-only-Passw0rd
+          MARIADB_DATABASE: app
+          ACCEPT_EULA: 'Y'
+          MSSQL_SA_PASSWORD: ci-only-Passw0rd
+          ORACLE_PASSWORD: ci-only-Passw0rd
+          APP_USER: app
+          APP_USER_PASSWORD: ci-only-Passw0rd
+        options: >-
+          --health-cmd "${{ matrix.health }}"
+          --health-interval 10s
+          --health-timeout 10s
+          --health-retries 30
+    steps:
+      - uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm test
+        env:
+          TEST_DATABASE_URL: ${{ matrix.url }}
+      - name: A generated resource works on this database
+        env:
+          TEST_DATABASE_URL: ${{ matrix.url }}
+        run: |
+          npm run generate -- note
+          npm test -- tests/integration/note.test.js
+          npx eslint --max-warnings 0 src tests
 
   e2e:
     name: Browser tests

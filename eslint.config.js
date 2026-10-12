@@ -5,7 +5,17 @@ const pluginSecurity = require('eslint-plugin-security');
 const sonarjs = require('eslint-plugin-sonarjs');
 
 module.exports = defineConfig([
-  { ignores: ['node_modules/', 'coverage/', 'reports/', 'playwright-report/', 'test-results/', '.impeccable/'] },
+  {
+    ignores: [
+      'node_modules/',
+      'coverage/',
+      'reports/',
+      'playwright-report/',
+      'test-results/',
+      '.impeccable/',
+      'preview-dist/',
+    ],
+  },
   js.configs.recommended,
   pluginSecurity.configs.recommended,
   // The rules SonarQube applies to JavaScript ("Sonar way"), so issues show up before the code reaches a scanner.
@@ -27,7 +37,10 @@ module.exports = defineConfig([
       'security/detect-object-injection': 'off',
     },
   },
-  { files: ['src/public/**/*.js'], languageOptions: { sourceType: 'script', globals: { ...globals.browser } } },
+  {
+    files: ['src/public/**/*.js', 'scripts/preview/*.js'],
+    languageOptions: { sourceType: 'script', globals: { ...globals.browser } },
+  },
   // MongoDB shell scripts run inside mongosh, which provides `db`.
   { files: ['docker/mongo/**/*.js'], languageOptions: { sourceType: 'script', globals: { db: 'readonly' } } },
   {

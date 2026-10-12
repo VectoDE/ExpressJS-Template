@@ -5,22 +5,27 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/VectoDE/ExpressJS-Template/badge)](https://securityscorecards.dev/viewer/?uri=github.com/VectoDE/ExpressJS-Template)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Starter for Express 5 applications with a JSON API and server-rendered pages. Version 3.0.0.
+Starter for Express 5 applications with a JSON API and server-rendered pages. Version 4.0.0.
+
+**[Look at the pages](https://vectode.github.io/ExpressJS-Template/)** in a static preview on GitHub Pages, in English
+and German. Signing in and forms need the running app; `npm run preview` starts it locally with demo accounts.
 
 It comes with sign-up and sign-in for both an API (JWT) and a browser (session cookie), two-factor
-authentication, email verification and password reset, user management for admins, GDPR self-service,
+authentication with an app or a passkey, email verification and password reset, user management for admins, GDPR self-service,
 OpenAPI docs, Docker, CI and tests for every endpoint. Security settings are strict
 by default; you loosen them where your project needs it, not the other way round.
 
 ## What is included
 
-- **API** under `/v1`: register, login with optional second factor, token rotation, logout, email verification,
+- **API** under `/v1`: register, login with optional second factor (code or passkey), token rotation, logout, email verification,
   password reset, account self-service, sessions and activity log, user admin
-- **Browser pages** with EJS in English (default) and German: sign-in, account page with profile, password, two-factor
-  and session management, data export, account deletion, user administration, privacy and imprint
+- **Browser pages** with EJS in English (default) and German: sign-in, account page with profile, password, two-factor,
+  passkey and session management, data export, account deletion, user administration, privacy and imprint
   placeholders. Light and dark theme, WCAG 2.1 AA, no external fonts or scripts
 - **Responsive and animated:** layouts for phones, tablets, large monitors and TVs up to 3840 px; five motion
   styles (`MOTION_STYLE`) with a switch in the footer; reduced motion is respected
+- **Any database:** SQLite out of the box, MongoDB, PostgreSQL, MySQL, MariaDB, SQL Server or Oracle through
+  `DATABASE_URL`. CI runs every test against each of them
 - **Modular structure:** layouts and components for views, layered CSS with design tokens, UI texts in
   `src/locales`, routers split by area, a generator for new owner-scoped resources
 - **Security:** scrypt hashing, single-use refresh tokens with reuse detection, account lockout, CSRF protection,
@@ -37,7 +42,9 @@ by default; you loosen them where your project needs it, not the other way round
 The repository is a GitHub template. Click **Use this template** on GitHub to create your own repository
 from it (or run `gh repo create my-app --template VectoDE/ExpressJS-Template --private --clone`), then clone it.
 
-Requirements: Node.js 22.12 or newer and MongoDB 6 or newer (or Docker).
+Requirements: Node.js 22.12 or newer. The app stores its data in a SQLite file by default, so no database
+server is needed to start. For production, point `DATABASE_URL` at MongoDB, PostgreSQL, MySQL, MariaDB,
+SQL Server or Oracle; see [configuration](docs/configuration.md#database).
 
 ```bash
 cd my-app
@@ -51,7 +58,7 @@ Open <http://localhost:8080>. API docs are at <http://localhost:8080/docs> outsi
 `SMTP_URL`, emails such as verification links are written to the log in development.
 
 `npm run seed` creates demo accounts, including an admin, as an alternative to `create-admin`. To look at the
-interface without installing MongoDB, run `npm run preview`: it starts the app on <http://localhost:3100> with
+interface without creating an account, run `npm run preview`: it starts the app on <http://localhost:3100> with
 an in-memory database and the demo accounts from `tests/e2e/fixtures.js`.
 
 With Docker:
@@ -68,11 +75,14 @@ docker compose up -d --build
 | `npm run setup`                   | Create `.env` with random secrets                                   |
 | `npm run dev`                     | Start with reload on changes in `src/`                              |
 | `npm start`                       | Start without reload                                                |
+| `npm run copy-database`           | Copy accounts and activity to another database (MongoDB ↔ SQL)      |
 | `npm run create-admin`            | Create an administrator or promote an existing account              |
+| `npm run migrate`                 | Apply database migrations, see `MIGRATION_DATABASE_URL`             |
 | `npm run seed`                    | Demo accounts for development (refuses production)                  |
 | `npm run generate -- <name>`      | Scaffold an owner-scoped REST resource with tests                   |
-| `npm run preview`                 | Start the app with an in-memory MongoDB and demo accounts           |
-| `npm test`                        | Unit and integration tests (in-memory MongoDB)                      |
+| `npm run preview`                 | Start the app with an in-memory database and demo accounts          |
+| `npm run build:preview`           | Static copy of the pages for GitHub Pages in `preview-dist/`        |
+| `npm test`                        | Unit and integration tests (in-memory SQLite)                       |
 | `npm run test:coverage`           | Tests with coverage report                                          |
 | `npm run test:e2e`                | Browser tests in Chromium, Firefox, WebKit and a phone (Playwright) |
 | `npm run test:e2e:install`        | Install the Playwright browsers once                                |
@@ -103,8 +113,8 @@ The layers and the request flow are described in [docs/architecture.md](docs/arc
 | [Compliance](docs/compliance.md)                                | GDPR, cookies, accessibility, imprint, licenses |
 | [Testing](docs/testing.md) / [Performance](docs/performance.md) | Test suites and load tests                      |
 | [Deployment](docs/deployment.md)                                | Docker, reverse proxy, go-live checklist        |
-| [Upgrading to 3.0](docs/upgrading.md)                           | Breaking changes from 1.x and 2.0               |
-| [Changelog](docs/changelog.md)                                  | Release history                                 |
+| [Upgrading](docs/upgrading.md)                                  | Breaking changes in 4.0 and 3.0                 |
+| [Changelog](CHANGELOG.md)                                       | Release history                                 |
 
 ## Before going live
 

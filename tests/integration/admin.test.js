@@ -1,8 +1,7 @@
+const auditService = require('../../src/services/audit.service');
 const request = require('supertest');
 const app = require('../../src/app');
-const User = require('../../src/models/user.model');
-const AuditEvent = require('../../src/models/auditEvent.model');
-const { useDatabase } = require('../helpers/db');
+const { useDatabase, db, hasAuditEvent } = require('../helpers/db');
 const { browser } = require('../helpers/web');
 const { PASSWORD, createUser, createAdmin, tokensFor, bearer } = require('../helpers/fixtures');
 
@@ -75,10 +74,10 @@ describe('user administration in the browser', () => {
       `/admin/users/${user.id}`
     );
     expect(res.headers.location).toBe(`/admin/users/${user.id}`);
-    const updated = await User.findById(user.id);
+    const updated = await db.users.findById(user.id);
     expect(updated).toMatchObject({ name: 'Renamed User', role: 'admin' });
     await request(app).get('/v1/users/profile').set(bearer(userTokens)).expect(401);
-    expect(await AuditEvent.exists({ user: user.id, type: 'roleChanged' })).toBeTruthy();
+    expect(await hasAuditEvent(user.id, 'roleChanged')).toBeTruthy();
 
     const invalid = await client.submit(
       `/admin/users/${user.id}`,
@@ -86,7 +85,7 @@ describe('user administration in the browser', () => {
       `/admin/users/${user.id}`
     );
     expect(invalid.headers.location).toBe(`/admin/users/${user.id}`);
-    expect((await User.findById(user.id)).name).toBe('Renamed User');
+    expect((await db.users.findById(user.id)).name).toBe('Renamed User');
   });
 
   it('protects administrators from locking themselves out', async () => {
@@ -97,19 +96,19 @@ describe('user administration in the browser', () => {
     expect(view.text).not.toContain(`action="/admin/users/${admin.id}/delete"`);
 
     await client.submit(`/admin/users/${admin.id}`, { name: admin.name, role: 'user' }, `/admin/users/${admin.id}`);
-    expect((await User.findById(admin.id)).role).toBe('admin');
+    expect((await db.users.findById(admin.id)).role).toBe('admin');
     const csrf = await client.csrfFrom(`/admin/users/${admin.id}`);
     await client.agent
       .post(`/admin/users/${admin.id}/delete`)
       .type('form')
       .send({ _csrf: csrf, confirmEmail: admin.email });
-    expect(await User.exists({ _id: admin.id })).toBeTruthy();
+    expect(await db.users.findById(admin.id)).toBeTruthy();
   });
 
   it('deletes an account only after the address is typed again', async () => {
     const admin = await createAdmin();
     const user = await createUser();
-    await AuditEvent.create({ user: user.id, type: 'login' });
+    await auditService.record(user.id, 'login');
     const client = await signIn(admin);
 
     await client.submit(
@@ -117,7 +116,7 @@ describe('user administration in the browser', () => {
       { confirmEmail: 'wrong@example.com' },
       `/admin/users/${user.id}`
     );
-    expect(await User.exists({ _id: user.id })).toBeTruthy();
+    expect(await db.users.findById(user.id)).toBeTruthy();
 
     const res = await client.submit(
       `/admin/users/${user.id}/delete`,
@@ -125,8 +124,8 @@ describe('user administration in the browser', () => {
       `/admin/users/${user.id}`
     );
     expect(res.headers.location).toBe('/admin/users');
-    expect(await User.exists({ _id: user.id })).toBeFalsy();
-    expect(await AuditEvent.countDocuments({ user: user.id })).toBe(0);
+    expect(await db.users.findById(user.id)).toBeFalsy();
+    expect(await (await db.audit.types(user.id)).length).toBe(0);
   });
 
   it('answers unknown and malformed ids with a 404 page', async () => {

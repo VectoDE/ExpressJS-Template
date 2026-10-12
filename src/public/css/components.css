@@ -272,6 +272,24 @@
   color: var(--color-muted);
 }
 
+/* Result of a browser step such as a cancelled passkey prompt; takes no room while empty. */
+.form__status {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+}
+
+.form__status:empty {
+  display: none;
+}
+
+/* The passkey alternative under the code form on the second sign-in step. */
+.passkey-option {
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-line);
+}
+
 .field {
   display: grid;
   gap: var(--space-1);
@@ -384,7 +402,7 @@ select.field__input:disabled {
   width: 0.9rem;
   height: 0.9rem;
   background: var(--color-surface);
-  mask: url('/assets/img/check.svg') center / contain no-repeat;
+  mask: url('../img/check.svg') center / contain no-repeat;
 }
 
 .flash--success {
@@ -527,7 +545,7 @@ select.field__input:disabled {
   border-radius: 50%;
   background: var(--color-accent);
   mask:
-    url('/assets/img/check.svg') center / 70% no-repeat,
+    url('../img/check.svg') center / 70% no-repeat,
     radial-gradient(circle, #000 0 0);
   mask-composite: exclude;
 }
@@ -658,7 +676,7 @@ select.field__input:disabled {
   border-radius: 50%;
   background: var(--color-accent);
   mask:
-    url('/assets/img/check.svg') center / 70% no-repeat,
+    url('../img/check.svg') center / 70% no-repeat,
     radial-gradient(circle, #000 0 0);
   mask-composite: exclude;
 }
@@ -752,7 +770,7 @@ select.field__input:disabled {
   position: absolute;
   inset: 0.45rem;
   background: var(--color-accent-ink);
-  mask: url('/assets/img/check.svg') center / contain no-repeat;
+  mask: url('../img/check.svg') center / contain no-repeat;
 }
 
 .code-timer {
@@ -1217,19 +1235,6 @@ select.field__input:disabled {
   margin: var(--space-6) 0 0;
   color: var(--color-muted);
   font-size: var(--text-sm);
-}
-
-.stack {
-  margin-top: var(--space-6);
-  text-align: left;
-}
-
-.stack pre {
-  overflow-x: auto;
-  padding: var(--space-4);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-sunken);
-  font-size: var(--text-xs);
 }
 
 /* Long-form text */

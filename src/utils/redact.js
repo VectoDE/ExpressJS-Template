@@ -3,4 +3,8 @@ const SECRET_PARAMS = /([?&](?:token|code)=)[^&#]*/gi;
 
 const redactUrl = (url) => String(url).replaceAll(SECRET_PARAMS, '$1[redacted]');
 
-module.exports = { redactUrl };
+// Request data in log lines stays on one line, so nobody can forge an extra log entry with CR/LF. Line breaks are
+// dropped rather than replaced: stack frames keep their indentation, so a stack trace stays readable.
+const oneLine = (value) => String(value).replaceAll('\r', '').replaceAll('\n', '');
+
+module.exports = { redactUrl, oneLine };

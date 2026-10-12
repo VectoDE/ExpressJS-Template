@@ -4,9 +4,9 @@ const helmet = require('helmet');
 const cors = require('cors');
 const compression = require('compression');
 const session = require('express-session');
-const crypto = require('node:crypto');
-const { MongoStore, createWebCryptoAdapter } = require('connect-mongo');
 const config = require('./config/config');
+const db = require('./db');
+const DatabaseSessionStore = require('./db/sessionStore');
 const requestId = require('./middlewares/requestId');
 const saveSessionBeforeRedirect = require('./middlewares/saveSessionBeforeRedirect');
 const requestLogger = require('./middlewares/requestLogger');
@@ -20,7 +20,6 @@ const webRoutes = require('./routes/web');
 const { setupSwagger } = require('./docs/swagger');
 const healthController = require('./controllers/health.controller');
 const metricsController = require('./controllers/metrics.controller');
-const logger = require('./config/logger');
 const pkg = require('../package.json');
 
 const app = express();
@@ -130,27 +129,12 @@ app.use(sanitize);
 setupSwagger(app);
 app.use('/v1', routes);
 
-const sessionStore =
-  config.env === 'test'
-    ? new session.MemoryStore()
-    : MongoStore.create({
-        mongoUrl: config.mongoose.url,
-        dbName: config.mongoose.options.dbName,
-        collectionName: 'sessions',
-        ttl: config.security.session.idleTimeoutMinutes * 60,
-        autoRemove: 'native',
-        // Session data is encrypted with AES-GCM. The key is derived separately from the cookie signing key.
-        cryptoAdapter: createWebCryptoAdapter({
-          secret: Buffer.from(
-            crypto.hkdfSync('sha256', config.security.session.secret, 'expressjs-template', 'session-store', 32)
-          ),
-          salt: 'expressjs-template:session-store',
-        }),
-      });
-
-if (sessionStore.on) {
-  sessionStore.on('error', (error) => logger.error('Session store error: %s', error.message));
-}
+// Browser sessions live in the configured database, encrypted; see src/db/sessionStore.js.
+const sessionStore = new DatabaseSessionStore({
+  db,
+  secret: config.security.session.secret,
+  idleTimeoutMs: config.security.session.idleTimeoutMinutes * 60 * 1000,
+});
 
 // Sessions only exist for the browser UI. API calls authenticate with bearer tokens and never get a cookie.
 app.use(

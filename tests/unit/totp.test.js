@@ -46,6 +46,12 @@ describe('totp', () => {
     expect(totp.verify(secret, code, { now, afterStep: step })).toBeNull();
   });
 
+  // Found by the property tests: the drift window asked for step -1 at the start of the epoch and threw.
+  it('verifies codes at the very start of the epoch', () => {
+    const secret = totp.generateSecret();
+    expect(totp.verify(secret, totp.generate(secret, 0), { now: 0 })).toBe(0);
+  });
+
   it('rejects malformed codes without computing anything', () => {
     const secret = totp.generateSecret();
     ['', '12345', '1234567', 'abcdef', null, undefined].forEach((code) => {

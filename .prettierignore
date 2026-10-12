@@ -7,3 +7,4 @@ docs/third-party-notices.md
 .impeccable/
 playwright-report/
 test-results/
+preview-dist/

@@ -13,3 +13,5 @@
 <link rel="stylesheet" href="/assets/css/responsive.css" />
 <% (locals.stylesheets || []).forEach((sheet) => { %><link rel="stylesheet" href="/assets/css/<%= sheet %>.css" />
 <% }) %><script src="/assets/js/main.js" defer></script>
+<% (locals.scripts || []).forEach((script) => { %><script src="/assets/js/<%= script %>.js" defer></script>
+<% }) %>

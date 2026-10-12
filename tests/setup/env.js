@@ -6,4 +6,6 @@ process.env.CORS_ORIGIN = 'https://app.example.com';
 process.env.AUTH_RATE_LIMIT_MAX = process.env.AUTH_RATE_LIMIT_MAX || '1000';
 process.env.RATE_LIMIT_MAX = process.env.RATE_LIMIT_MAX || '100000';
 process.env.LOGIN_MAX_ATTEMPTS = '3';
+process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || 'sqlite::memory:';
+process.env.DATABASE_NAME = `test_${process.env.JEST_WORKER_ID || 0}`;
 process.env.API_DOCS_ENABLED = 'true';

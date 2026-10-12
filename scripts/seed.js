@@ -46,7 +46,7 @@ const slug = (name) =>
 
 // Creates the accounts that do not exist yet; running it twice changes nothing.
 const seed = async ({ password, extraUsers = EXTRA_NAMES.length } = {}) => {
-  const User = require('../src/models/user.model');
+  const userService = require('../src/services/user.service');
   const accounts = [
     { name: 'Demo Admin', email: `admin@${DEMO_DOMAIN}`, role: 'admin' },
     { name: 'Demo User', email: `user@${DEMO_DOMAIN}`, role: 'user' },
@@ -54,8 +54,8 @@ const seed = async ({ password, extraUsers = EXTRA_NAMES.length } = {}) => {
   ];
   const results = await Promise.all(
     accounts.map(async (account) => {
-      if (await User.exists({ email: account.email })) return 0;
-      await User.create({ ...account, password, isEmailVerified: true });
+      if (await userService.isEmailTaken(account.email)) return 0;
+      await userService.createUser({ ...account, password, isEmailVerified: true });
       return 1;
     })
   );
@@ -68,9 +68,9 @@ const main = async () => {
   if (config.env === 'production') {
     throw new Error('Refusing to seed a production database.');
   }
-  const mongoose = require('../src/config/mongoose');
+  const db = require('../src/db');
   const password = process.env.SEED_PASSWORD || `Demo-${crypto.randomBytes(9).toString('base64url')}`;
-  await mongoose.connect();
+  await db.connect();
   try {
     const { created, total } = await seed({ password });
     process.stdout.write(`${created} of ${total} demo accounts created (admin@${DEMO_DOMAIN}, user@${DEMO_DOMAIN}).\n`);
@@ -78,7 +78,7 @@ const main = async () => {
       process.stdout.write(`Password for the new accounts: ${password}\n`);
     }
   } finally {
-    await mongoose.disconnect();
+    await db.disconnect();
   }
 };
 

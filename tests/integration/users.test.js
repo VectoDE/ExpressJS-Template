@@ -1,7 +1,6 @@
 const request = require('supertest');
 const app = require('../../src/app');
-const User = require('../../src/models/user.model');
-const { useDatabase } = require('../helpers/db');
+const { useDatabase, db } = require('../helpers/db');
 const { createUser, createAdmin, tokensFor, bearer } = require('../helpers/fixtures');
 
 useDatabase();
@@ -28,7 +27,7 @@ describe('privilege escalation', () => {
   it('a user cannot promote themselves through PATCH /v1/users/:id', async () => {
     const { user, headers } = await asUser();
     await request(app).patch(`/v1/users/${user.id}`).set(headers).send({ role: 'admin' }).expect(403);
-    expect((await User.findById(user.id)).role).toBe('user');
+    expect((await db.users.findById(user.id)).role).toBe('user');
   });
 
   it.each([

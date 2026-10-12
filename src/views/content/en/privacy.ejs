@@ -7,7 +7,7 @@
   <p>
     For an account the application stores name, email address, role, language and a hash of the password. The password
     itself is never stored. Users who turn on two-factor sign-in also store an encrypted key and hashes of the recovery
-    codes.
+    codes, and for each passkey its name, public key and when it was added and last used.
   </p>
   <h2>Logs</h2>
   <p>
@@ -28,7 +28,7 @@
   <h2>Retention</h2>
   <p>
     Sessions end after inactivity and at the latest after a fixed maximum. Refresh tokens and email links expire after
-    their lifetime, the activity log after <%= locals.retentionDays || 180 %> days. The database deletes all of it
+    their lifetime, the activity log after <%= locals.retentionDays || 180 %> days. All of it is deleted
     automatically.
   </p>
   <h2>Your rights</h2>
