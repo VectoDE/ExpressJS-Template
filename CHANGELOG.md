@@ -38,6 +38,8 @@ Major release: the template now runs on MongoDB and on every common SQL database
 
 ### Added
 
+- Passkeys (WebAuthn) as a second factor next to the authenticator app, in the API and on the account page, stored
+  in every supported database. Adding one needs two-factor sign-in; at sign-in a passkey replaces the code (#21).
 - CI job "Database": the full test suite against MongoDB, PostgreSQL, MySQL, MariaDB, SQL Server and Oracle,
   plus a generated resource on each.
 - Contract tests for the data layer that every adapter has to pass.

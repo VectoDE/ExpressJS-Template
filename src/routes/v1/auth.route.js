@@ -161,6 +161,60 @@ router.post('/login/2fa', authLimiter, validate(authValidation.loginTwoFactor), 
 
 /**
  * @swagger
+ * /auth/login/passkey/options:
+ *   post:
+ *     summary: Options for signing in with a passkey instead of a code
+ *     description: Returns PublicKeyCredentialRequestOptionsJSON for navigator.credentials.get(), valid once for five minutes.
+ *     tags: [Auth]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { type: object, required: [challengeToken], properties: { challengeToken: { type: string } } }
+ *     responses:
+ *       "200": { description: Options for navigator.credentials.get() }
+ *       "401": { $ref: '#/components/responses/Unauthorized' }
+ *       "404": { description: The account has no passkey }
+ *       "429": { $ref: '#/components/responses/TooManyRequests' }
+ * /auth/login/passkey:
+ *   post:
+ *     summary: Complete a sign-in with a passkey
+ *     description: A rejected passkey counts towards the account lockout, like a wrong code.
+ *     tags: [Auth]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [challengeToken, response]
+ *             properties:
+ *               challengeToken: { type: string }
+ *               response: { type: object, description: JSON form of the credential from navigator.credentials.get() }
+ *     responses:
+ *       "200":
+ *         description: Signed in
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthResponse'
+ *       "401":
+ *         $ref: '#/components/responses/Unauthorized'
+ *       "429":
+ *         $ref: '#/components/responses/TooManyRequests'
+ */
+router.post(
+  '/login/passkey/options',
+  authLimiter,
+  validate(authValidation.passkeyChallenge),
+  authController.passkeyOptions
+);
+router.post('/login/passkey', authLimiter, validate(authValidation.loginPasskey), authController.loginPasskey);
+
+/**
+ * @swagger
  * /auth/send-verification-email:
  *   post:
  *     summary: Send a new email verification link to the signed-in user

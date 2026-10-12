@@ -6,6 +6,9 @@ const tokenTypes = {
   // Opaque single-use tokens sent by email. Stored as SHA-256 only.
   RESET_PASSWORD: 'resetPassword',
   VERIFY_EMAIL: 'verifyEmail',
+  // Single-use WebAuthn challenges for adding a passkey and for signing in with one. Stored as SHA-256 only.
+  PASSKEY_REGISTRATION: 'passkeyRegister',
+  PASSKEY_LOGIN: 'passkeyLogin',
 };
 
 module.exports = {

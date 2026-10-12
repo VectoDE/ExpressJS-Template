@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { fields } = require('./custom.validation');
+const { fields, objectId } = require('./custom.validation');
 
 const updateProfile = {
   body: Joi.object()
@@ -56,6 +56,27 @@ const recoveryCodes = {
   }),
 };
 
+const addPasskey = {
+  body: Joi.object().keys({
+    name: fields.passkeyName().required(),
+    response: fields.passkeyResponse().required(),
+  }),
+};
+
+// Browser form: the same with the credential as JSON text.
+const addPasskeyForm = {
+  body: Joi.object().keys({
+    name: fields.passkeyName().required(),
+    response: fields.passkeyResponseText().required(),
+  }),
+};
+
+const passkeyId = {
+  params: Joi.object().keys({
+    passkeyId: Joi.string().custom(objectId).required(),
+  }),
+};
+
 const sessionId = {
   params: Joi.object().keys({
     sessionId: Joi.string()
@@ -77,6 +98,10 @@ module.exports = {
   enableTwoFactor,
   disableTwoFactor,
   recoveryCodes,
+  passkeyOptions: passwordOnly,
+  addPasskey,
+  addPasskeyForm,
+  passkeyId,
   sessionId,
   language,
 };

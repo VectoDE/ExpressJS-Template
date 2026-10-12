@@ -136,6 +136,8 @@ const disable = async (userId, { password, code }, context = {}) => {
   }
   await requireCode(user, code);
   await db.users.update(user.id, { twoFactor: { enabled: false, recoveryCodes: [], lastUsedStep: -1 } });
+  // Passkeys are a second factor next to the codes; without two-factor sign-in they would never be asked for.
+  await db.passkeys.removeForUser(user.id);
   await auditService.record(user.id, 'twoFactorDisabled', context);
   emailService.notify(user, 'twoFactorDisabled');
 };
@@ -170,5 +172,6 @@ module.exports = {
   regenerateRecoveryCodes,
   status,
   loadUser,
+  confirmPassword,
   RECOVERY_CODE_COUNT,
 };

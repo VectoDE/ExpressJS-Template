@@ -23,7 +23,7 @@ To move from MongoDB to a SQL database (or back), copy the data with `npm run co
 SOURCE_DATABASE_URL=mongodb://… TARGET_DATABASE_URL=postgres://… npm run copy-database
 ```
 
-It copies accounts with password hashes, second factors and recovery codes, the activity log and valid tokens,
+It copies accounts with password hashes, second factors, recovery codes and passkeys, the activity log and valid tokens,
 and keeps ids and timestamps, so everybody signs in as before. The target must be empty. Sessions and rate-limit
 counters are not copied, and records of your own resources need their own step.
 

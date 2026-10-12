@@ -16,6 +16,8 @@ const AUDIT_EVENT_TYPES = [
   'emailVerified',
   'twoFactorEnabled',
   'twoFactorDisabled',
+  'passkeyAdded',
+  'passkeyRemoved',
   'recoveryCodeUsed',
   'sessionRevoked',
   'allSessionsRevoked',
@@ -98,6 +100,23 @@ const tokenRecord = (data) => ({
   createdAt: toDate(data.createdAt),
 });
 
+// The public key and the signature counter stay on the server; they are never part of an API response.
+const passkeyRecord = (data) => ({
+  id: data.id,
+  userId: data.userId,
+  credentialId: data.credentialId,
+  publicKey: data.publicKey,
+  counter: Number(data.counter) || 0,
+  transports: Array.isArray(data.transports)
+    ? [...data.transports]
+    : String(data.transports || '')
+        .split(',')
+        .filter(Boolean),
+  name: data.name,
+  createdAt: toDate(data.createdAt),
+  lastUsedAt: toDate(data.lastUsedAt),
+});
+
 const auditRecord = (data) => ({ type: data.type, device: data.device ?? null, createdAt: toDate(data.createdAt) });
 
 module.exports = {
@@ -108,5 +127,6 @@ module.exports = {
   toDate,
   userRecord,
   tokenRecord,
+  passkeyRecord,
   auditRecord,
 };

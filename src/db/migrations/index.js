@@ -5,6 +5,7 @@
  */
 const MIGRATIONS = [
   ['001_initial', require('./001_initial')],
+  ['002_passkeys', require('./002_passkeys')],
   // New migrations go here.
 ].map(([name, migration]) => ({ name, ...migration }));
 

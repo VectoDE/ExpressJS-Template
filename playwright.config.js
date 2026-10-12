@@ -20,8 +20,9 @@ module.exports = defineConfig({
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+    // Virtual WebAuthn authenticators exist only in Chromium, so the passkey test runs there.
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] }, testIgnore: '**/passkeys.spec.js' },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] }, testIgnore: '**/passkeys.spec.js' },
     // Tests tagged @desktop and the viewport tests, which set their own sizes, would only repeat the desktop runs.
     {
       name: 'mobile',

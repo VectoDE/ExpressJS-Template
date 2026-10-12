@@ -107,6 +107,13 @@ module.exports = {
     twoFactorNotPending: 'Please start the setup with your password first.',
     recoveryCodesRenewed: 'New recovery codes are ready. The old ones no longer work.',
     recoveryCodeUsed: 'You signed in with a recovery code. {count} codes are left.',
+    passkeyReady: 'Choose a name and create the passkey. Your browser then asks where to save it.',
+    passkeyAdded: 'The passkey “{name}” is saved. At sign-in it can replace the code from the app.',
+    passkeyRemoved: 'The passkey is removed.',
+    passkeyInvalid: 'The passkey could not be saved. Please start again.',
+    passkeyLimit: 'You already have the maximum of 10 passkeys. Remove one first.',
+    passkeyNeedsTwoFactor: 'Turn on two-factor sign-in first, then add a passkey.',
+    passkeyRejected: 'The passkey was not accepted. Try again or enter a code.',
     sessionRevoked: 'The session is ended.',
     allSessionsRevoked: 'All other sessions and API tokens are signed out.',
     languageChanged: 'The language is now English.',
@@ -173,6 +180,9 @@ module.exports = {
       submit: 'Verify',
       cancel: 'Cancel and sign in again',
       recoveryHint: 'No access to the app? Enter one of your recovery codes.',
+      passkey: 'Use a passkey',
+      passkeyHint: 'Or confirm with a passkey on this device, in your password manager or on a security key.',
+      passkeyCancelled: 'No passkey was used. Try again or enter a code.',
     },
     forgot: {
       title: 'Forgot password',
@@ -260,6 +270,23 @@ module.exports = {
       codesText:
         'Each code works once if you cannot use the app. Store them somewhere safe now, they are only shown this one time.',
     },
+    passkeys: {
+      title: 'Passkeys',
+      text: 'A passkey replaces the code from the app at sign-in; the password is still needed. It lives on your device, in a password manager or on a security key.',
+      added: 'Added {date}',
+      lastUsed: 'Last used {date}',
+      neverUsed: 'Not used yet',
+      remove: 'Remove',
+      removeLabel: 'Remove passkey {name}',
+      startText: 'To add one, confirm with your password.',
+      start: 'Add passkey',
+      name: 'Name of the passkey',
+      nameHelp: 'So you can tell your passkeys apart, for example “Laptop” or “Phone”.',
+      create: 'Create passkey',
+      unsupported: 'This browser cannot create passkeys. Use a current browser with JavaScript turned on.',
+      cancelled: 'No passkey was created. Try again when you are ready.',
+      limit: 'You have the maximum of {count} passkeys.',
+    },
     sessions: {
       title: 'Signed-in devices',
       text: 'API clients signed in with your account.',
@@ -304,6 +331,8 @@ module.exports = {
     emailVerified: 'Email address confirmed',
     twoFactorEnabled: 'Two-factor sign-in turned on',
     twoFactorDisabled: 'Two-factor sign-in turned off',
+    passkeyAdded: 'Passkey added',
+    passkeyRemoved: 'Passkey removed',
     recoveryCodeUsed: 'Recovery code used',
     sessionRevoked: 'Session ended',
     allSessionsRevoked: 'Signed out everywhere',
@@ -379,6 +408,15 @@ module.exports = {
     twoFactorDisabled: {
       subject: 'Two-factor sign-in turned off',
       intro: 'two-factor sign-in was turned off for your account. Sign-in now only needs the password.',
+    },
+    passkeyAdded: {
+      subject: 'A passkey was added',
+      intro:
+        'the passkey “{passkey}” was added to your account. At sign-in it can now replace the code from the authenticator app.',
+    },
+    passkeyRemoved: {
+      subject: 'A passkey was removed',
+      intro: 'a passkey was removed from your account.',
     },
   },
 };

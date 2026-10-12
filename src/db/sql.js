@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const knexFactory = require('knex');
-const { userRecord, tokenRecord, auditRecord, toDate } = require('./records');
+const { userRecord, tokenRecord, passkeyRecord, auditRecord, toDate } = require('./records');
 const migrations = require('./migrations');
 
 /**
@@ -82,6 +82,20 @@ const fromTokenRow = (row) =>
     startedAt: row.started_at,
     email: row.email,
     createdAt: row.created_at,
+  });
+
+const fromPasskeyRow = (row) =>
+  (row ?? null) &&
+  passkeyRecord({
+    id: row.id,
+    userId: row.user_id,
+    credentialId: row.credential_id,
+    publicKey: row.public_key,
+    counter: row.counter,
+    transports: row.transports,
+    name: row.name,
+    createdAt: row.created_at,
+    lastUsedAt: row.last_used_at,
   });
 
 const createSqlAdapter = ({ knexConfig, dialect, migrate = true }) => {
@@ -327,6 +341,51 @@ const createSqlAdapter = ({ knexConfig, dialect, migrate = true }) => {
     },
   };
 
+  const passkeys = {
+    async create(data) {
+      const row = {
+        id: data.id,
+        user_id: String(data.userId),
+        credential_id: String(data.credentialId),
+        public_key: String(data.publicKey),
+        counter: Number(data.counter) || 0,
+        transports: (data.transports || []).map(String).join(','),
+        name: String(data.name),
+        created_at: ms(data.createdAt) ?? Date.now(),
+        last_used_at: ms(data.lastUsedAt),
+      };
+      await knex('passkeys').insert(row);
+      return fromPasskeyRow(row);
+    },
+    async listForUser(userId) {
+      const rows = await knex('passkeys')
+        .where({ user_id: String(userId) })
+        .orderBy([
+          { column: 'created_at', order: 'asc' },
+          { column: 'id', order: 'asc' },
+        ]);
+      return rows.map((row) => fromPasskeyRow(row));
+    },
+    async recordUse(userId, id, counter, at) {
+      const updated = await knex('passkeys')
+        .where({ id: String(id), user_id: String(userId) })
+        .update({ counter: Number(counter) || 0, last_used_at: ms(at) });
+      return updated === 1;
+    },
+    async remove(userId, id) {
+      return (
+        (await knex('passkeys')
+          .where({ id: String(id), user_id: String(userId) })
+          .del()) === 1
+      );
+    },
+    async removeForUser(userId) {
+      await knex('passkeys')
+        .where({ user_id: String(userId) })
+        .del();
+    },
+  };
+
   const audit = {
     async add({ id, userId, type, device }) {
       await knex('audit_events').insert({
@@ -448,7 +507,7 @@ const createSqlAdapter = ({ knexConfig, dialect, migrate = true }) => {
     },
   };
 
-  const TABLES = ['recovery_codes', 'tokens', 'audit_events', 'web_sessions', 'rate_limits', 'users'];
+  const TABLES = ['passkeys', 'recovery_codes', 'tokens', 'audit_events', 'web_sessions', 'rate_limits', 'users'];
   const ownedTables = new Set();
 
   /**
@@ -575,6 +634,7 @@ const createSqlAdapter = ({ knexConfig, dialect, migrate = true }) => {
     },
     users,
     tokens,
+    passkeys,
     audit,
     sessions,
     rateLimits,

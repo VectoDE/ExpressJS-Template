@@ -27,6 +27,7 @@ TEST_DATABASE_URL=postgres://postgres:pw@127.0.0.1:5432/app npm test
 | `tests/unit`                               | Configuration rules, password hashing, TOTP, encryption, i18n, metrics, redirects, sanitizer, error pages, saving the session before a redirect |
 | `tests/integration/auth.test.js`           | Sign-up, sign-in, lockout, token rotation and reuse, forged JWTs                                                                                |
 | `tests/integration/twoFactor.test.js`      | Two-factor setup, sign-in with code or recovery code, disabling, renewing recovery codes                                                        |
+| `tests/integration/passkeys.test.js`       | Passkeys in API and browser with a software authenticator: adding, signing in, replays, other origins, limits, removal                          |
 | `tests/integration/email.test.js`          | Email templates, email verification, password reset                                                                                             |
 | `tests/integration/users.test.js`          | Admin API, privilege escalation, pagination, sorting                                                                                            |
 | `tests/integration/admin.test.js`          | User administration in the browser, user search in the API                                                                                      |
@@ -51,6 +52,7 @@ quick look at the interface.
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `pages.spec.js`      | Public, error, account and admin pages in light and dark theme: axe (WCAG 2.2 AA and best practices), no console errors |
 | `auth.spec.js`       | Sign-up, sign-in and sign-out, wrong password, two-factor setup and sign-in, busy buttons                               |
+| `passkeys.spec.js`   | Adding a passkey and signing in with it, with Chromium's virtual authenticator (Chromium projects only)                 |
 | `motion.spec.js`     | Reduced motion, the footer style switch, the scroll story, headline splitting                                           |
 | `responsive.spec.js` | No horizontal scrolling from 320 to 3840 px, folding menu, scaling on large screens                                     |
 

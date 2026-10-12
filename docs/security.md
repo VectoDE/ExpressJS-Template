@@ -40,6 +40,10 @@ The 3.0.0 audit found these problems in 2.0.0 / 1.0.1. All are fixed and covered
 - Tokens and sessions issued before the last password, email or role change are rejected.
 - Optional two-factor sign-in with TOTP (RFC 6238). The secret is stored encrypted with AES-256-GCM under
   `ENCRYPTION_KEY`, recovery codes only as hashes and each usable once, and every code is accepted only once.
+- Passkeys (WebAuthn) as an alternative to the code once two-factor sign-in is on. They are bound to the host of
+  `APP_URL`, so a look-alike site cannot use them. Each ceremony has its own challenge that is stored as a hash and
+  accepted once within five minutes; verification uses `@simplewebauthn/server`. Only the public key is stored.
+  Turning two-factor sign-in off removes the passkeys.
 
 **Browser**
 

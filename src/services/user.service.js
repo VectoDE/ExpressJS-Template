@@ -126,9 +126,10 @@ const updateUserById = async (userId, updateBody, context = {}) => {
   return result.user;
 };
 
-// Erasure: the account, every token of every type and the activity log.
+// Erasure: the account, its passkeys, every token of every type and the activity log.
 const removeUserData = async (user) => {
   await db.users.remove(user.id);
+  await db.passkeys.removeForUser(user.id);
   await db.tokens.remove({ userId: user.id });
   await auditService.removeForUser(user.id);
 };

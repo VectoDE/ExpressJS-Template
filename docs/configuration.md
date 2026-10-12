@@ -18,7 +18,7 @@ node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
 | `NODE_ENV`                       | `development`                              | `production`, `development` or `test`                                                |
 | `PORT`                           | `8080`                                     |                                                                                      |
 | `APP_NAME`                       | `Express.js Template`                      | Shown in the header, page titles and emails                                          |
-| `APP_URL`                        | `http://localhost:<PORT>`                  | Public address for links in emails. Required in production, must be `https`          |
+| `APP_URL`                        | `http://localhost:<PORT>`                  | Public address for email links; passkeys are bound to its host. Production: `https`  |
 | `DEFAULT_LOCALE`                 | `en`                                       | `en` or `de`, used when the browser asks for neither                                 |
 | `DATABASE_URL`                   | `sqlite:data/app.db`                       | Which database to use, see [Database](#database)                                     |
 | `MIGRATION_DATABASE_URL`         | empty                                      | Account for schema changes, see [Database](#database)                                |

@@ -8,11 +8,13 @@ const { burnPasswordCheck, comparePassword, hashPassword, needsRehash } = requir
 const userService = require('./user.service');
 const tokenService = require('./token.service');
 const twoFactorService = require('./twoFactor.service');
+const passkeyService = require('./passkey.service');
 const auditService = require('./audit.service');
 const emailService = require('./email.service');
 
 const INVALID_CREDENTIALS = 'Incorrect email or password';
 const INVALID_CODE = 'Invalid two-factor code';
+const INVALID_PASSKEY = 'Invalid passkey';
 const INVALID_LINK = 'Invalid or expired link';
 
 const isLocked = (user) => user.lockUntil?.getTime() > Date.now();
@@ -134,14 +136,51 @@ const completeTwoFactorLogin = async (userId, code, context = {}) => {
   return { user, ...result };
 };
 
+/**
+ * Second sign-in step with a passkey instead of a code. A rejected passkey counts as a failed sign-in, like a
+ * wrong code.
+ */
+const completePasskeyLogin = async (userId, response, context = {}) => {
+  const user = await db.users.findById(userId);
+  if (!user?.twoFactor?.enabled || isLocked(user)) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, INVALID_PASSKEY);
+  }
+  if (!(await passkeyService.verifyAssertion(user, response))) {
+    await recordFailure(user, context);
+    throw new ApiError(httpStatus.UNAUTHORIZED, INVALID_PASSKEY);
+  }
+  await clearFailures(user);
+  await auditService.record(user.id, 'login', context);
+  return { user, recoveryCodeUsed: false };
+};
+
 // API variant: the challenge token from the first step proves the password; a credential change voids it.
-const loginWithTwoFactorChallenge = async (challengeToken, code, context = {}) => {
+const userOfChallenge = async (challengeToken) => {
   const payload = tokenService.decodeToken(challengeToken, tokenTypes.TWO_FACTOR);
   const user = await userService.getUserById(payload.sub);
   if (!user || tokenService.issuedBeforeCredentialChange(payload, user)) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid or expired token');
   }
+  return user;
+};
+
+const loginWithTwoFactorChallenge = async (challengeToken, code, context = {}) => {
+  const user = await userOfChallenge(challengeToken);
   return completeTwoFactorLogin(user.id, code, context);
+};
+
+const passkeyOptionsForChallenge = async (challengeToken) => {
+  const user = await userOfChallenge(challengeToken);
+  const options = await passkeyService.authenticationOptions(user.id);
+  if (!options) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'No passkey registered');
+  }
+  return options;
+};
+
+const loginWithPasskeyChallenge = async (challengeToken, response, context = {}) => {
+  const user = await userOfChallenge(challengeToken);
+  return completePasskeyLogin(user.id, response, context);
 };
 
 const logout = async (refreshToken) => {
@@ -210,7 +249,10 @@ module.exports = {
   verifyEmail,
   login,
   completeTwoFactorLogin,
+  completePasskeyLogin,
   loginWithTwoFactorChallenge,
+  passkeyOptionsForChallenge,
+  loginWithPasskeyChallenge,
   logout,
   refreshAuth,
   requestPasswordReset,

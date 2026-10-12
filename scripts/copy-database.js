@@ -1,5 +1,5 @@
 /**
- * Copies accounts, their second factors and recovery codes, valid tokens and the activity log from one database to
+ * Copies accounts, their second factors, recovery codes and passkeys, valid tokens and the activity log from one database to
  * another, for example from MongoDB to PostgreSQL. Ids, timestamps and password hashes stay as they are, so users
  * sign in with their passwords and second factors as before. Browser sessions and rate-limit counters are not
  * copied: everybody signs in once more. Records of resources made with `npm run generate` need their own step.
@@ -21,6 +21,8 @@ const copyUsers = async (source, target, offset = 0, copied = 0) => {
   await results.reduce(async (previous, user) => {
     await previous;
     await target.users.restore(user);
+    const passkeys = await source.passkeys.listForUser(user.id);
+    await Promise.all(passkeys.map((passkey) => target.passkeys.create(passkey)));
     // Activity entries carry no id outside the database that stored them; the target gives them new ones.
     const events = await source.audit.list(user.id, ALL);
     await Promise.all(events.map((event) => target.audit.restore({ ...event, id: newId(), userId: user.id })));

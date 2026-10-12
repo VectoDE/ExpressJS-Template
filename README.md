@@ -11,16 +11,16 @@ Starter for Express 5 applications with a JSON API and server-rendered pages. Ve
 and German. Signing in and forms need the running app; `npm run preview` starts it locally with demo accounts.
 
 It comes with sign-up and sign-in for both an API (JWT) and a browser (session cookie), two-factor
-authentication, email verification and password reset, user management for admins, GDPR self-service,
+authentication with an app or a passkey, email verification and password reset, user management for admins, GDPR self-service,
 OpenAPI docs, Docker, CI and tests for every endpoint. Security settings are strict
 by default; you loosen them where your project needs it, not the other way round.
 
 ## What is included
 
-- **API** under `/v1`: register, login with optional second factor, token rotation, logout, email verification,
+- **API** under `/v1`: register, login with optional second factor (code or passkey), token rotation, logout, email verification,
   password reset, account self-service, sessions and activity log, user admin
-- **Browser pages** with EJS in English (default) and German: sign-in, account page with profile, password, two-factor
-  and session management, data export, account deletion, user administration, privacy and imprint
+- **Browser pages** with EJS in English (default) and German: sign-in, account page with profile, password, two-factor,
+  passkey and session management, data export, account deletion, user administration, privacy and imprint
   placeholders. Light and dark theme, WCAG 2.1 AA, no external fonts or scripts
 - **Responsive and animated:** layouts for phones, tablets, large monitors and TVs up to 3840 px; five motion
   styles (`MOTION_STYLE`) with a switch in the footer; reduced motion is respected

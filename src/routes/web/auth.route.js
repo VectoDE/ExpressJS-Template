@@ -13,6 +13,7 @@ router
   .route('/login/2fa')
   .get(ensureGuest, authController.renderTwoFactor)
   .post(authLimiter, ensureGuest, authController.handleTwoFactor);
+router.post('/login/2fa/passkey', authLimiter, ensureGuest, authController.handleTwoFactorPasskey);
 router
   .route('/register')
   .get(ensureGuest, authController.renderRegister)

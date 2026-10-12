@@ -8,6 +8,7 @@ const userService = require('./user.service');
 const auditService = require('./audit.service');
 const emailService = require('./email.service');
 const twoFactorService = require('./twoFactor.service');
+const passkeyService = require('./passkey.service');
 const authService = require('./auth.service');
 
 /**
@@ -34,9 +35,10 @@ const exportData = async (userId) => {
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
-  const [sessions, activity] = await Promise.all([
+  const [sessions, activity, passkeys] = await Promise.all([
     tokenService.listSessions(userId),
     auditService.listForUser(userId, 1000),
+    passkeyService.list(userId),
   ]);
   return {
     exportedAt: new Date().toISOString(),
@@ -53,11 +55,13 @@ const exportData = async (userId) => {
       credentialsChangedAt: user.credentialsChangedAt,
     },
     twoFactor: twoFactorService.status(user),
+    passkeys,
     activeApiSessions: sessions,
     activity,
     notes: [
       'The password is stored only as a scrypt hash and is not part of this export.',
       'The two-factor secret is stored encrypted and recovery codes only as hashes; neither is exported.',
+      'Passkeys are listed by name; their public keys only work for this site and are not exported.',
       'Browser sessions are stored encrypted and expire after inactivity.',
     ],
   };

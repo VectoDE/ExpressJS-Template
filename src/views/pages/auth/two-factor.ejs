@@ -9,6 +9,15 @@
       }) %>
       <button type="submit" class="button button--primary button--block"><%= t('auth.twoFactor.submit') %></button>
     </form>
+    <% if (locals.passkeyOptions) { %>
+    <form method="post" action="/login/2fa/passkey" class="form passkey-option" data-passkey="get" data-passkey-options="<%= JSON.stringify(passkeyOptions) %>" data-passkey-cancelled="<%= t('auth.twoFactor.passkeyCancelled') %>" hidden>
+      <%- include('../../components/csrf') %>
+      <input type="hidden" name="response" value="" />
+      <p class="form__intro"><%= t('auth.twoFactor.passkeyHint') %></p>
+      <p class="form__status" data-passkey-status role="status" aria-live="polite"></p>
+      <button type="submit" class="button button--secondary button--block"><%= t('auth.twoFactor.passkey') %></button>
+    </form>
+    <% } %>
     <p class="panel__footer"><a href="/login"><%= t('auth.twoFactor.cancel') %></a></p>
   </section>
   <%- include('../../components/auth-steps', { timer: true, steps: [

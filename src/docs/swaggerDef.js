@@ -138,6 +138,15 @@ module.exports = {
           createdAt: { type: 'string', format: 'date-time' },
         },
       },
+      Passkey: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          name: { type: 'string' },
+          createdAt: { type: 'string', format: 'date-time' },
+          lastUsedAt: { type: 'string', format: 'date-time', nullable: true },
+        },
+      },
       TwoFactorStatus: {
         type: 'object',
         properties: {

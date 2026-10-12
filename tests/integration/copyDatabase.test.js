@@ -56,6 +56,16 @@ describe('npm run copy-database', () => {
       lockUntil: new Date(Date.now() + HOUR),
     });
     await sqlite.audit.add({ id: newId(), userId: id, type: 'login', device: 'Firefox' });
+    await sqlite.passkeys.create({
+      id: newId(),
+      userId: id,
+      credentialId: 'Y3JlZGVudGlhbA',
+      publicKey: 'cHVibGljIGtleQ',
+      counter: 7,
+      transports: ['usb', 'nfc'],
+      name: 'Security key',
+      lastUsedAt: new Date(Date.now() - HOUR),
+    });
     await sqlite.audit.add({ id: newId(), userId: id, type: 'twoFactorEnabled' });
     const valid = { id: newId(), tokenHash: 'valid', userId: id, type: 'refresh', family: 'f', device: 'Firefox' };
     await sqlite.tokens.create({ ...valid, expires: new Date(Date.now() + HOUR), startedAt: new Date() });
@@ -70,12 +80,15 @@ describe('npm run copy-database', () => {
 
     expect(await copyDatabase(sqlite, mongo)).toEqual({ users: 1, tokens: 1 });
     expect(snapshot(await mongo.users.findById(id))).toEqual(original);
+    const passkeys = await sqlite.passkeys.listForUser(id);
+    expect(await mongo.passkeys.listForUser(id)).toEqual(passkeys);
     expect((await mongo.audit.types(id)).sort()).toEqual(['login', 'twoFactorEnabled']);
     expect(await mongo.tokens.find({ tokenHash: 'valid' })).toMatchObject({ id: valid.id, userId: id, family: 'f' });
     expect(await mongo.tokens.exists({ tokenHash: 'expired' })).toBe(false);
 
     expect(await copyDatabase(mongo, back)).toEqual({ users: 1, tokens: 1 });
     expect(snapshot(await back.users.findById(id))).toEqual(original);
+    expect(await back.passkeys.listForUser(id)).toEqual(passkeys);
     const events = await back.audit.list(id, 10);
     expect(events.map((event) => event.type).sort()).toEqual(['login', 'twoFactorEnabled']);
     expect(events.find((event) => event.type === 'login').device).toBe('Firefox');

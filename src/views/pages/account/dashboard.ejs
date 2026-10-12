@@ -7,6 +7,7 @@
     { id: 'profile', label: t('account.profile.title') },
     { id: 'password', label: t('account.password.title') },
     { id: 'two-factor', label: t('account.twoFactor.title') },
+    { id: 'passkeys', label: t('account.passkeys.title') },
     { id: 'sessions', label: t('account.sessions.title') },
     { id: 'activity', label: t('account.activity.title') },
     { id: 'export', label: t('account.export.title') },
@@ -157,6 +158,55 @@
           autocomplete: 'current-password', maxlength: 128, required: true,
         }) %>
         <div class="button-row"><button type="submit" class="button button--primary"><%= t('account.twoFactor.start') %></button></div>
+      </form>
+      <% } %>
+    </section>
+
+    <section class="panel" id="passkeys" aria-labelledby="passkeys-title" data-reveal>
+      <h2 id="passkeys-title"><%= t('account.passkeys.title') %></h2>
+      <p><%= t('account.passkeys.text') %></p>
+      <% if (passkeys.length) { %>
+      <ul class="session-list">
+        <% passkeys.forEach((passkey) => { %>
+        <li class="session-list__item">
+          <div>
+            <p class="session-list__device"><%= passkey.name %></p>
+            <p class="session-list__meta"><span><%= t('account.passkeys.added', { date: formatDate(passkey.createdAt) }) %></span><span><%= passkey.lastUsedAt ? t('account.passkeys.lastUsed', { date: formatDate(passkey.lastUsedAt, dateTimeOptions) }) : t('account.passkeys.neverUsed') %></span></p>
+          </div>
+          <form method="post" action="/account/passkeys/<%= passkey.id %>/delete">
+            <%- include('../../components/csrf') %>
+            <button type="submit" class="button button--quiet button--small" aria-label="<%= t('account.passkeys.removeLabel', { name: passkey.name }) %>"><%= t('account.passkeys.remove') %></button>
+          </form>
+        </li>
+        <% }) %>
+      </ul>
+      <% } %>
+      <% if (!twoFactor.enabled) { %>
+      <p class="empty-state"><%= t('flash.passkeyNeedsTwoFactor') %></p>
+      <% } else if (passkeyOptions) { %>
+      <p data-passkey-unsupported><%= t('account.passkeys.unsupported') %></p>
+      <form method="post" action="/account/passkeys" class="form" data-passkey="create" data-passkey-options="<%= JSON.stringify(passkeyOptions) %>" data-passkey-cancelled="<%= t('account.passkeys.cancelled') %>" hidden>
+        <%- include('../../components/csrf') %>
+        <input type="hidden" name="response" value="" />
+        <%- include('../../components/field', {
+          id: 'passkey-name', name: 'name', label: t('account.passkeys.name'), help: t('account.passkeys.nameHelp'),
+          maxlength: 60, required: true, autocomplete: 'off',
+        }) %>
+        <p class="form__status" data-passkey-status role="status" aria-live="polite"></p>
+        <div class="button-row"><button type="submit" class="button button--primary"><%= t('account.passkeys.create') %></button></div>
+      </form>
+      <% } else if (passkeys.length >= maxPasskeys) { %>
+      <p class="empty-state"><%= t('account.passkeys.limit', { count: maxPasskeys }) %></p>
+      <% } else { %>
+      <form method="post" action="/account/passkeys/options" class="form">
+        <%- include('../../components/csrf') %>
+        <%- include('../../components/username-hint') %>
+        <p class="form__intro"><%= t('account.passkeys.startText') %></p>
+        <%- include('../../components/field', {
+          id: 'passkey-password', name: 'password', label: t('fields.currentPassword'), type: 'password',
+          autocomplete: 'current-password', maxlength: 128, required: true,
+        }) %>
+        <div class="button-row"><button type="submit" class="button button--secondary"><%= t('account.passkeys.start') %></button></div>
       </form>
       <% } %>
     </section>

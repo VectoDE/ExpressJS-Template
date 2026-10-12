@@ -3,6 +3,7 @@ const { tokenTypes } = require('../../config/tokens');
 const httpStatus = require('../../utils/httpStatus');
 const authValidation = require('../../validations/auth.validation');
 const authService = require('../../services/auth.service');
+const passkeyService = require('../../services/passkey.service');
 const tokenService = require('../../services/token.service');
 const userService = require('../../services/user.service');
 const { addFlashMessage, rememberInput } = require('../../utils/flash');
@@ -81,10 +82,16 @@ const expired = (req, res) => {
 };
 
 const renderTwoFactor = async (req, res) => {
-  if (!(await pendingLogin(req))) {
+  const pending = await pendingLogin(req);
+  if (!pending) {
     return expired(req, res);
   }
-  return res.render('pages/auth/two-factor', { title: req.t('auth.twoFactor.title') });
+  return res.render('pages/auth/two-factor', {
+    title: req.t('auth.twoFactor.title'),
+    // Only for accounts with a passkey; each page view gets its own single-use challenge.
+    passkeyOptions: await passkeyService.authenticationOptions(pending.userId),
+    scripts: ['passkeys'],
+  });
 };
 
 const handleTwoFactor = async (req, res) => {
@@ -111,6 +118,33 @@ const handleTwoFactor = async (req, res) => {
   if (result.recoveryCodeUsed) {
     flash(req, 'warning', 'flash.recoveryCodeUsed', { count: result.remainingRecoveryCodes });
   }
+  return res.redirect(pending.returnTo);
+};
+
+// The same second step with a passkey: the browser posts the signed answer as JSON in the field "response".
+const handleTwoFactorPasskey = async (req, res) => {
+  const pending = await pendingLogin(req);
+  if (!pending) {
+    return expired(req, res);
+  }
+  const rejected = () => {
+    flash(req, 'error', 'flash.passkeyRejected');
+    return res.redirect('/login/2fa');
+  };
+  const { error, value } = validate(authValidation.passkeyForm.body, req.body);
+  if (error) {
+    return rejected();
+  }
+  let result;
+  try {
+    result = await authService.completePasskeyLogin(pending.userId, value.response, requestContext(req));
+  } catch (err) {
+    if (err.statusCode === httpStatus.UNAUTHORIZED) {
+      return rejected();
+    }
+    throw err;
+  }
+  await startSession(req, result.user, { type: 'success', text: req.t('flash.signedIn', { name: result.user.name }) });
   return res.redirect(pending.returnTo);
 };
 
@@ -238,6 +272,7 @@ module.exports = {
   handleLogin,
   renderTwoFactor,
   handleTwoFactor,
+  handleTwoFactorPasskey,
   handleRegister,
   handleLogout,
   renderForgotPassword,

@@ -54,6 +54,7 @@
     "node": ">=22.12.0"
   },
   "dependencies": {
+    "@simplewebauthn/server": "^14.0.3",
     "better-sqlite3": "^13.0.3",
     "compression": "^1.8.2",
     "cors": "^2.8.6",

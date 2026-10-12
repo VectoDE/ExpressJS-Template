@@ -247,6 +247,55 @@ describe.each(targets)('%s', (label, urlFor) => {
     });
   });
 
+  describe('passkeys', () => {
+    const passkey = (userId, overrides = {}) =>
+      db.passkeys.create({
+        id: newId(),
+        userId,
+        credentialId: `${'A'.repeat(1300)}${newId()}`,
+        publicKey: 'p'.repeat(1900),
+        counter: 0,
+        transports: ['internal', 'hybrid'],
+        name: 'Laptop',
+        ...overrides,
+      });
+
+    it('stores long credential ids and keys, lists oldest first and only for the owner', async () => {
+      const owner = await user();
+      const stranger = await user();
+      const first = await passkey(owner.id, { createdAt: new Date(Date.now() - HOUR) });
+      const second = await passkey(owner.id, { transports: [] });
+      await passkey(stranger.id);
+      const list = await db.passkeys.listForUser(owner.id);
+      expect(list.map((item) => item.id)).toEqual([first.id, second.id]);
+      expect(list[0]).toEqual(first);
+      expect(list[0].credentialId).toHaveLength(1324);
+      expect(list[0].transports).toEqual(['internal', 'hybrid']);
+      expect(list[1].transports).toEqual([]);
+      expect(list[1].lastUsedAt).toBeNull();
+    });
+
+    it("records a use and removes only the owner's passkeys", async () => {
+      const owner = await user();
+      const stranger = await user();
+      const item = await passkey(owner.id);
+      const at = new Date();
+      expect(await db.passkeys.recordUse(stranger.id, item.id, 5, at)).toBe(false);
+      expect(await db.passkeys.recordUse(owner.id, item.id, 5, at)).toBe(true);
+      const [used] = await db.passkeys.listForUser(owner.id);
+      expect(used.counter).toBe(5);
+      expect(used.lastUsedAt.getTime()).toBe(at.getTime());
+      expect(await db.passkeys.remove(stranger.id, item.id)).toBe(false);
+      expect(await db.passkeys.remove(owner.id, 'not-an-id')).toBe(false);
+      expect(await db.passkeys.remove(owner.id, item.id)).toBe(true);
+      await passkey(owner.id);
+      await passkey(stranger.id);
+      await db.passkeys.removeForUser(owner.id);
+      expect(await db.passkeys.listForUser(owner.id)).toEqual([]);
+      expect(await db.passkeys.listForUser(stranger.id)).toHaveLength(1);
+    });
+  });
+
   describe('audit', () => {
     it('keeps events per account, newest first', async () => {
       const owner = await user();

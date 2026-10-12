@@ -1,7 +1,7 @@
 const os = require('node:os');
 const { MongoClient, ObjectId } = require('mongodb');
 const { isId } = require('../utils/id');
-const { userRecord, tokenRecord, auditRecord, emptyTwoFactor } = require('./records');
+const { userRecord, tokenRecord, passkeyRecord, auditRecord, emptyTwoFactor } = require('./records');
 
 /**
  * MongoDB adapter on the official driver. Field names and ObjectId keys match the collections of version 3.0.0,
@@ -14,6 +14,7 @@ const hex = (value) => (value instanceof ObjectId ? value.toHexString() : String
 
 const fromUserDoc = (doc) => doc && userRecord({ ...doc, id: hex(doc._id) });
 const fromTokenDoc = (doc) => doc && tokenRecord({ ...doc, id: hex(doc._id), userId: hex(doc.user) });
+const fromPasskeyDoc = (doc) => doc && passkeyRecord({ ...doc, id: hex(doc._id), userId: hex(doc.user) });
 
 const escapeRegExp = (value) => value.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
 
@@ -42,6 +43,7 @@ const createMongoAdapter = ({ url, dbName, auditRetentionDays, migrate = true })
       col('tokens').createIndex({ tokenHash: 1 }, { unique: true }),
       col('tokens').createIndex({ user: 1, type: 1 }),
       col('tokens').createIndex({ expires: 1 }, { expireAfterSeconds: 0 }),
+      col('passkeys').createIndex({ user: 1, createdAt: 1 }),
       col('auditevents').createIndex({ user: 1, createdAt: -1 }),
       col('auditevents').createIndex({ createdAt: 1 }, { expireAfterSeconds: auditRetentionDays * 24 * 60 * 60 }),
       col('web_sessions').createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
@@ -290,6 +292,45 @@ const createMongoAdapter = ({ url, dbName, auditRetentionDays, migrate = true })
     },
   };
 
+  const passkeys = {
+    async create(data) {
+      const doc = {
+        _id: oid(data.id),
+        user: oid(data.userId),
+        credentialId: String(data.credentialId),
+        publicKey: String(data.publicKey),
+        counter: Number(data.counter) || 0,
+        transports: (data.transports || []).map(String),
+        name: String(data.name),
+        createdAt: data.createdAt || new Date(),
+        lastUsedAt: data.lastUsedAt || null,
+      };
+      await col('passkeys').insertOne(doc);
+      return fromPasskeyDoc(doc);
+    },
+    async listForUser(userId) {
+      const docs = await col('passkeys')
+        .find({ user: oid(userId) })
+        .sort({ createdAt: 1, _id: 1 })
+        .toArray();
+      return docs.map((doc) => fromPasskeyDoc(doc));
+    },
+    async recordUse(userId, id, counter, at) {
+      const { matchedCount } = await col('passkeys').updateOne(
+        { _id: oid(id), user: oid(userId) },
+        { $set: { counter: Number(counter) || 0, lastUsedAt: at } }
+      );
+      return matchedCount === 1;
+    },
+    async remove(userId, id) {
+      const { deletedCount } = await col('passkeys').deleteOne({ _id: oid(id), user: oid(userId) });
+      return deletedCount === 1;
+    },
+    async removeForUser(userId) {
+      await col('passkeys').deleteMany({ user: oid(userId) });
+    },
+  };
+
   const audit = {
     async add({ userId, type, device }) {
       const doc = { user: oid(userId), type: String(type), createdAt: new Date() };
@@ -401,7 +442,7 @@ const createMongoAdapter = ({ url, dbName, auditRetentionDays, migrate = true })
     // TTL indexes remove expired tokens, sessions, rate-limit windows and old audit events on their own.
     async purgeExpired() {},
     async clear() {
-      const names = ['users', 'tokens', 'auditevents', 'web_sessions', 'rate_limits', ...ownedCollections];
+      const names = ['users', 'tokens', 'passkeys', 'auditevents', 'web_sessions', 'rate_limits', ...ownedCollections];
       await Promise.all(names.map((name) => col(name).deleteMany({})));
     },
     async drop() {
@@ -409,6 +450,7 @@ const createMongoAdapter = ({ url, dbName, auditRetentionDays, migrate = true })
     },
     users,
     tokens,
+    passkeys,
     audit,
     sessions,
     rateLimits,

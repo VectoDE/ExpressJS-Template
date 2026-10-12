@@ -246,4 +246,93 @@ router.post(
   accountController.renewRecoveryCodes
 );
 
+/**
+ * @swagger
+ * /account/passkeys:
+ *   get:
+ *     summary: Passkeys of the account
+ *     tags: [Account]
+ *     responses:
+ *       "200":
+ *         description: Passkeys, oldest first
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 results: { type: array, items: { $ref: '#/components/schemas/Passkey' } }
+ *       "401": { $ref: '#/components/responses/Unauthorized' }
+ *   post:
+ *     summary: Add a passkey
+ *     description: >
+ *       Second step. `response` is the JSON form of the credential that navigator.credentials.create() returned for
+ *       the options of /account/passkeys/options. The browser must run on the origin of APP_URL.
+ *     tags: [Account]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, response]
+ *             properties:
+ *               name: { type: string, maxLength: 60, example: "Laptop" }
+ *               response: { type: object }
+ *     responses:
+ *       "201":
+ *         description: Added
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Passkey' }
+ *       "400": { description: Two-factor sign-in is off, or the passkey could not be verified }
+ *       "409": { description: Limit of 10 passkeys reached }
+ * /account/passkeys/options:
+ *   post:
+ *     summary: Start adding a passkey
+ *     description: >
+ *       Needs the password and two-factor sign-in turned on. Returns PublicKeyCredentialCreationOptionsJSON with a
+ *       challenge that works once within five minutes.
+ *     tags: [Account]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { type: object, required: [password], properties: { password: { type: string } } }
+ *     responses:
+ *       "200": { description: Options for navigator.credentials.create() }
+ *       "400": { description: Two-factor sign-in is off }
+ *       "403": { description: Password is incorrect }
+ *       "409": { description: Limit of 10 passkeys reached }
+ * /account/passkeys/{passkeyId}:
+ *   delete:
+ *     summary: Remove a passkey
+ *     tags: [Account]
+ *     parameters:
+ *       - { in: path, name: passkeyId, required: true, schema: { type: string } }
+ *     responses:
+ *       "204": { description: Removed }
+ *       "404": { $ref: '#/components/responses/NotFound' }
+ */
+router.get('/passkeys', auth('getProfile'), accountController.listPasskeys);
+router.post(
+  '/passkeys/options',
+  authLimiter,
+  auth('getProfile'),
+  validate(accountValidation.passkeyOptions),
+  accountController.passkeyOptions
+);
+router.post(
+  '/passkeys',
+  authLimiter,
+  auth('getProfile'),
+  validate(accountValidation.addPasskey),
+  accountController.addPasskey
+);
+router.delete(
+  '/passkeys/:passkeyId',
+  auth('getProfile'),
+  validate(accountValidation.passkeyId),
+  accountController.removePasskey
+);
+
 module.exports = router;
