@@ -1,7 +1,7 @@
 const express = require('express');
 const request = require('supertest');
 const app = require('../../src/app');
-const { useDatabase } = require('../helpers/db');
+const { useDatabase, db } = require('../helpers/db');
 const { browser } = require('../helpers/web');
 
 useDatabase();
@@ -131,6 +131,8 @@ describe('rate limiting', () => {
     const saved = process.env.AUTH_RATE_LIMIT_MAX;
     process.env.AUTH_RATE_LIMIT_MAX = '2';
     jest.isolateModules(() => {
+      // The fresh app keeps using the connected test database for its browser sessions.
+      jest.doMock('../../src/db', () => db);
       limitedApp = require('../../src/app');
     });
     process.env.AUTH_RATE_LIMIT_MAX = saved;
@@ -148,7 +150,7 @@ describe('rate limiting', () => {
 
   it('counts failed browser sign-ins although they answer with a redirect', async () => {
     const client = browser(appWithLowLimit());
-    // Fails validation, so the test needs no database in the separately loaded app.
+    // Fails validation, so no account is needed.
     const wrong = { email: 'not-an-email', password: 'x' };
     expect((await client.submit('/login', wrong)).status).toBe(302);
     expect((await client.submit('/login', wrong)).status).toBe(302);

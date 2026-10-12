@@ -1,22 +1,12 @@
-const os = require('node:os');
-const mongoose = require('mongoose');
+const db = require('../../src/db');
 
-const connect = async () => {
-  // Jest's sandbox cannot run the driver's dynamic import('os'); hand the module over directly.
-  await mongoose.connect(process.env.MONGODB_URI, {
-    dbName: `test_${process.env.JEST_WORKER_ID || 0}`,
-    runtimeAdapters: { os },
-  });
-  await Promise.all(Object.values(mongoose.models).map((model) => model.init()));
-};
+const connect = () => db.connect();
 
-const clear = async () => {
-  await Promise.all(Object.values(mongoose.connection.collections).map((collection) => collection.deleteMany({})));
-};
+const clear = () => db.clear();
 
 const disconnect = async () => {
-  await mongoose.connection.dropDatabase();
-  await mongoose.disconnect();
+  await db.drop();
+  await db.disconnect();
 };
 
 // Registers connect / clear / disconnect hooks for a test file.
@@ -26,4 +16,14 @@ const useDatabase = () => {
   afterAll(disconnect);
 };
 
-module.exports = { connect, clear, disconnect, useDatabase };
+// True when the account has an activity entry of this type.
+const hasAuditEvent = async (userId, type) => (await db.audit.types(userId)).includes(type);
+
+// Lets stored tokens of a type run out, as if their time had passed.
+const expireTokens = async (type) => {
+  const tokens = await db.tokens.list({ type });
+  await db.tokens.remove({ type });
+  await Promise.all(tokens.map((token) => db.tokens.create({ ...token, expires: new Date(Date.now() - 1000) })));
+};
+
+module.exports = { db, connect, clear, disconnect, useDatabase, hasAuditEvent, expireTokens };

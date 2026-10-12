@@ -52,8 +52,8 @@ const inSequence = (items, fn) =>
 const serverEnv = (mongoUri, port) => ({
   NODE_ENV: 'production',
   PORT: String(port),
-  MONGODB_URI: mongoUri,
-  MONGODB_DB_NAME: 'perf',
+  DATABASE_URL: mongoUri,
+  DATABASE_NAME: 'perf',
   JWT_SECRET: crypto.randomBytes(48).toString('base64url'),
   SESSION_SECRET: crypto.randomBytes(48).toString('base64url'),
   ENCRYPTION_KEY: crypto.randomBytes(32).toString('base64url'),

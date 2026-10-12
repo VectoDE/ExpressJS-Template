@@ -1,27 +1,47 @@
-const mongoose = require('mongoose');
-const User = require('../models/user.model');
-const Token = require('../models/token.model');
+const config = require('../config/config');
+const db = require('../db');
+const { LOCALES } = require('../db/records');
+const { newId } = require('../utils/id');
+const { hashPassword } = require('../utils/password');
 const ApiError = require('../utils/ApiError');
 const httpStatus = require('../utils/httpStatus');
 const tokenService = require('./token.service');
 const auditService = require('./audit.service');
 
 const SORTABLE_FIELDS = new Set(['name', 'email', 'role', 'createdAt', 'updatedAt']);
+const PUBLIC_FIELDS = ['id', 'name', 'email', 'role', 'isEmailVerified', 'locale', 'createdAt', 'updatedAt'];
 
-const escapeRegExp = (value) => value.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+const normalizeEmail = (email) => String(email).trim().toLowerCase();
 
-const toUserResponse = (userDoc) => (userDoc ? userDoc.toPublic() : null);
+// The public view of an account. Only a flag tells whether two-factor sign-in is on; secrets never leave.
+const toUserResponse = (user) => {
+  if (!user) {
+    return null;
+  }
+  const response = {};
+  PUBLIC_FIELDS.forEach((field) => {
+    if (user[field] !== undefined && user[field] !== null) {
+      response[field] = user[field];
+    }
+  });
+  response.twoFactorEnabled = Boolean(user.twoFactor?.enabled);
+  return response;
+};
+
+const isEmailTaken = (email, excludeUserId) => db.users.emailTaken(normalizeEmail(email), excludeUserId);
 
 const createUser = async (userBody) => {
-  if (await User.isEmailTaken(userBody.email)) {
+  if (await isEmailTaken(userBody.email)) {
     throw new ApiError(httpStatus.CONFLICT, 'Email already taken');
   }
-  return User.create({
-    name: userBody.name,
-    email: userBody.email,
-    password: userBody.password,
+  return db.users.create({
+    id: newId(),
+    name: String(userBody.name).trim(),
+    email: normalizeEmail(userBody.email),
+    password: await hashPassword(userBody.password),
     role: userBody.role || 'user',
-    locale: User.LOCALES.includes(userBody.locale) ? userBody.locale : undefined,
+    isEmailVerified: Boolean(userBody.isEmailVerified),
+    locale: LOCALES.includes(userBody.locale) ? userBody.locale : config.defaultLocale,
   });
 };
 
@@ -30,45 +50,56 @@ const queryUsers = async (filter = {}, options = {}) => {
   if (!SORTABLE_FIELDS.has(sortField)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'sortBy is not allowed');
   }
-  const query = {};
-  if (filter.role) {
-    query.role = String(filter.role);
-  }
-  // Search is a case-insensitive substring match on name and email. Input is escaped, never a pattern.
-  if (filter.search) {
-    const pattern = mongoose.trusted({
-      $regex: escapeRegExp(String(filter.search).trim().slice(0, 100)),
-      $options: 'i',
-    });
-    query.$or = [{ name: pattern }, { email: pattern }];
-  }
   const limit = Math.min(Math.max(Number.parseInt(options.limit, 10) || 10, 1), 100);
   const page = Math.max(Number.parseInt(options.page, 10) || 1, 1);
+  // Search is a case-insensitive substring match on name and email. Input is matched literally, never a pattern.
+  const search = filter.search ? String(filter.search).trim().slice(0, 100) : '';
 
-  const [results, totalResults] = await Promise.all([
-    User.find(query)
-      .select('+twoFactor')
-      .sort({ [sortField]: sortOrder === 'desc' ? -1 : 1 })
-      .skip((page - 1) * limit)
-      .limit(limit),
-    User.countDocuments(query),
-  ]);
+  const { results, total } = await db.users.list(
+    { role: filter.role ? String(filter.role) : undefined, search: search || undefined },
+    { sortBy: sortField, descending: sortOrder === 'desc', offset: (page - 1) * limit, limit }
+  );
 
   return {
     results: results.map((user) => toUserResponse(user)),
     page,
     limit,
-    totalPages: Math.max(Math.ceil(totalResults / limit), 1),
-    totalResults,
+    totalPages: Math.max(Math.ceil(total / limit), 1),
+    totalResults: total,
   };
 };
 
-// The two-factor block is loaded so toPublic can report whether it is on; toPublic never exposes the secret.
-const getUserById = async (id) => User.findById(id).select('+twoFactor');
+const getUserById = (id) => db.users.findById(id);
 
-const getUserByEmail = async (email, { withSecrets = false } = {}) => {
-  const query = User.findOne({ email: String(email).toLowerCase() });
-  return withSecrets ? query.select('+password +failedLoginAttempts +lockUntil +twoFactor') : query;
+const getUserByEmail = (email) => db.users.findByEmail(normalizeEmail(email));
+
+/**
+ * Applies changes to an account and returns the updated record. A new password is hashed here; a changed password,
+ * email or role moves credentialsChangedAt, which ends every token and session issued before.
+ */
+const saveChanges = async (user, changes) => {
+  const update = {};
+  if (changes.name !== undefined) update.name = String(changes.name).trim();
+  if (changes.email !== undefined && normalizeEmail(changes.email) !== user.email) {
+    update.email = normalizeEmail(changes.email);
+    update.isEmailVerified = false;
+  }
+  if (changes.password !== undefined) update.password = await hashPassword(changes.password);
+  if (changes.role !== undefined && changes.role !== user.role) update.role = changes.role;
+  if (changes.locale !== undefined && LOCALES.includes(changes.locale)) update.locale = changes.locale;
+  if (changes.isEmailVerified !== undefined) update.isEmailVerified = Boolean(changes.isEmailVerified);
+  if (update.password || update.email || update.role) {
+    update.credentialsChangedAt = new Date();
+  }
+  if (Object.keys(update).length) {
+    await db.users.update(user.id, update);
+  }
+  return {
+    user: await db.users.findById(user.id),
+    emailChanged: Boolean(update.email),
+    passwordChanged: Boolean(update.password),
+    roleChanged: Boolean(update.role),
+  };
 };
 
 const updateUserById = async (userId, updateBody, context = {}) => {
@@ -76,34 +107,30 @@ const updateUserById = async (userId, updateBody, context = {}) => {
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
-  if (updateBody.email && (await User.isEmailTaken(updateBody.email, userId))) {
+  if (updateBody.email && (await isEmailTaken(updateBody.email, userId))) {
     throw new ApiError(httpStatus.CONFLICT, 'Email already taken');
   }
+  const changes = {};
   ['name', 'email', 'password', 'role'].forEach((field) => {
     if (updateBody[field] !== undefined) {
-      user[field] = updateBody[field];
+      changes[field] = updateBody[field];
     }
   });
-  const roleChanged = user.isModified('role');
-  const credentialsChanged = user.isModified('password') || roleChanged || user.isModified('email');
-  if (user.isModified('email')) {
-    user.isEmailVerified = false;
-  }
-  await user.save();
-  if (credentialsChanged) {
+  const result = await saveChanges(user, changes);
+  if (result.emailChanged || result.passwordChanged || result.roleChanged) {
     await tokenService.revokeAllForUser(user.id);
   }
-  if (roleChanged) {
-    await auditService.record(user._id, 'roleChanged', context);
+  if (result.roleChanged) {
+    await auditService.record(user.id, 'roleChanged', context);
   }
-  return user;
+  return result.user;
 };
 
 // Erasure: the account, every token of every type and the activity log.
 const removeUserData = async (user) => {
-  await user.deleteOne();
-  await Token.deleteMany({ user: user._id });
-  await auditService.removeForUser(user._id);
+  await db.users.remove(user.id);
+  await db.tokens.remove({ userId: user.id });
+  await auditService.removeForUser(user.id);
 };
 
 const deleteUserById = async (userId) => {
@@ -116,11 +143,14 @@ const deleteUserById = async (userId) => {
 };
 
 module.exports = {
+  LOCALES,
   toUserResponse,
+  isEmailTaken,
   createUser,
   queryUsers,
   getUserById,
   getUserByEmail,
+  saveChanges,
   updateUserById,
   deleteUserById,
   removeUserData,

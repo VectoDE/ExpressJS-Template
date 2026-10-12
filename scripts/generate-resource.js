@@ -1,7 +1,8 @@
 /**
- * Scaffolds a REST resource that belongs to the signed-in user: model, validation, service, controller, route with
- * OpenAPI docs and an integration test. Every query is scoped to the owner, so one user can never read or change
- * another user's records (no IDOR by default). Existing files are never overwritten.
+ * Scaffolds a REST resource that belongs to the signed-in user: SQL migration, validation, service, controller, route
+ * with OpenAPI docs and an integration test. It works with every supported database: the service stores records
+ * through db.owned(), MongoDB needs no migration. Every query is scoped to the owner, so one user can never read or
+ * change another user's records (no IDOR by default). Existing files are never overwritten.
  *
  *   npm run generate -- note        creates /v1/notes
  *   npm run generate -- invoice-item creates /v1/invoice-items
@@ -32,35 +33,36 @@ const names = (input) => {
     if (/[^aeiou]y$/.test(word)) return `${word.slice(0, -1)}ies`;
     return `${word}s`;
   };
-  return { camel, pascal, kebab, path: plural(kebab), label: parts.join(' ') };
-};
-
-const files = (n) => ({
-  [`src/models/${n.camel}.model.js`]: `const mongoose = require('mongoose');
-
-const ${n.camel}Schema = new mongoose.Schema(
-  {
-    // Every record belongs to one user; all queries filter on it.
-    owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    title: { type: String, required: true, trim: true, maxlength: 200 },
-    body: { type: String, trim: true, maxlength: 10000, default: '' },
-  },
-  { timestamps: true }
-);
-
-${n.camel}Schema.index({ owner: 1, createdAt: -1 });
-
-${n.camel}Schema.methods.toPublic = function toPublic() {
+  const pluralParts = [...parts.slice(0, -1), plural(parts.at(-1))];
   return {
-    id: this.id,
-    title: this.title,
-    body: this.body,
-    createdAt: this.createdAt,
-    updatedAt: this.updatedAt,
+    camel,
+    pascal,
+    kebab,
+    path: plural(kebab),
+    table: pluralParts.join('_'),
+    label: parts.join(' '),
   };
 };
 
-module.exports = mongoose.model('${n.pascal}', ${n.camel}Schema);
+const files = (n) => ({
+  [`src/db/migrations/${n.migration}.js`]: `// Table for ${n.label} records. MongoDB needs no migration; the collection is created on first use.
+module.exports = {
+  async up(knex) {
+    await knex.schema.createTable('${n.table}', (table) => {
+      table.string('id', 24).primary();
+      // Every record belongs to one user; all queries filter on it.
+      table.string('owner_id', 24).notNullable();
+      table.string('title', 200).notNullable();
+      table.text('body').nullable();
+      table.bigInteger('created_at').notNullable();
+      table.bigInteger('updated_at').notNullable();
+      table.index(['owner_id', 'created_at']);
+    });
+  },
+  async down(knex) {
+    await knex.schema.dropTableIfExists('${n.table}');
+  },
+};
 `,
   [`src/validations/${n.camel}.validation.js`]: `const Joi = require('joi');
 const { objectId } = require('./custom.validation');
@@ -95,58 +97,70 @@ const delete${n.pascal} = { params };
 
 module.exports = { create${n.pascal}, list${n.pascal}s, get${n.pascal}, update${n.pascal}, delete${n.pascal} };
 `,
-  [`src/services/${n.camel}.service.js`]: `const ${n.pascal} = require('../models/${n.camel}.model');
+  [`src/services/${n.camel}.service.js`]: `const db = require('../db');
+const { newId } = require('../utils/id');
 const ApiError = require('../utils/ApiError');
 const httpStatus = require('../utils/httpStatus');
 
-// Not found and "belongs to someone else" look the same, so IDs of other users' records leak nothing.
-const findOwned = async (ownerId, id) => {
-  const doc = await ${n.pascal}.findOne({ _id: id, owner: ownerId });
-  if (!doc) {
-    throw new ApiError(httpStatus.NOT_FOUND, '${n.pascal} not found');
-  }
-  return doc;
-};
+const records = db.owned('${n.table}');
 
-const create = async (ownerId, body) => (await ${n.pascal}.create({ ...body, owner: ownerId })).toPublic();
+const toPublic = (record) => ({
+  id: record.id,
+  title: record.title,
+  body: record.body ?? '',
+  createdAt: record.createdAt,
+  updatedAt: record.updatedAt,
+});
+
+// Not found and "belongs to someone else" look the same, so IDs of other users' records leak nothing.
+const notFound = () => new ApiError(httpStatus.NOT_FOUND, '${n.pascal} not found');
+
+const create = async (ownerId, body) =>
+  toPublic(await records.create(ownerId, { id: newId(), title: body.title, body: body.body ?? '' }));
 
 const list = async (ownerId, options = {}) => {
   const [field, order] = (options.sortBy || 'createdAt:desc').split(':');
   const limit = options.limit || 10;
   const page = options.page || 1;
-  const filter = { owner: ownerId };
-  const [results, totalResults] = await Promise.all([
-    ${n.pascal}.find(filter)
-      .sort({ [field]: order === 'desc' ? -1 : 1 })
-      .skip((page - 1) * limit)
-      .limit(limit),
-    ${n.pascal}.countDocuments(filter),
-  ]);
+  const { results, total } = await records.list(ownerId, {
+    sortBy: field,
+    descending: order === 'desc',
+    offset: (page - 1) * limit,
+    limit,
+  });
   return {
-    results: results.map((doc) => doc.toPublic()),
+    results: results.map((record) => toPublic(record)),
     page,
     limit,
-    totalPages: Math.max(Math.ceil(totalResults / limit), 1),
-    totalResults,
+    totalPages: Math.max(Math.ceil(total / limit), 1),
+    totalResults: total,
   };
 };
 
-const get = async (ownerId, id) => (await findOwned(ownerId, id)).toPublic();
+const get = async (ownerId, id) => {
+  const record = await records.find(ownerId, id);
+  if (!record) {
+    throw notFound();
+  }
+  return toPublic(record);
+};
 
 const update = async (ownerId, id, body) => {
-  const doc = await findOwned(ownerId, id);
-  Object.assign(doc, body);
-  await doc.save();
-  return doc.toPublic();
+  const record = await records.update(ownerId, id, body);
+  if (!record) {
+    throw notFound();
+  }
+  return toPublic(record);
 };
 
 const remove = async (ownerId, id) => {
-  const doc = await findOwned(ownerId, id);
-  await doc.deleteOne();
+  if (!(await records.remove(ownerId, id))) {
+    throw notFound();
+  }
 };
 
 // Called when an account is deleted, so no orphaned records stay behind (GDPR Art. 17).
-const removeAllOf = (ownerId) => ${n.pascal}.deleteMany({ owner: ownerId });
+const removeAllOf = (ownerId) => records.removeAllOf(ownerId);
 
 module.exports = { create, list, get, update, remove, removeAllOf };
 `,
@@ -307,6 +321,16 @@ describe('/v1/${n.path}', () => {
 `,
 });
 
+// Adds the migration to the list in src/db/migrations/index.js, after the existing ones.
+const registerMigration = (n) => {
+  const file = path.join(ROOT, 'src/db/migrations/index.js');
+  const source = fs.readFileSync(file, 'utf8');
+  const entry = `  ['${n.migration}', require('./${n.migration}')],`;
+  if (source.includes(entry)) return false;
+  fs.writeFileSync(file, source.replace('  // New migrations go here.', `${entry}\n  // New migrations go here.`));
+  return true;
+};
+
 // Mounts the new router next to the existing ones in src/routes/v1/index.js.
 const register = (n) => {
   const file = path.join(ROOT, 'src/routes/v1/index.js');
@@ -340,7 +364,9 @@ const main = async () => {
   if (!input) {
     throw new Error('Usage: npm run generate -- <name>   (for example: npm run generate -- note)');
   }
-  const n = names(input);
+  // Migrations run in file name order; the timestamp puts a new one after every existing one.
+  const stamp = new Date().toISOString().replaceAll(/\D/g, '').slice(0, 14);
+  const n = { ...names(input), migration: `${stamp}_create_${names(input).table}` };
   const planned = files(n);
   const existing = Object.keys(planned).filter((file) => fs.existsSync(path.join(ROOT, file)));
   if (existing.length) {
@@ -354,8 +380,12 @@ const main = async () => {
   if (register(n)) {
     process.stdout.write(`mounted /v1/${n.path} in src/routes/v1/index.js\n`);
   }
+  if (registerMigration(n)) {
+    process.stdout.write(`listed the migration in src/db/migrations/index.js\n`);
+  }
   process.stdout.write(
-    `\nNext steps:\n  1. Adjust the fields in src/models/${n.camel}.model.js and src/validations/${n.camel}.validation.js\n` +
+    `\nNext steps:\n  1. Adjust the fields in src/db/migrations/${n.migration}.js, src/validations/${n.camel}.validation.js\n` +
+      `     and src/services/${n.camel}.service.js\n` +
       `  2. Delete the records with the account: call ${n.camel}Service.removeAllOf(userId) in removeUserData (src/services/user.service.js)\n` +
       `  3. npm test\n`
   );

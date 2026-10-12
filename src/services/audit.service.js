@@ -1,4 +1,6 @@
-const AuditEvent = require('../models/auditEvent.model');
+const db = require('../db');
+const { AUDIT_EVENT_TYPES } = require('../db/records');
+const { newId } = require('../utils/id');
 const logger = require('../config/logger');
 
 /**
@@ -7,18 +9,18 @@ const logger = require('../config/logger');
  */
 const record = async (userId, type, context = {}) => {
   try {
-    await AuditEvent.create({ user: userId, type, device: context.device || undefined });
+    if (!AUDIT_EVENT_TYPES.includes(type)) {
+      throw new Error(`Unknown audit event type ${type}`);
+    }
+    const device = context.device ? String(context.device).slice(0, 120) : undefined;
+    await db.audit.add({ id: newId(), userId: String(userId), type, device });
   } catch (error) {
     logger.error('Audit event %s for user %s was not stored: %s', type, String(userId), error.message);
   }
 };
 
-const listForUser = (userId, limit = 20) =>
-  AuditEvent.find({ user: userId }, { type: 1, device: 1, createdAt: 1, _id: 0 })
-    .sort({ createdAt: -1 })
-    .limit(limit)
-    .lean();
+const listForUser = (userId, limit = 20) => db.audit.list(String(userId), limit);
 
-const removeForUser = (userId) => AuditEvent.deleteMany({ user: userId });
+const removeForUser = (userId) => db.audit.removeForUser(String(userId));
 
-module.exports = { record, listForUser, removeForUser };
+module.exports = { TYPES: AUDIT_EVENT_TYPES, record, listForUser, removeForUser };

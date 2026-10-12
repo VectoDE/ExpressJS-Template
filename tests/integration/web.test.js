@@ -1,7 +1,7 @@
+const userService = require('../../src/services/user.service');
 const request = require('supertest');
 const app = require('../../src/app');
-const User = require('../../src/models/user.model');
-const { useDatabase } = require('../helpers/db');
+const { useDatabase, db } = require('../helpers/db');
 const { browser } = require('../helpers/web');
 const { PASSWORD, createUser } = require('../helpers/fixtures');
 
@@ -76,7 +76,7 @@ describe('sign-in flow', () => {
       role: 'admin',
     });
     expect(res.headers.location).toBe('/dashboard');
-    expect((await User.findOne({ email: 'grace@example.com' })).role).toBe('user');
+    expect((await db.users.findByEmail('grace@example.com')).role).toBe('user');
   });
 
   it('shows validation errors and duplicate emails without detail', async () => {
@@ -150,8 +150,7 @@ describe('session lifetime', () => {
     await new Promise((resolve) => setTimeout(resolve, 1100));
     await signIn(client, user);
     await new Promise((resolve) => setTimeout(resolve, 1100));
-    user.password = 'Another-Password-77';
-    await user.save();
+    await userService.saveChanges(user, { password: 'Another-Password-77' });
     expect(await client.agent.get('/dashboard')).toMatchObject({ status: 302, headers: { location: '/login' } });
   });
 
@@ -159,7 +158,7 @@ describe('session lifetime', () => {
     const user = await createUser();
     const client = browser(app);
     await signIn(client, user);
-    await User.deleteOne({ _id: user.id });
+    await db.users.remove(user.id);
     expect(await client.agent.get('/dashboard')).toMatchObject({ status: 302, headers: { location: '/login' } });
   });
 });

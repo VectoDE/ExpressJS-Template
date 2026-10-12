@@ -1,9 +1,7 @@
 const request = require('supertest');
 const app = require('../../src/app');
-const User = require('../../src/models/user.model');
-const AuditEvent = require('../../src/models/auditEvent.model');
 const totp = require('../../src/utils/totp');
-const { useDatabase } = require('../helpers/db');
+const { useDatabase, db, hasAuditEvent } = require('../helpers/db');
 const { browser } = require('../helpers/web');
 const { waitForMail, mailTo, clearOutbox } = require('../helpers/mail');
 const { PASSWORD, createUser, tokensFor, bearer } = require('../helpers/fixtures');
@@ -42,7 +40,7 @@ describe('two-factor setup (API)', () => {
     expect(res.body.otpauthUrl).toContain(`secret=${res.body.secret}`);
     expect(res.body.qrSvg.startsWith('<svg')).toBe(true);
 
-    const stored = await User.findById(user.id).select('+twoFactor').lean();
+    const stored = await db.users.findById(user.id);
     expect(stored.twoFactor.enabled).toBe(false);
     expect(stored.twoFactor.pendingSecret).toMatch(/^v1\./);
     expect(stored.twoFactor.pendingSecret).not.toContain(res.body.secret);
@@ -70,11 +68,11 @@ describe('two-factor setup (API)', () => {
     expect(res.body.recoveryCodes).toHaveLength(10);
     res.body.recoveryCodes.forEach((code) => expect(code).toMatch(/^[0-9a-f]{5}-[0-9a-f]{5}$/));
 
-    const stored = await User.findById(user.id).select('+twoFactor').lean();
+    const stored = await db.users.findById(user.id);
     expect(stored.twoFactor.enabled).toBe(true);
     expect(stored.twoFactor.recoveryCodes).not.toContain(res.body.recoveryCodes[0]);
     await waitForMail(mailTo(user.email, 'twoFactorEnabled'));
-    expect(await AuditEvent.exists({ user: user.id, type: 'twoFactorEnabled' })).toBeTruthy();
+    expect(await hasAuditEvent(user.id, 'twoFactorEnabled')).toBeTruthy();
 
     await request(app).post('/v1/account/2fa/enable').set(headers).send({ code: '123456' }).expect(409);
   });
@@ -118,7 +116,7 @@ describe('sign-in with two factors (API)', () => {
       .expect(200);
     expect(res.headers['x-recovery-codes-remaining']).toBe('9');
     await request(app).post('/v1/auth/login/2fa').send({ challengeToken, code: recoveryCodes[0] }).expect(401);
-    expect(await AuditEvent.exists({ user: user.id, type: 'recoveryCodeUsed' })).toBeTruthy();
+    expect(await hasAuditEvent(user.id, 'recoveryCodeUsed')).toBeTruthy();
   });
 
   it('counts wrong codes towards the account lockout', async () => {
@@ -165,7 +163,7 @@ describe('sign-in with two factors (API)', () => {
 
     const { challengeToken } = await challengeFor(user);
     await new Promise((resolve) => setTimeout(resolve, 1100));
-    await User.updateOne({ _id: user.id }, { $set: { credentialsChangedAt: new Date() } });
+    await db.users.update(user.id, { credentialsChangedAt: new Date() });
     expect(
       (
         await request(app)

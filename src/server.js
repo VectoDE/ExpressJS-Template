@@ -1,9 +1,10 @@
 const app = require('./app');
 const config = require('./config/config');
 const logger = require('./config/logger');
-const mongoose = require('./config/mongoose');
+const db = require('./db');
 
 const SHUTDOWN_TIMEOUT_MS = 10000;
+const PURGE_INTERVAL_MS = 10 * 60 * 1000;
 let server;
 let shuttingDown = false;
 
@@ -21,7 +22,7 @@ const shutdown = async (reason, exitCode) => {
         server.closeIdleConnections();
       });
     }
-    await mongoose.disconnect();
+    await db.disconnect();
   } catch (error) {
     logger.error('Error during shutdown: %s', error.message);
     process.exit(1);
@@ -33,7 +34,16 @@ const start = async () => {
   if (config.ephemeralSecrets.length) {
     logger.warn('%s not set, using random values for this process only', config.ephemeralSecrets.join(' and '));
   }
-  await mongoose.connect();
+  await db.connect();
+  logger.info('Connected to the database (%s)', db.dialect);
+  // Expired tokens, sessions and rate-limit windows and old activity entries are removed in the background.
+  // MongoDB does this with TTL indexes; SQL databases need the sweep.
+  const purge = () =>
+    db
+      .purgeExpired(new Date(), new Date(Date.now() - config.audit.retentionDays * 24 * 60 * 60 * 1000))
+      .catch((error) => logger.error('Removing expired records failed: %s', error.message));
+  void purge();
+  setInterval(purge, PURGE_INTERVAL_MS).unref();
   server = app.listen(config.port, () => logger.info('Server listening on port %d', config.port));
   // Slow clients cannot hold sockets open forever (slowloris).
   server.headersTimeout = 20000;

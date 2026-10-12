@@ -2,15 +2,17 @@ const { rateLimit } = require('express-rate-limit');
 const config = require('../config/config');
 const httpStatus = require('../utils/httpStatus');
 const ApiError = require('../utils/ApiError');
-const MongoRateLimitStore = require('../utils/mongoRateLimitStore');
+const db = require('../db');
+const DatabaseRateLimitStore = require('../db/rateLimitStore');
 
 // The error handler answers with JSON for the API and an HTML page for the browser.
 const handler = (req, res, next) => {
   next(new ApiError(httpStatus.TOO_MANY_REQUESTS, 'Too many requests, please try again later.'));
 };
 
-// RATE_LIMIT_STORE=mongo shares the counters between instances; the default keeps them in memory.
-const storeFor = (prefix) => (config.rateLimit.store === 'mongo' ? { store: new MongoRateLimitStore({ prefix }) } : {});
+// RATE_LIMIT_STORE=database shares the counters between instances; the default keeps them in memory.
+const storeFor = (prefix) =>
+  config.rateLimit.store === 'database' ? { store: new DatabaseRateLimitStore({ db, prefix }) } : {};
 
 const apiLimiter = rateLimit({
   windowMs: config.rateLimit.windowMs,
