@@ -225,7 +225,9 @@ const requestPasswordReset = (email, context = {}) => {
     await auditService.record(user.id, 'passwordResetRequested', context);
     emailService.notify(user, 'resetPassword', { token });
   };
-  run().catch((error) => logger.error('Password reset could not be started: %s', error.message));
+  const pending = run().catch((error) => logger.error('Password reset could not be started: %s', error.message));
+  // The demo shows the reset mail on the next page, so it has to wait; the demo accepts the timing difference.
+  return config.demo ? pending : undefined;
 };
 
 /**

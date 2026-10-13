@@ -18,6 +18,8 @@ module.exports = defineConfig([
       'test-results/',
       '.impeccable/',
       'preview-dist/',
+      'worker-dist/',
+      '.wrangler/',
     ],
   },
   js.configs.recommended,
@@ -47,9 +49,15 @@ module.exports = defineConfig([
   },
   // MongoDB shell scripts run inside mongosh, which provides `db`.
   { files: ['docker/mongo/**/*.js'], languageOptions: { sourceType: 'script', globals: { db: 'readonly' } } },
+  // Entry of the Cloudflare Worker (an ES module) and the Workers runtime globals it uses.
+  {
+    files: ['worker/**/*.mjs'],
+    languageOptions: { sourceType: 'module', globals: { ...globals.node, ...globals.serviceworker } },
+  },
   {
     // Command-line tools: they print results and read files whose paths come from package-lock.json.
-    files: ['scripts/**/*.js', 'tests/performance/**/*.js'],
+    // The worker build helpers read the views and migrations of this repository the same way.
+    files: ['scripts/**/*.js', 'tests/performance/**/*.js', 'worker/precompile-views.js', 'worker/d1-migrations.js'],
     rules: { 'no-console': 'off', 'security/detect-non-literal-fs-filename': 'off' },
   },
   {

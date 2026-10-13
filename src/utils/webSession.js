@@ -7,8 +7,9 @@ const { addFlashMessage } = require('./flash');
 
 const regenerate = (req) =>
   new Promise((resolve, reject) => {
-    // A language chosen before the switch survives it; everything else starts empty.
-    const { locale } = req.session;
+    // A language chosen before the switch survives it, and so do emails the demo has yet to show (DEMO_MODE only);
+    // everything else starts empty.
+    const { locale, demoMail } = req.session;
     req.session.regenerate((error) => {
       if (error) {
         reject(error);
@@ -16,6 +17,9 @@ const regenerate = (req) =>
       }
       if (locale) {
         req.session.locale = locale;
+      }
+      if (demoMail) {
+        req.session.demoMail = demoMail;
       }
       resolve();
     });

@@ -27,7 +27,9 @@
     "preview": "node scripts/e2e-server.js",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install --with-deps",
-    "prepare": "simple-git-hooks"
+    "prepare": "simple-git-hooks",
+    "build:worker": "node scripts/build-worker.js",
+    "dev:worker": "npm run build:worker && wrangler dev --local"
   },
   "keywords": [
     "express",
@@ -86,6 +88,7 @@
     "eslint": "^10.12.0",
     "eslint-plugin-security": "^4.2.0",
     "eslint-plugin-sonarjs": "^4.2.2",
+    "espree": "11.2.0",
     "fast-check": "4.10.2",
     "globals": "^17.13.0",
     "jest": "^30.5.2",
@@ -93,7 +96,8 @@
     "mongodb-memory-server": "^11.3.0",
     "prettier": "^3.9.10",
     "simple-git-hooks": "^2.14.0",
-    "supertest": "^7.3.1"
+    "supertest": "^7.3.1",
+    "wrangler": "4.149.0"
   },
   "overrides": {
     "@istanbuljs/load-nyc-config": {

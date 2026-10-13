@@ -102,7 +102,7 @@ const fromPasskeyRow = (row) =>
     lastUsedAt: row.last_used_at,
   });
 
-const createSqlAdapter = ({ knexConfig, dialect, migrate = true }) => {
+const createSqlAdapter = ({ knexConfig, dialect, migrate = true, externalSchema = false }) => {
   const knex = knexFactory(knexConfig);
 
   const recoveryCodesOf = async (trx, userId) =>
@@ -583,6 +583,10 @@ const createSqlAdapter = ({ knexConfig, dialect, migrate = true }) => {
     // The Knex instance, for own queries and schema changes beyond the methods below.
     knex,
     async connect() {
+      // Schema managed outside Knex (Cloudflare D1): nothing to create or check here.
+      if (externalSchema) {
+        return;
+      }
       const filename = knexConfig.connection?.filename;
       if (filename && filename !== ':memory:') {
         // The file name comes from DATABASE_URL, which only the operator sets.

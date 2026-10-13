@@ -44,6 +44,10 @@ app.locals.sessionCookieName = config.security.session.name;
 app.locals.docsEnabled = config.docsEnabled;
 
 app.use(requestId);
+// Demo mode shows emails to the visitor who caused them; this keeps track of whose request is running.
+if (config.demo) {
+  app.use(require('./utils/demoInbox').trackRequest);
+}
 app.use(metrics.middleware);
 app.use(requestLogger);
 

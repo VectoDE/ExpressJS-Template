@@ -5,6 +5,8 @@
 const { consumeFlashMessages, consumeInput } = require('../utils/flash');
 const { applyLocale, localeFromRequest } = require('./i18n');
 const { roleRights } = require('../config/roles');
+const config = require('../config/config');
+const demoInbox = require('../utils/demoInbox');
 
 /**
  * Values every template relies on, for a visitor without session. Set for every request, so error pages
@@ -26,6 +28,8 @@ const viewDefaults = (req, res, next) => {
     csrfToken: () => '',
     flash: [],
     old: {},
+    demo: config.demo,
+    demoMail: [],
   });
   next();
 };
@@ -42,6 +46,8 @@ const viewLocals = (req, res, next) => {
   res.locals.csrfToken = () => req.csrfToken();
   res.locals.flash = consumeFlashMessages(req);
   res.locals.old = consumeInput(req);
+  // Demo mode only: emails this visitor triggered, shown instead of sent.
+  res.locals.demoMail = config.demo ? demoInbox.consume(req) : [];
   next();
 };
 

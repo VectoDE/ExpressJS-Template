@@ -11,9 +11,20 @@ All notable changes to this project are documented here. The format follows
   REUSE tool.
 - CI builds the release source archive from two separate clones and fails unless both are identical.
 - The contributing guide has a checklist that every review goes through.
+- Live demo on Cloudflare Workers Free with D1 (`npm run build:worker`, `wrangler.jsonc`, `worker/`). The Express
+  app runs unchanged; views are precompiled at build time, static files are Workers Static Assets, and a Cron
+  Trigger resets the data every hour. See the README section "Live demo on Cloudflare" for deployment and limits.
+- `DEMO_MODE` (off by default) for that demo: emails are shown on the next page instead of being sent, and the
+  demo-only settings below are allowed. Production checks stay in force otherwise.
+- `PASSWORD_HASH_COST` sets the scrypt cost as a power of two. The default stays 17; lower values need
+  `DEMO_MODE`. Hashes made with a lower cost are upgraded at the next sign-in.
+- `DATABASE_URL=d1:<binding>`: a Knex client for Cloudflare D1, only allowed with `DEMO_MODE` because its
+  transactions are not atomic.
 
 ### Changed
 
+- The metrics endpoint reports an event loop delay of 0 on runtimes without an event loop monitor instead of
+  failing at start.
 - Contributing guide: coding standards and how dependencies are chosen. Security policy: handling of secrets and
   of vulnerable dependencies. Roadmap for 4.x. OpenSSF Best Practices badge in the README.
 

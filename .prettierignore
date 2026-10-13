@@ -8,3 +8,5 @@ docs/third-party-notices.md
 playwright-report/
 test-results/
 preview-dist/
+worker-dist/
+.wrangler/

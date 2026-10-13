@@ -1,0 +1,28 @@
+<%#
+  SPDX-FileCopyrightText: 2024-2026 VectoDE
+  SPDX-License-Identifier: MIT
+
+  Demo mode only (DEMO_MODE=true): the notice that this is a public demo, and the emails this visitor triggered.
+  The demo sends no mail; the link from the message is shown here instead. Locals: demoMail.
+-%>
+<div class="flash-list">
+  <div class="flash flash--warning" role="note">
+    <span class="flash__icon" aria-hidden="true"></span>
+    <p><%= t('demo.banner') %></p>
+  </div>
+  <% (locals.demoMail || []).forEach((mail) => { %>
+  <section class="flash flash--info demo-mail" role="status" aria-label="<%= t('demo.mailTitle') %>">
+    <span class="flash__icon" aria-hidden="true"></span>
+    <div class="demo-mail__body">
+      <p><strong><%= t('demo.mailTitle') %>.</strong> <%= t('demo.mailLead', { to: mail.to }) %></p>
+      <p class="demo-mail__subject"><%= mail.subject %></p>
+      <% if (mail.greeting) { %><p><%= mail.greeting %></p><% } %>
+      <p><%= mail.intro %></p>
+      <% if (mail.action && mail.action.url) { %>
+      <p><a href="<%= mail.action.url %>"><%= mail.action.label || t('demo.mailAction') %></a></p>
+      <% } %>
+      <% if (mail.outro) { %><p class="demo-mail__note"><%= mail.outro %></p><% } %>
+    </div>
+  </section>
+  <% }) %>
+</div>

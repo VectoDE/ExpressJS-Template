@@ -1,0 +1,83 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+// SPDX-License-Identifier: MIT
+//
+// Public demo of this template on Cloudflare Workers Free with D1. Not a deployment target for real use:
+// see the README, "Live demo on Cloudflare", for what the demo relaxes and how to deploy it.
+// Run `npm run build:worker` before `wrangler dev` or `wrangler deploy`.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "expressjs-template-demo",
+  "main": "worker/index.mjs",
+  "compatibility_date": "2026-09-25",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Packages the Worker cannot run are swapped for small stand-ins at bundle time (see worker/stubs).
+  "alias": {
+    "ejs": "./worker/stubs/ejs.js",
+    "nodemailer": "./worker/stubs/nodemailer.js",
+    "swagger-jsdoc": "./worker/stubs/swagger-jsdoc.js",
+    "compression": "./worker/stubs/compression.js",
+    "better-sqlite3": "./worker/stubs/unavailable.js",
+    "sqlite3": "./worker/stubs/unavailable.js",
+    "pg": "./worker/stubs/unavailable.js",
+    "pg-query-stream": "./worker/stubs/unavailable.js",
+    "mysql": "./worker/stubs/unavailable.js",
+    "mariadb/callback": "./worker/stubs/unavailable.js",
+    "pg-native": "./worker/stubs/unavailable.js",
+    "mysql2": "./worker/stubs/unavailable.js",
+    "tedious": "./worker/stubs/unavailable.js",
+    "oracledb": "./worker/stubs/unavailable.js",
+    "mongodb": "./worker/stubs/unavailable.js",
+  },
+
+  // Bundled code has no module directories. Paths built from __dirname only ever name views and other files that
+  // the build replaced, so one fixed value is enough.
+  "define": {
+    "__dirname": "\"/bundle/src/module\"",
+    "__filename": "\"/bundle/src/module/index.js\"",
+  },
+
+  // Static files (src/public and the Swagger UI files) are copied here by the build and served without the Worker.
+  "assets": {
+    "directory": "./worker-dist/assets",
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "expressjs-template-demo",
+      // The project's own demo database (EU jurisdiction). For your own deployment, `npx wrangler d1 create
+      // expressjs-template-demo` prints the id to put here. Local development (`wrangler dev`) ignores it.
+      "database_id": "560df8db-35c3-42fe-83ad-5677aca04375",
+      "migrations_dir": "worker/migrations",
+    },
+  ],
+
+  // Hourly reset of all demo data (worker/demo.js).
+  "triggers": {
+    "crons": ["0 * * * *"],
+  },
+
+  // Settings only. JWT_SECRET, SESSION_SECRET and ENCRYPTION_KEY are secrets: `npx wrangler secret put <NAME>`
+  // for the deployed Worker, a .dev.vars file (never committed) for `wrangler dev`.
+  "vars": {
+    "NODE_ENV": "production",
+    "DEMO_MODE": "true",
+    "DATABASE_URL": "d1:DB",
+    // scrypt N = 2^10 instead of 2^17: Workers Free allows 10 ms of CPU per request. Demo only.
+    "PASSWORD_HASH_COST": "10",
+    // The Worker entry rewrites X-Forwarded-For and X-Forwarded-Proto from what Cloudflare reports.
+    "TRUST_PROXY": "1",
+    "RATE_LIMIT_STORE": "database",
+    "API_DOCS_ENABLED": "true",
+    "APP_NAME": "Express.js Template Demo",
+    // The public address of the demo, used for the links in the emails it shows. Change it to your own
+    // workers.dev or custom domain URL when you deploy it yourself.
+    "APP_URL": "https://expressjs-template-demo.vectode.workers.dev",
+    "LOG_LEVEL": "info",
+  },
+
+  "observability": {
+    "enabled": true,
+  },
+}

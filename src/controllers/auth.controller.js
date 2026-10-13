@@ -92,8 +92,8 @@ const verifyEmail = async (req, res) => {
 };
 
 // Always 204, whether or not the address has an account.
-const forgotPassword = (req, res) => {
-  authService.requestPasswordReset(req.body.email, requestContext(req));
+const forgotPassword = async (req, res) => {
+  await authService.requestPasswordReset(req.body.email, requestContext(req));
   res.status(httpStatus.NO_CONTENT).send();
 };
 

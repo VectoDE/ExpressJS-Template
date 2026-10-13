@@ -12,8 +12,17 @@ const { monitorEventLoopDelay } = require('node:perf_hooks');
 const BUCKETS = [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10];
 
 const requests = new Map();
-const eventLoop = monitorEventLoopDelay({ resolution: 20 });
-eventLoop.enable();
+// Runtimes without an event loop monitor (the Cloudflare Workers demo) report a delay of 0.
+const startEventLoopMonitor = () => {
+  try {
+    const histogram = monitorEventLoopDelay({ resolution: 20 });
+    histogram.enable();
+    return histogram;
+  } catch {
+    return { percentile: () => 0 };
+  }
+};
+const eventLoop = startEventLoopMonitor();
 
 const escapeLabel = (value) =>
   String(value)
