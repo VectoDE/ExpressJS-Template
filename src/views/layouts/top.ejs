@@ -12,3 +12,4 @@
     <%- include('header') %>
     <main id="main" class="page page--<%= locals.width || 'wide' %>">
       <%- include('../components/flash') %>
+      <% if (locals.demo) { %><%- include('../components/demo-mail') %><% } %>

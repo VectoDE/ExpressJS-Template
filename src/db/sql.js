@@ -583,6 +583,10 @@ const createSqlAdapter = ({ knexConfig, dialect, migrate = true }) => {
     // The Knex instance, for own queries and schema changes beyond the methods below.
     knex,
     async connect() {
+      // Schema managed outside Knex (Cloudflare D1): nothing to create or check here.
+      if (migrate === 'external') {
+        return;
+      }
       const filename = knexConfig.connection?.filename;
       if (filename && filename !== ':memory:') {
         // The file name comes from DATABASE_URL, which only the operator sets.

@@ -45,6 +45,14 @@ module.exports = {
   },
 
   // Animation styles, offered in the footer.
+  demo: {
+    banner:
+      'Öffentliche Demo. Alle können sich mit den Demo-Konten anmelden, und jede Stunde werden alle Daten gelöscht. Bitte keine echten Daten eingeben.',
+    mailTitle: 'E-Mail nicht verschickt',
+    mailLead: 'Diese Demo verschickt keine E-Mails. Diese Nachricht wäre an {to} gegangen:',
+    mailAction: 'Link öffnen',
+  },
+
   motion: {
     film: 'Film',
     precise: 'Präzise',

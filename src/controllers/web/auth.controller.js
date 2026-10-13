@@ -192,14 +192,14 @@ const renderForgotPassword = (req, res) => {
 };
 
 // Same message whether or not the address has an account.
-const handleForgotPassword = (req, res) => {
+const handleForgotPassword = async (req, res) => {
   const { error, value } = validate(authValidation.forgotPassword.body, req.body);
   if (error) {
     rememberInput(req, { email: typed(req, 'email', 254) });
     flash(req, 'error', 'fieldErrors.email');
     return res.redirect('/forgot-password');
   }
-  authService.requestPasswordReset(value.email, requestContext(req));
+  await authService.requestPasswordReset(value.email, requestContext(req));
   flash(req, 'info', 'flash.resetRequested', { minutes: config.auth.resetPasswordExpirationMinutes });
   return res.redirect('/login');
 };

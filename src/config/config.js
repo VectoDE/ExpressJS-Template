@@ -11,7 +11,7 @@ dotenv.config({ path: path.join(__dirname, '../../.env'), quiet: true });
 
 const flag = () => Joi.boolean().truthy('true', '1').falsy('false', '0');
 const secret = () => Joi.string().min(32).max(512);
-const DATABASE_SCHEMES = /^(mongodb(\+srv)?|postgres(ql)?|mysql|mariadb|sqlite|mssql|sqlserver|oracle):/i;
+const DATABASE_SCHEMES = /^(mongodb(\+srv)?|postgres(ql)?|mysql|mariadb|sqlite|mssql|sqlserver|oracle|d1):/i;
 const PLACEHOLDER = /change-?me|changeme|secret|example|placeholder|^(.)\1+$/i;
 
 const withoutTrailingSlash = (url) => {
@@ -84,6 +84,11 @@ const envSchema = Joi.object({
   METRICS_TOKEN: Joi.string().min(32).max(512).allow('').default(''),
   MOTION_STYLE: Joi.string().valid('film', 'precise', 'playful', 'calm', 'off').default('film'),
   MOTION_SWITCH: flag().default(true),
+  // Public demo (the Cloudflare Worker): e-mails are shown on the page instead of being sent and the settings
+  // below may be relaxed. Never set it for a real installation.
+  DEMO_MODE: flag().default(false),
+  // scrypt cost as a power of two (N = 2^cost). Below 17 only with DEMO_MODE, for the CPU limits of Workers Free.
+  PASSWORD_HASH_COST: Joi.number().integer().min(10).max(20).default(17),
 }).unknown();
 
 const { value: envVars, error } = envSchema.validate(process.env, { abortEarly: false });
@@ -100,7 +105,17 @@ const corsOrigins = envVars.CORS_ORIGIN.split(',')
 // Each secret protects something different, so each one must be its own random value.
 const SECRET_NAMES = ['JWT_SECRET', 'SESSION_SECRET', 'ENCRYPTION_KEY'];
 
+const isDemo = envVars.DEMO_MODE === true;
+const DEFAULT_HASH_COST = 17;
+
 const problems = [];
+// Demo relaxations need DEMO_MODE in every environment, so they never switch on by accident.
+if (!isDemo && envVars.PASSWORD_HASH_COST < DEFAULT_HASH_COST) {
+  problems.push(`PASSWORD_HASH_COST below ${DEFAULT_HASH_COST} is only allowed with DEMO_MODE=true`);
+}
+if (!isDemo && /^d1:/i.test(envVars.DATABASE_URL || '')) {
+  problems.push('DATABASE_URL=d1: runs transactions without atomicity and is only allowed with DEMO_MODE=true');
+}
 if (isProduction) {
   SECRET_NAMES.forEach((name) => {
     if (!envVars[name]) {
@@ -121,7 +136,7 @@ if (isProduction) {
   } else if (!envVars.APP_URL.startsWith('https://')) {
     problems.push('APP_URL must use https in production');
   }
-  if (!envVars.SMTP_URL) {
+  if (!envVars.SMTP_URL && !isDemo) {
     problems.push('SMTP_URL is required in production, otherwise password resets and verification emails fail');
   }
   if (corsOrigins.includes('*')) {
@@ -164,6 +179,8 @@ module.exports = {
   env: envVars.NODE_ENV,
   isProduction,
   port: envVars.PORT,
+  // Public demo mode, see DEMO_MODE above and the README section on the Cloudflare demo.
+  demo: isDemo,
   ephemeralSecrets: ephemeral,
   cors: {
     origins: corsOrigins,
@@ -195,9 +212,14 @@ module.exports = {
   // Key for data encrypted at rest (two-factor secrets). Changing it makes stored secrets unreadable.
   encryptionKey: secretOrRandom('ENCRYPTION_KEY'),
   mail: {
-    // Empty outside production: emails are written to the log instead of being sent.
+    // Empty outside production: emails are written to the log instead of being sent. In demo mode they are
+    // shown to the visitor who triggered them and never sent.
     smtpUrl: envVars.SMTP_URL,
     from: envVars.MAIL_FROM,
+  },
+  password: {
+    // scrypt N as a power of two; 17 (OWASP) unless a demo lowers it.
+    hashCost: envVars.PASSWORD_HASH_COST,
   },
   auth: {
     requireVerifiedEmail: envVars.AUTH_REQUIRE_VERIFIED_EMAIL,

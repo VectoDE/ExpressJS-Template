@@ -1382,3 +1382,27 @@ select.field__input:disabled {
     text-align: left;
   }
 }
+
+/* Demo mode only: emails shown on the page instead of being sent. */
+.demo-mail {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.demo-mail__body {
+  display: grid;
+  gap: var(--space-2);
+  overflow-wrap: anywhere;
+}
+
+.demo-mail__body p {
+  margin: 0;
+}
+
+.demo-mail__subject {
+  font-weight: 600;
+}
+
+.demo-mail__note {
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}

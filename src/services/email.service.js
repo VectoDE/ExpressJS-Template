@@ -8,6 +8,7 @@ const nodemailer = require('nodemailer');
 const config = require('../config/config');
 const logger = require('../config/logger');
 const i18n = require('../i18n');
+const demoInbox = require('../utils/demoInbox');
 
 /**
  * Transactional emails in the language of the account. With SMTP_URL set, mails go out over SMTP.
@@ -45,7 +46,8 @@ const MESSAGES = {
   passkeyRemoved: () => ({ notYou: true }),
 };
 
-const compose = async (template, { name, locale, ...data }) => {
+// Subject, texts and link of a message, without the HTML part.
+const contentOf = (template, { name, locale, ...data }) => {
   const { t, locale: resolved } = i18n.forLocale(locale);
   const spec = MESSAGES[template](data);
   const key = (part) => `emails.${template}.${part}`;
@@ -59,6 +61,11 @@ const compose = async (template, { name, locale, ...data }) => {
     notYou: spec.notYou ? { text: t('emails.notYou'), url: forgotPasswordUrl() } : null,
     signature: t('emails.signature', { app: config.appName }),
   };
+  return content;
+};
+
+const compose = async (template, data) => {
+  const content = contentOf(template, data);
   const text = [
     content.greeting,
     content.intro,
@@ -86,11 +93,32 @@ const send = async (template, to, data) => {
   return info;
 };
 
+// Demo mode: the visitor sees the mail on the next page instead of receiving it. Runs synchronously, so the mail
+// is in the session before the response that redirects to that page is written.
+const showInDemo = (template, to, data) => {
+  const content = contentOf(template, data);
+  const shown = demoInbox.deliver({
+    to,
+    subject: content.subject,
+    greeting: content.greeting,
+    intro: content.intro,
+    action: content.action,
+    outro: content.outro,
+  });
+  if (!shown) {
+    logger.info('Demo mode: email "%s" was neither sent nor shown (no browser session)', content.subject);
+  }
+};
+
 /**
  * Fire and forget for requests that must answer at once and must not reveal by their timing whether
  * an email was sent (forgot password). Failures are logged, never thrown.
  */
 const sendInBackground = (template, to, data) => {
+  if (config.demo) {
+    showInDemo(template, to, data);
+    return;
+  }
   send(template, to, data).catch((error) => {
     logger.error('Email "%s" could not be sent: %s', template, error.message);
   });

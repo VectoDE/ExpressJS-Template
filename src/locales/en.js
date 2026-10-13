@@ -43,6 +43,14 @@ module.exports = {
   },
 
   // Animation styles, offered in the footer.
+  demo: {
+    banner:
+      'Public demo. Anyone can sign in with the demo accounts, and all data is deleted every hour. Do not enter real data.',
+    mailTitle: 'Email not sent',
+    mailLead: 'This demo sends no emails. This is the message that would have gone to {to}:',
+    mailAction: 'Open the link',
+  },
+
   motion: {
     film: 'Film',
     precise: 'Precise',

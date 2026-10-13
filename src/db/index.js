@@ -6,6 +6,7 @@ const path = require('node:path');
 const config = require('../config/config');
 const { createMongoAdapter } = require('./mongo');
 const { createSqlAdapter } = require('./sql');
+const { ClientD1 } = require('./d1');
 
 /**
  * The database is picked by DATABASE_URL:
@@ -15,6 +16,7 @@ const { createSqlAdapter } = require('./sql');
  *   mysql://, mariadb://            MySQL, MariaDB
  *   mssql://, sqlserver://          Microsoft SQL Server, needs `npm install tedious`
  *   oracle://                       Oracle Database, needs `npm install oracledb`
+ *   d1:DB                           Cloudflare D1 through the Worker binding DB, only for the demo (DEMO_MODE)
  * Services only talk to the adapter interface, so switching databases needs no code change.
  */
 const ROOT = path.join(__dirname, '../..');
@@ -85,6 +87,13 @@ const knexConfigFor = (scheme, url) => {
         pool,
       };
     }
+    case 'd1':
+      // The binding is registered by the Worker entry (worker/index.mjs); the schema comes from worker/migrations.
+      return {
+        client: ClientD1,
+        connection: { filename: url, binding: url.slice('d1:'.length) || 'DB' },
+        useNullAsDefault: true,
+      };
     default:
       throw new Error(`DATABASE_URL scheme "${scheme}" is not supported`);
   }
@@ -99,6 +108,7 @@ const DIALECTS = {
   mssql: 'mssql',
   sqlserver: 'mssql',
   oracle: 'oracle',
+  d1: 'd1',
 };
 
 // `migrate: false` only checks that the schema is current on connect, for apps that run without DDL rights.
@@ -107,7 +117,9 @@ const createDatabase = ({ url, name, auditRetentionDays, migrate = true }) => {
   if (scheme === 'mongodb' || scheme === 'mongodb+srv') {
     return createMongoAdapter({ url, dbName: name, auditRetentionDays, migrate });
   }
-  return createSqlAdapter({ knexConfig: knexConfigFor(scheme, url), dialect: DIALECTS[scheme], migrate });
+  // D1 schemas are applied with `wrangler d1 migrations apply`, which keeps its own migration table.
+  const migrateMode = scheme === 'd1' ? 'external' : migrate;
+  return createSqlAdapter({ knexConfig: knexConfigFor(scheme, url), dialect: DIALECTS[scheme], migrate: migrateMode });
 };
 
 module.exports = createDatabase({

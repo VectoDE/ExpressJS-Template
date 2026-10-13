@@ -5,10 +5,13 @@
 const crypto = require('node:crypto');
 const { promisify } = require('node:util');
 
+const config = require('../config/config');
+
 const scrypt = promisify(crypto.scrypt);
 
-// OWASP Password Storage Cheat Sheet: scrypt with N=2^17, r=8, p=1.
-const PARAMS = { N: 2 ** 17, r: 8, p: 1 };
+// OWASP Password Storage Cheat Sheet: scrypt with N=2^17, r=8, p=1. Only the public demo (DEMO_MODE) may lower N,
+// see PASSWORD_HASH_COST in src/config/config.js; hashes made with less work are upgraded at the next sign-in.
+const PARAMS = { N: 2 ** config.password.hashCost, r: 8, p: 1 };
 const LEGACY_PARAMS = { N: 2 ** 14, r: 8, p: 1 };
 const SALT_LENGTH = 16;
 const KEY_LENGTH = 64;
