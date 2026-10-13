@@ -40,22 +40,27 @@ Only test against your own installation. Do not test against systems you do not 
 
 ## Verifying releases
 
-Every release since 4.0.0 carries a signed build provenance. Check a downloaded archive or the Docker image
-with `gh attestation verify <file or oci://image> --repo VectoDE/ExpressJS-Template`; see
-[deployment](../docs/deployment.md#releases).
+Every release since 4.0.0 carries a signed build provenance, and version tags from 4.1.0 on are signed with the
+release key, whose public half is in [allowed_signers](allowed_signers). GitHub shows them as verified; in a clone,
+check a tag with `git -c gpg.ssh.allowedSignersFile=.github/allowed_signers tag --verify v<version>`. Check a
+downloaded archive or the Docker image with `gh attestation verify <file or oci://image> --repo
+VectoDE/ExpressJS-Template`; see [deployment](../docs/deployment.md#releases).
 
 ## Secrets and credentials
 
 - The repository holds no secrets. gitleaks runs in CI and GitHub secret scanning with push protection is on.
   Tests generate their passwords and keys at run time.
-- The release workflow needs no stored secret: it signs with GitHub's OIDC identity and pushes the image with the
-  short-lived repository token. The repository has no Actions secrets; SonarQube Cloud analyses through its
-  GitHub app.
+- The release workflow signs the provenance with GitHub's OIDC identity and pushes the image with the short-lived
+  repository token. The only stored secret is `RELEASE_SIGNING_KEY`, the SSH key that signs version tags. It belongs
+  to the GitHub environment `release`, which only `main` can use, so workflows on other branches never see it; one
+  job that runs no dependency code uses it, and no person keeps a copy. SonarQube Cloud analyses through its GitHub
+  app.
 - The live demo on Cloudflare has its own three keys (`JWT_SECRET`, `SESSION_SECRET`, `ENCRYPTION_KEY`). They are
   random values that were never displayed, stored only as Worker secrets in Cloudflare, and set by the maintainer
   with `wrangler secret put`. They protect nothing but the demo, whose data is deleted every hour.
-- Should a secret become necessary, only the maintainer can read or change it (see [governance](GOVERNANCE.md)).
-  It is rotated at least once a year, at once when someone with access leaves, and whenever it may have leaked.
+- Only the maintainer can read or change secrets (see [governance](GOVERNANCE.md)). They are rotated at least once
+  a year, at once when someone with access leaves, and whenever they may have leaked; for the signing key: create a
+  new key, replace the secret, the signing key on GitHub and `allowed_signers`, then delete the old key.
 - Applications built from the template keep their secrets in environment variables; `npm run setup` generates
   them and production refuses placeholders. See [configuration](../docs/configuration.md).
 

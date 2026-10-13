@@ -19,6 +19,7 @@ path = [
   ".nvmrc",
   ".prettierignore",
   ".github/CODEOWNERS",
+  ".github/allowed_signers",
 ]
 SPDX-FileCopyrightText = "2024-2026 VectoDE"
 SPDX-License-Identifier = "MIT"

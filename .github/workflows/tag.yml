@@ -1,0 +1,76 @@
+# SPDX-FileCopyrightText: 2024-2026 VectoDE
+#
+# SPDX-License-Identifier: MIT
+
+# Second step of a release (docs/deployment.md#releases): after the version pull request is merged, this creates the
+# version tag for the version in package.json on main, signs it with the release key and starts the release workflow
+# for it. The key is a secret of the environment "release", which only main can use; the public half is in
+# .github/allowed_signers, so the tag shows as verified and the release workflow checks the signature.
+name: Tag release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tag-release
+  cancel-in-progress: false
+
+jobs:
+  tag:
+    name: Sign and push the version tag
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: release
+    permissions:
+      contents: write # pushes the tag
+      actions: write # starts the release workflow for the tag
+    steps:
+      - uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: true # the tag is pushed with this job's token
+      - name: Sign and push the tag
+        env:
+          SIGNING_KEY: ${{ secrets.RELEASE_SIGNING_KEY }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          tag="v$version"
+          if ! [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
+            echo "::error::$version in package.json is not a version."
+            exit 1
+          fi
+          if git rev-parse --verify --quiet "refs/tags/$tag" > /dev/null; then
+            echo "::error::$tag exists already. Merge a pull request with the next version first."
+            exit 1
+          fi
+          # The tag message is the changelog section of the version.
+          notes="$RUNNER_TEMP/notes.md"
+          awk -v heading="## [$version]" 'index($0, heading) == 1 { found = 1; next } found && /^## \[/ { exit } found' \
+            CHANGELOG.md > "$notes"
+          if ! grep -q '[^[:space:]]' "$notes"; then
+            echo "::error::CHANGELOG.md has no section for $version."
+            exit 1
+          fi
+          key="$RUNNER_TEMP/signing-key"
+          (umask 077 && printf '%s\n' "$SIGNING_KEY" > "$key")
+          git config user.name "VectoDE"
+          git config user.email "157636760+VectoDE@users.noreply.github.com"
+          git config gpg.format ssh
+          git config user.signingkey "$key"
+          git config gpg.ssh.allowedSignersFile .github/allowed_signers
+          git tag --sign "$tag" --file "$notes" --cleanup=verbatim
+          git tag --verify "$tag"
+          rm -f "$key"
+          git push origin "refs/tags/$tag"
+          # A tag pushed with the workflow token starts no workflow, so the release is started explicitly.
+          gh workflow run release.yml --ref "$tag" -R "$GITHUB_REPOSITORY"
+          echo "Signed $tag and started the release: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/workflows/release.yml" \
+            >> "$GITHUB_STEP_SUMMARY"

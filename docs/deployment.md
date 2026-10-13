@@ -109,15 +109,13 @@ steps:
 
 1. A pull request sets the new `version` with `npm version 4.1.0 --no-git-tag-version` and moves the
    "Unreleased" entries of [CHANGELOG.md](../CHANGELOG.md) under the new version.
-2. After the merge, tag the merge commit and push only the tag:
+2. After the merge, start the workflow **Tag release** on `main` (Actions tab, or
+   `gh workflow run tag.yml --ref main`). It creates the tag `v<version>` with the changelog section as its message,
+   signs it with the release key and starts the release workflow for it. The key is a secret of the GitHub
+   environment `release`, which only `main` can use; nobody keeps a copy.
 
-   ```bash
-   git switch main && git pull
-   git tag -a v4.1.0 -m "Release 4.1.0"
-   git push origin v4.1.0
-   ```
-
-`.github/workflows/release.yml` then checks that the tag is on `main` and matches `package.json`, runs
+`.github/workflows/release.yml` then checks that the tag is signed with the release key, is on `main` and matches
+`package.json`, runs
 `npm run check` again and publishes:
 
 - the source archive, a CycloneDX SBOM of the runtime dependencies and `SHA256SUMS`, with a signed build
