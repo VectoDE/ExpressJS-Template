@@ -92,7 +92,10 @@ class ClientD1 extends Client_SQLite3 {
     return Promise.resolve();
   }
 
-  async destroyRawConnection() {}
+  // D1 bindings hold no connection of their own, so there is nothing to close.
+  destroyRawConnection() {
+    return Promise.resolve();
+  }
 
   validateConnection() {
     return true;

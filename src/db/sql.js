@@ -102,7 +102,7 @@ const fromPasskeyRow = (row) =>
     lastUsedAt: row.last_used_at,
   });
 
-const createSqlAdapter = ({ knexConfig, dialect, migrate = true }) => {
+const createSqlAdapter = ({ knexConfig, dialect, migrate = true, externalSchema = false }) => {
   const knex = knexFactory(knexConfig);
 
   const recoveryCodesOf = async (trx, userId) =>
@@ -584,7 +584,7 @@ const createSqlAdapter = ({ knexConfig, dialect, migrate = true }) => {
     knex,
     async connect() {
       // Schema managed outside Knex (Cloudflare D1): nothing to create or check here.
-      if (migrate === 'external') {
+      if (externalSchema) {
         return;
       }
       const filename = knexConfig.connection?.filename;

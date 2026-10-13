@@ -118,8 +118,12 @@ const createDatabase = ({ url, name, auditRetentionDays, migrate = true }) => {
     return createMongoAdapter({ url, dbName: name, auditRetentionDays, migrate });
   }
   // D1 schemas are applied with `wrangler d1 migrations apply`, which keeps its own migration table.
-  const migrateMode = scheme === 'd1' ? 'external' : migrate;
-  return createSqlAdapter({ knexConfig: knexConfigFor(scheme, url), dialect: DIALECTS[scheme], migrate: migrateMode });
+  return createSqlAdapter({
+    knexConfig: knexConfigFor(scheme, url),
+    dialect: DIALECTS[scheme],
+    migrate,
+    externalSchema: scheme === 'd1',
+  });
 };
 
 module.exports = createDatabase({

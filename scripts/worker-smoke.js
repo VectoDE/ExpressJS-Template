@@ -22,13 +22,9 @@ if (process.env.NODE_TLS_REJECT_UNAUTHORIZED === '0' && !['127.0.0.1', 'localhos
   process.exit(1);
 }
 
-const decode = (text) =>
-  text
-    .replaceAll('&amp;', '&')
-    .replaceAll('&#34;', '"')
-    .replaceAll('&#39;', "'")
-    .replaceAll('&lt;', '<')
-    .replaceAll('&gt;', '>');
+// One pass, so "&amp;lt;" becomes "&lt;" and is not decoded a second time.
+const ENTITIES = { '&amp;': '&', '&#34;': '"', '&#39;': "'", '&lt;': '<', '&gt;': '>' };
+const decode = (text) => text.replaceAll(/&(?:amp|#34|#39|lt|gt);/g, (entity) => ENTITIES[entity]);
 
 const bodyOf = ({ form, json }) => {
   if (form) return new URLSearchParams(form).toString();
@@ -65,12 +61,11 @@ const browser = () => {
     });
     return { status: response.status, location: response.headers.get('location'), body, headers: response.headers };
   };
+  // Each hop depends on the previous one, so the redirects are followed one after the other.
   const follow = async (path, options) => {
-    let result = await request(path, options);
-    while (result.status >= 300 && result.status < 400 && result.location) {
-      result = await request(result.location);
-    }
-    return result;
+    const result = await request(path, options);
+    const isRedirect = result.status >= 300 && result.status < 400 && result.location;
+    return isRedirect ? follow(result.location) : result;
   };
   const csrf = (html) => {
     const match = /name="_csrf" value="([^"]+)"/.exec(html);

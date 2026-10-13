@@ -81,7 +81,7 @@ describe('D1 Knex client', () => {
     d1 = fakeD1();
     applyMigrations(d1.sqlite);
     registerD1Binding('TEST', d1.binding);
-    db = createSqlAdapter({ knexConfig: knexConfigFor('d1', 'd1:TEST'), dialect: 'd1', migrate: 'external' });
+    db = createSqlAdapter({ knexConfig: knexConfigFor('d1', 'd1:TEST'), dialect: 'd1', externalSchema: true });
     await db.connect();
   });
 
@@ -168,7 +168,7 @@ describe('D1 Knex client', () => {
     const orphan = createSqlAdapter({
       knexConfig: knexConfigFor('d1', 'd1:MISSING'),
       dialect: 'd1',
-      migrate: 'external',
+      externalSchema: true,
     });
     await expect(orphan.ping()).resolves.toBe(false);
     await expect(orphan.users.count()).rejects.toThrow(/No D1 binding named "MISSING"/);
