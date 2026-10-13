@@ -2,11 +2,17 @@
 
 ## Supported versions
 
-| Version | Supported                                                                                                         |
-| ------- | ----------------------------------------------------------------------------------------------------------------- |
-| 4.x     | Yes                                                                                                               |
-| 3.x     | No. Upgrade with [docs/upgrading.md](../docs/upgrading.md); data in MongoDB keeps working.                        |
-| < 3.0   | No. 1.0 and 1.0.1 contain known critical vulnerabilities; upgrade with [docs/upgrading.md](../docs/upgrading.md). |
+| Version | Supported                                                                      | Security updates until                                        |
+| ------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| 4.x     | Yes. Fixes ship in a new patch or minor release of the latest 4.x              | 6 months after 5.0.0 is released                              |
+| 3.x     | No. Upgrade with [docs/upgrading.md](../docs/upgrading.md); MongoDB data stays | Ended with the release of 4.0.0, before this policy           |
+| < 3.0   | No. 1.0 and 1.0.1 contain known critical vulnerabilities                       | Ended; upgrade with [docs/upgrading.md](../docs/upgrading.md) |
+
+- Only the latest release of a major version is supported; there are no backports to older minor or patch releases.
+  Upgrading within a major version is safe, because breaking changes only come with a new major version.
+- When a new major version comes out, the previous one keeps getting security fixes for six months. The end date is
+  added to this table and announced in the changelog and the release notes of the new major version.
+- After that date the old major version gets no updates of any kind, security fixes included.
 
 ## Reporting a vulnerability
 

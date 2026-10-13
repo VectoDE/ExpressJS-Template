@@ -25,6 +25,7 @@ All notable changes to this project are documented here. The format follows
 
 - The public demo runs at https://expressjs-template-demo.vectode.workers.dev; GitHub Pages now redirects there
   instead of serving the static preview. `npm run build:preview` stays for projects that want a static preview.
+- Security policy: a major version keeps getting security fixes for six months after the next one is released.
 - Coverage thresholds raised to 90 % for statements, lines and functions and 80 % for branches.
 - The metrics endpoint reports an event loop delay of 0 on runtimes without an event loop monitor instead of
   failing at start.
