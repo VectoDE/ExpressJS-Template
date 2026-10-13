@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');

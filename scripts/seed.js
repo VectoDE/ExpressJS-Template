@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 /**
  * Fills a development database with demo accounts: one admin, one user and enough extra accounts to page through
  * the admin list. Refuses to run in production. All accounts share one password, printed once at the end.

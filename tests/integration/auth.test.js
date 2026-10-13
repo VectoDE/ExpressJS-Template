@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const userService = require('../../src/services/user.service');
 const request = require('supertest');
 const jwt = require('jsonwebtoken');

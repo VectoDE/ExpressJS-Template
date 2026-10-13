@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 // Runs before the first paint (loaded without defer) so animated elements never flash in their final state
 // and then jump back. Kept tiny on purpose; everything else lives in main.js.
 (() => {

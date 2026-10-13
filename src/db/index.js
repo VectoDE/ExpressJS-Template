@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const path = require('node:path');
 const config = require('../config/config');
 const { createMongoAdapter } = require('./mongo');

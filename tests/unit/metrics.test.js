@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const metrics = require('../../src/utils/metrics');
 
 const finish = (req, statusCode, delayMs = 0) =>

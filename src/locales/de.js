@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 /**
  * German texts of the browser UI and of all emails. Placeholders use {name} and are filled by i18n.translate.
  * en.js must have exactly the same keys; a unit test enforces that. Long prose pages (home, security,

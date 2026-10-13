@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const os = require('node:os');
 const { MongoClient, ObjectId } = require('mongodb');
 const { isId } = require('../utils/id');

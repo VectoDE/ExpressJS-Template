@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 // Layout from small phones to 4K TVs: no sideways scrolling, menu behaviour, scaling on large screens.
 const { test, expect } = require('@playwright/test');
 const fixtures = require('./fixtures');

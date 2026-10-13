@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const { createOrPromote } = require('../../scripts/create-admin');
 const { useDatabase, db } = require('../helpers/db');
 const { PASSWORD, createUser } = require('../helpers/fixtures');

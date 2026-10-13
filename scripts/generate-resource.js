@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 /**
  * Scaffolds a REST resource that belongs to the signed-in user: SQL migration, validation, service, controller, route
  * with OpenAPI docs and an integration test. It works with every supported database: the service stores records

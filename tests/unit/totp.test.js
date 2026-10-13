@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const totp = require('../../src/utils/totp');
 
 // RFC 6238, Appendix B: SHA-1 secret "12345678901234567890". The RFC lists 8 digits; we use the last 6.

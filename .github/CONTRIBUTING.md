@@ -60,6 +60,29 @@ Node.js 22.12 or newer is required (`.nvmrc` pins 26). Tests use an in-memory SQ
 - New dependencies need a reason in the pull request. Prefer the standard library.
 - CI must be green before review.
 
+## Code review
+
+Every change reaches `main` through a pull request, and only a maintainer merges it. The reviewer reads the whole diff
+and checks it against this list before approving:
+
+1. **Purpose.** The pull request says what it changes and why, and links the issue it closes. It does one thing.
+2. **Correctness.** The code does what the description says, on every supported database, including the error
+   paths: they answer through `ApiError` without internal details.
+3. **Tests.** New behaviour and every fixed bug have a test that fails without the change. Security-relevant code has
+   a test for the attack it prevents. Coverage stays above the thresholds.
+4. **Security.** Input is validated with Joi before it reaches a controller; views escape user data; sessions, tokens,
+   passwords and passkeys keep their current protections; nothing secret reaches logs or responses. Changes to
+   authentication, sessions or the CSP get a second look at `docs/security.md`, which must still be true afterwards.
+5. **Dependencies.** A new dependency is justified in the description (purpose, maintenance, license) and locked.
+6. **Compatibility.** A change to routes, the API, configuration or the database schema is either backwards
+   compatible or comes with a migration and notes in `CHANGELOG.md`.
+7. **Documentation.** `docs/`, the README and `CHANGELOG.md` (under "Unreleased") match the change.
+8. **Style.** The checks enforce formatting and lint rules; the reviewer looks at names, comments that explain why, and
+   new files carrying the SPDX header.
+
+The reviewer leaves a comment for each point that fails and approves only when none is left. Changes by the maintainer
+go through the same checks, and CI runs them on every pull request.
+
 ## Releases
 
 Only maintainers release, through a version tag on `main`; see [deployment](../docs/deployment.md#releases). The
@@ -69,3 +92,8 @@ plans for the next versions are in the [roadmap](../docs/roadmap.md), how decisi
 ## License
 
 By contributing you agree that your contribution is licensed under the [MIT License](../LICENSE).
+
+Every file carries an [SPDX](https://spdx.dev/) header with the copyright holder and the license, or is covered by
+`REUSE.toml` when a header is not possible or would end up in rendered pages (templates, Markdown, JSON). CI checks
+this with the [REUSE](https://reuse.software/) tool; run `uvx reuse lint` locally, and `uvx reuse annotate` adds the
+header to a new file.

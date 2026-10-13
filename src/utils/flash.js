@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 /**
  * One-time messages and form input that survive a single redirect (post/redirect/get).
  * Both live in the session and are removed when the next page reads them.

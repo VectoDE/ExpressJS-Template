@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const request = require('supertest');
 const app = require('../../src/app');
 const totp = require('../../src/utils/totp');

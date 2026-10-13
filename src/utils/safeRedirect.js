@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const MAX_LENGTH = 2048;
 
 // Pages a redirect may lead back to, with the query parameters each one keeps. The target is rebuilt from these

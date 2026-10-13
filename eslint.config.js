@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const { defineConfig } = require('eslint/config');
 const js = require('@eslint/js');
 const globals = require('globals');

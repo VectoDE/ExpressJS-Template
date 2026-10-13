@@ -1,0 +1,24 @@
+# Licensing of the files that cannot carry a comment header, or where a header would end up in rendered output:
+# documentation, templates, JSON, images and tool settings. Every other file names its license and copyright in its
+# own SPDX header. CI checks this with `reuse lint`.
+version = 1
+
+[[annotations]]
+path = [
+  "**/*.md",
+  "**/*.ejs",
+  "**/*.json",
+  "**/*.svg",
+  "**/*.properties",
+  ".env.example",
+  ".dockerignore",
+  ".editorconfig",
+  ".gitattributes",
+  ".gitignore",
+  ".npmrc",
+  ".nvmrc",
+  ".prettierignore",
+  ".github/CODEOWNERS",
+]
+SPDX-FileCopyrightText = "2024-2026 VectoDE"
+SPDX-License-Identifier = "MIT"

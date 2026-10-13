@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024-2026 VectoDE
+#
+# SPDX-License-Identifier: MIT
+
 name: Feature request
 description: Suggest an improvement for the template.
 labels: [enhancement]

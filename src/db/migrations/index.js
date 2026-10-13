@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 /**
  * Schema changes for the SQL databases, applied in this order and recorded in knex_migrations; Knex runs pending
  * ones on start. Add a change as a new file and a new entry at the end (the generator does both for new

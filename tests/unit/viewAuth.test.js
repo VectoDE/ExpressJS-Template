@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const config = require('../../src/config/config');
 const userService = require('../../src/services/user.service');
 const { ensureAuthenticated } = require('../../src/middlewares/viewAuth');

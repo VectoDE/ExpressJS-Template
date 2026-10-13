@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024-2026 VectoDE
+#
+# SPDX-License-Identifier: MIT
+
 # Local production-like stack: the app and MongoDB on an internal network. For another database, remove the
 # mongo service and set DATABASE_URL in .env (see docs/deployment.md).
 # Put a TLS-terminating reverse proxy in front for real deployments (see docs/deployment.md).

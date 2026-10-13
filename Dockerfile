@@ -1,4 +1,8 @@
 # syntax=docker/dockerfile:1.10
+# SPDX-FileCopyrightText: 2024-2026 VectoDE
+#
+# SPDX-License-Identifier: MIT
+
 # Base image pinned by digest (node 26.10.0 on Alpine 3.24) in both stages, so Dependabot can propose updates.
 FROM node:26.11.1-alpine3.24@sha256:143494b1da2945f061539253adc65e4f1569ddf07da2d384c022c791a9d90a4a AS deps
 WORKDIR /app

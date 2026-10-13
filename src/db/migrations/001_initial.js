@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 // First schema of the SQL databases: accounts, recovery codes, tokens, activity log, browser sessions, rate limits.
 // Column types are the portable subset: strings with a length (indexable everywhere, also on SQL Server and
 // Oracle), BIGINT milliseconds for times, booleans and integers.

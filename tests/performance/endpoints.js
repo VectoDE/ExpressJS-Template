@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 /**
  * Every endpoint of the app with its expected status and latency budget (p99, milliseconds).
  * Endpoints that consume something (a refresh token, a session, an account) get one fresh item per request.

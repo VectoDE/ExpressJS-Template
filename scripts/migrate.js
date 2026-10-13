@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 /**
  * Brings the database schema up to date: SQL migrations, or the indexes on MongoDB. Uses MIGRATION_DATABASE_URL when
  * set, so the account of the running app needs no right to change the schema; otherwise DATABASE_URL.

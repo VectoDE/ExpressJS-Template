@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const { consumeFlashMessages, consumeInput } = require('../utils/flash');
 const { applyLocale, localeFromRequest } = require('./i18n');
 const { roleRights } = require('../config/roles');

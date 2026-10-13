@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const fs = require('node:fs');
 const path = require('node:path');
 const knexFactory = require('knex');

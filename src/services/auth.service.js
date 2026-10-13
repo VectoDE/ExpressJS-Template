@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const config = require('../config/config');
 const logger = require('../config/logger');
 const { tokenTypes } = require('../config/tokens');

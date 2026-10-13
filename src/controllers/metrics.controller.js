@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const config = require('../config/config');
 const metrics = require('../utils/metrics');
 const { safeEqual } = require('../utils/crypto');

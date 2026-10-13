@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 /**
  * Creates an administrator account, or promotes an existing account to administrator.
  * Asks for name, email and password on the terminal; the password is not echoed.

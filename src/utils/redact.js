@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 // Query parameters that carry single-use secrets (links from emails). Their values never reach a log line.
 const SECRET_PARAMS = /([?&](?:token|code)=)[^&#]*/gi;
 

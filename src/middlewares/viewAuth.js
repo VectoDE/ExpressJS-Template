@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const config = require('../config/config');
 const userService = require('../services/user.service');
 const ApiError = require('../utils/ApiError');

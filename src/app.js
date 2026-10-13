@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const path = require('node:path');
 const express = require('express');
 const helmet = require('helmet');

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 // Runs once when the MongoDB volume is created (docker-entrypoint-initdb.d).
 // Creates the application user with access to the application database only.
 const dbName = process.env.MONGO_APP_DATABASE;

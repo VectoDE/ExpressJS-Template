@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 // Property-based tests: random input against invariants, so the parsers and encoders that face user input are
 // fuzzed on every test run. A failure prints the smallest input that breaks the property.
 const fc = require('fast-check');

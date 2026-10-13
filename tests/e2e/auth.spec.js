@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 // Sign-up, sign-in, two-factor and sign-out as a visitor would do it.
 const { test, expect } = require('@playwright/test');
 const totp = require('../../src/utils/totp');

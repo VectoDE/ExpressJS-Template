@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const saveSessionBeforeRedirect = require('../../src/middlewares/saveSessionBeforeRedirect');
 
 const setup = (session, events) => {

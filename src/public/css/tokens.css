@@ -1,4 +1,10 @@
 /*
+ * SPDX-FileCopyrightText: 2024-2026 VectoDE
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+/*
  * Design tokens. Every colour, size, radius and timing used by the other stylesheets comes from here.
  * Contrast (WCAG 2.1 AA), measured for both themes: body text >= 12.9:1, every other text and button pair >= 6.3:1.
  */

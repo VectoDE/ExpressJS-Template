@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 /**
  * Checks the licenses of all production dependencies against an allow-list and writes
  * docs/third-party-notices.md with name, version, license and copyright notice of each package.
