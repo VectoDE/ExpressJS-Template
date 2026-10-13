@@ -145,3 +145,8 @@ data/
 
 # Static preview for GitHub Pages (npm run build:preview)
 preview-dist/
+
+# Cloudflare demo build output, local state and local secrets
+worker-dist/
+.wrangler/
+.dev.vars
