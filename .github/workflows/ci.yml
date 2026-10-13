@@ -140,6 +140,12 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci --ignore-scripts
+      # The service counts as healthy when its own check passes inside the container. Wait until the mapped port also
+      # accepts connections from the runner, or the tests start against a closed port.
+      - name: Wait for the database port
+        env:
+          DB_PORT: ${{ matrix.port }}
+        run: timeout 120 bash -c 'until (echo > "/dev/tcp/127.0.0.1/$DB_PORT") 2> /dev/null; do sleep 2; done'
       - run: npm test
         env:
           TEST_DATABASE_URL: ${{ matrix.url }}
