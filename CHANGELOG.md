@@ -5,6 +5,10 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [4.1.1] - 2026-10-13
+
+Repository maintenance only; the application is unchanged.
+
 ### Changed
 
 - Dependabot pull requests for patch and minor updates merge on their own once every required check has passed;
@@ -221,7 +225,8 @@ Security release with a full audit. See [upgrading](docs/upgrading.md) for migra
 
 - First release.
 
-[Unreleased]: https://github.com/VectoDE/ExpressJS-Template/compare/v4.1.0...HEAD
+[Unreleased]: https://github.com/VectoDE/ExpressJS-Template/compare/v4.1.1...HEAD
+[4.1.1]: https://github.com/VectoDE/ExpressJS-Template/compare/v4.1.0...v4.1.1
 [4.1.0]: https://github.com/VectoDE/ExpressJS-Template/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/VectoDE/ExpressJS-Template/compare/v3.0.0...v4.0.0
 [3.0.0]: https://github.com/VectoDE/ExpressJS-Template/compare/1.0.1...v3.0.0
