@@ -25,9 +25,10 @@ request that adds them to this file and to [CODEOWNERS](CODEOWNERS).
 
 ## Releases
 
-A release is a version tag on a commit of `main`. The [release workflow](workflows/release.yml) checks the commit
-again and publishes the source archive, the SBOM and the Docker image with signed provenance. Nobody publishes
-from a laptop. See [deployment](../docs/deployment.md#releases).
+A release is a signed version tag on a commit of `main`, created by the [tag workflow](workflows/tag.yml). The
+[release workflow](workflows/release.yml) checks the signature and the commit again and publishes the source archive,
+the SBOM and the Docker image with signed provenance. Nobody publishes from a laptop. See
+[deployment](../docs/deployment.md#releases).
 
 ## Access to sensitive resources
 
@@ -35,7 +36,8 @@ from a laptop. See [deployment](../docs/deployment.md#releases).
 | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | Repository settings, rulesets and secrets                              | [@VectoDE](https://github.com/VectoDE) (owner)                                                    |
 | Merging into `main`                                                    | [@VectoDE](https://github.com/VectoDE), through pull requests only                                |
-| Version tags and releases                                              | [@VectoDE](https://github.com/VectoDE); the release workflow publishes                            |
+| Version tags and releases                                              | [@VectoDE](https://github.com/VectoDE) starts the tag workflow; the release workflow publishes    |
+| Release signing key (`RELEASE_SIGNING_KEY`, environment `release`)     | The tag workflow on `main` only; nobody keeps a copy                                              |
 | Docker image `ghcr.io/vectode/expressjs-template`                      | The release workflow with the repository token; no personal token is stored                       |
 | Live demo: Cloudflare Worker and D1 database `expressjs-template-demo` | [@VectoDE](https://github.com/VectoDE); Workers Builds deploys `main`, the owner sets the secrets |
 | GitHub Pages (redirect to the live demo)                               | The Pages workflow on `main`                                                                      |
@@ -52,6 +54,7 @@ when no longer needed.
 ## Continuity
 
 - Code, issues, discussions, releases and the full history are public, so anyone can fork and continue.
-- Releases need no personal token or key: the workflow signs with GitHub's OIDC identity.
+- Releases need no personal token or key: the workflows sign with GitHub's OIDC identity and the release key kept
+  in the environment `release`.
 - The repository belongs to the maintainer account. Access for a second person is arranged by the maintainer and
   recorded here once it exists.

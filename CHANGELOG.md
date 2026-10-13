@@ -10,6 +10,9 @@ All notable changes to this project are documented here. The format follows
 - Every file states its copyright holder and license in an SPDX header or in `REUSE.toml`; CI checks this with the
   REUSE tool.
 - CI builds the release source archive from two separate clones and fails unless both are identical.
+- Signed version tags: the workflow "Tag release" creates the tag for the version in `package.json`, signs it with
+  the release key from the GitHub environment `release` and starts the release. The release workflow refuses tags
+  that are not signed with that key; the public key is in `.github/allowed_signers`.
 - The contributing guide has a checklist that every review goes through.
 - Live demo on Cloudflare Workers Free with D1 (`npm run build:worker`, `wrangler.jsonc`, `worker/`). The Express
   app runs unchanged; views are precompiled at build time, static files are Workers Static Assets, and a Cron

@@ -85,9 +85,9 @@ go through the same checks, and CI runs them on every pull request.
 
 ## Releases
 
-Only maintainers release, through a version tag on `main`; see [deployment](../docs/deployment.md#releases). The
-plans for the next versions are in the [roadmap](../docs/roadmap.md), how decisions are made in the
-[governance](GOVERNANCE.md).
+Only maintainers release, through a signed version tag that the tag workflow creates on `main`; see
+[deployment](../docs/deployment.md#releases). The plans for the next versions are in the
+[roadmap](../docs/roadmap.md), how decisions are made in the [governance](GOVERNANCE.md).
 
 ## License
 
