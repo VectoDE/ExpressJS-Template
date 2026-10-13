@@ -220,6 +220,39 @@ jobs:
           npm run licenses
           git diff --exit-code docs/third-party-notices.md
 
+  worker:
+    name: Cloudflare demo (local Worker)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --ignore-scripts
+      # The committed D1 migrations must match the Knex migrations, and the bundle must build.
+      - run: npm run build:worker -- --check
+      - run: npm run build:worker
+      # Runs the Worker in workerd with a local D1 database and walks through the main flows. The secrets are random
+      # values that exist only for this job.
+      - name: Run the Worker and the smoke test
+        run: |
+          {
+            echo "APP_URL=https://localhost:8787"
+            for name in JWT_SECRET SESSION_SECRET ENCRYPTION_KEY; do echo "$name=$(openssl rand -hex 32)"; done
+          } > .dev.vars
+          npx wrangler d1 migrations apply DB --local
+          npx wrangler d1 execute DB --local --file worker-dist/seed.sql
+          npx wrangler dev --local --local-protocol https --port 8787 > wrangler.log 2>&1 &
+          for _ in $(seq 60); do curl -ksf -o /dev/null https://127.0.0.1:8787/ && break; sleep 2; done
+          NODE_TLS_REJECT_UNAUTHORIZED=0 node scripts/worker-smoke.js https://127.0.0.1:8787 || { cat wrangler.log; exit 1; }
+
   reuse:
     name: License and copyright headers
     runs-on: ubuntu-latest
