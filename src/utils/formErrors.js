@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 /**
  * Turns a Joi validation error into user-facing messages, one per failed field and in the UI language.
  * Raw Joi messages are English and name internal keys, so they never reach the browser.

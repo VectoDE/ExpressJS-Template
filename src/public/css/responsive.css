@@ -1,4 +1,10 @@
 /*
+ * SPDX-FileCopyrightText: 2024-2026 VectoDE
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+/*
  * Device adjustments on top of the layout: large monitors and TVs, tablets, touch screens, landscape phones,
  * notched displays and print. Breakpoints are in px on purpose: they must not move when the root size scales.
  */

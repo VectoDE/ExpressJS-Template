@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const crypto = require('node:crypto');
 const jwt = require('jsonwebtoken');
 const config = require('../config/config');

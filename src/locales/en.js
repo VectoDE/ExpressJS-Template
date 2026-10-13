@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 /**
  * English texts of the browser UI and of all emails. Must have exactly the same keys as de.js.
  */

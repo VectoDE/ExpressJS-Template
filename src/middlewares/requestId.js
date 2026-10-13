@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const crypto = require('node:crypto');
 
 // Accept an incoming id from a proxy or client only if it is short and harmless; otherwise make a new one.

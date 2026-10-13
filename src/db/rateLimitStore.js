@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 /**
  * express-rate-limit store on the configured database, so several app instances share one counter per client.
  * The adapters count atomically, so parallel requests cannot undercount.

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 /**
  * Short, human-readable device label from a User-Agent, for the session list and the activity log.
  * Deliberately coarse (browser and operating system only), so it is useful without being a fingerprint.

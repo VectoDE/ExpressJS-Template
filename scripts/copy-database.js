@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 /**
  * Copies accounts, their second factors, recovery codes and passkeys, valid tokens and the activity log from one database to
  * another, for example from MongoDB to PostgreSQL. Ids, timestamps and password hashes stay as they are, so users

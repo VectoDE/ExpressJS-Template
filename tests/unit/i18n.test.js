@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const i18n = require('../../src/i18n');
 const de = require('../../src/locales/de');
 const en = require('../../src/locales/en');

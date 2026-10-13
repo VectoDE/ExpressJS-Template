@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 // Passkeys end to end: the page script, the browser's WebAuthn API and the server verification together.
 // WebAuthn needs an authenticator, and Chromium offers a virtual one through the DevTools protocol, so
 // playwright.config.js runs this file only in the Chromium-based projects.

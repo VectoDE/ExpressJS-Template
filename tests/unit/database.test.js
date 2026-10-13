@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const path = require('node:path');
 const { createDatabase, knexConfigFor, sqliteFile } = require('../../src/db');
 const DatabaseSessionStore = require('../../src/db/sessionStore');

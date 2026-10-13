@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const { deviceLabel } = require('../../src/utils/device');
 const { redactUrl, oneLine } = require('../../src/utils/redact');
 const describeFormErrors = require('../../src/utils/formErrors');

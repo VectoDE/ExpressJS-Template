@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 // Browser tests: real pages in Chromium, Firefox and WebKit against an in-memory database (scripts/e2e-server.js).
 const { defineConfig, devices } = require('@playwright/test');
 const fixtures = require('./tests/e2e/fixtures');

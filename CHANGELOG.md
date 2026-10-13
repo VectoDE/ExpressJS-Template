@@ -5,6 +5,13 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Every file states its copyright holder and license in an SPDX header or in `REUSE.toml`; CI checks this with the
+  REUSE tool.
+- CI builds the release source archive from two separate clones and fails unless both are identical.
+- The contributing guide has a checklist that every review goes through.
+
 ### Changed
 
 - Contributing guide: coding standards and how dependencies are chosen. Security policy: handling of secrets and

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024-2026 VectoDE
+#
+# SPDX-License-Identifier: MIT
+
 name: CI
 
 on:
@@ -194,6 +198,44 @@ jobs:
         run: |
           npm run licenses
           git diff --exit-code docs/third-party-notices.md
+
+  reuse:
+    name: License and copyright headers
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Every file names its license and copyright holder, in an SPDX header or in REUSE.toml.
+      - uses: fsfe/reuse-action@676e2d560c9a403aa252096d99fcab3e1132b0f5 # v6.0.0
+
+  reproducible:
+    name: Reproducible source archive
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # The release ships a source archive made by git archive. Two separate clones in different directories must
+      # give the same archive, byte for byte, so anyone can rebuild it and compare it with the signed one.
+      - name: Build the archive twice and compare
+        run: |
+          git clone --quiet --no-local . "$RUNNER_TEMP/second"
+          for dir in "$GITHUB_WORKSPACE" "$RUNNER_TEMP/second"; do
+            (cd "$dir" && git archive --format=tar.gz --prefix=expressjs-template/ -o "$RUNNER_TEMP/$(basename "$dir").tar.gz" HEAD)
+          done
+          first=$(sha256sum "$RUNNER_TEMP/$(basename "$GITHUB_WORKSPACE").tar.gz" | cut -d' ' -f1)
+          second=$(sha256sum "$RUNNER_TEMP/second.tar.gz" | cut -d' ' -f1)
+          echo "first:  $first" && echo "second: $second"
+          test "$first" = "$second"
 
   docker:
     name: Docker image

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const { encrypt, decrypt, randomToken, sha256, safeEqual } = require('../../src/utils/crypto');
 
 describe('crypto', () => {

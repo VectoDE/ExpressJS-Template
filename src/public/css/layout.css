@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2026 VectoDE
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 /* Page frame: header, main area widths, footer and the page-level grids. */
 .shell {
   width: min(var(--shell-width), 100% - 2 * var(--space-5));

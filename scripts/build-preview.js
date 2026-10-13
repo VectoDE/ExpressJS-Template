@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 /**
  * Builds a static copy of the web pages for GitHub Pages: every public page, the account dashboard and the user
  * administration in English and German, rendered by the real app against an in-memory SQLite database with the

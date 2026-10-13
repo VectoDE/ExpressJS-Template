@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const morgan = require('morgan');
 const logger = require('../config/logger');
 const config = require('../config/config');

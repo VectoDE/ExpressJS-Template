@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 // Runs before every test file. Fixed values keep tests deterministic; none of them is used outside tests.
 process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = 'test-only-jwt-key-4f9c1e7a2b8d6035e1c9a7f4b2d8e6c0';

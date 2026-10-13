@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 /**
  * Plain records shared by every database adapter. Adapters convert their rows or documents into these shapes, so
  * services never see database specifics.

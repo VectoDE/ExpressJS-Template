@@ -1,4 +1,10 @@
 /*
+ * SPDX-FileCopyrightText: 2024-2026 VectoDE
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+/*
  * Motion layer. Everything here only runs when motion-init.js has set the "motion" class on <html>, which it does
  * only if JavaScript works and the visitor has not asked for reduced motion. Without the class every element
  * is in its final state, so nothing depends on an animation finishing.

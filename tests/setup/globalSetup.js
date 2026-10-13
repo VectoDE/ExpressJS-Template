@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
 // TEST_DATABASE_URL=mongodb-memory starts a throwaway MongoDB; any other value is used as it is

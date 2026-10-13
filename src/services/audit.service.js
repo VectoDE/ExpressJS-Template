@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const db = require('../db');
 const { AUDIT_EVENT_TYPES } = require('../db/records');
 const { newId } = require('../utils/id');

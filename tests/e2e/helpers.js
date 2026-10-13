@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const { expect } = require('@playwright/test');
 const { default: AxeBuilder } = require('@axe-core/playwright');
 const fixtures = require('./fixtures');

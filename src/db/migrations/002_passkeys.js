@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 // Passkeys (WebAuthn credentials) as a second factor. The credential id can be long (up to 1023 bytes as
 // base64url), so it is not indexed; lookups always go through the owner, who has a handful at most.
 module.exports = {

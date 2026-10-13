@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024-2026 VectoDE
+#
+# SPDX-License-Identifier: MIT
+
 # A pushed version tag (v4.0.0, v4.1.0-rc.1, ...) on main becomes a signed release:
 #   - the full check runs once more on the tagged commit,
 #   - the source archive and a CycloneDX SBOM get a signed build provenance (Sigstore, GitHub attestations),

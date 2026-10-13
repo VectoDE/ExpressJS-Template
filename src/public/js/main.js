@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 // Interface behaviour and the motion controller. No dependencies, no inline styles (CSP style-src 'self'):
 // values reach CSS through custom properties set via the CSSOM, which the policy allows.
 (() => {

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024-2026 VectoDE
+#
+# SPDX-License-Identifier: MIT
+
 # Groups automatically generated release notes by pull request label.
 changelog:
   exclude:

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 // Passkey ceremonies for the dashboard (create) and the second sign-in step (get). The server renders the options
 // into data-passkey-options; this script asks the browser for the credential and posts it as JSON in the hidden
 // field "response". Without WebAuthn the forms stay hidden and the code form remains the way in.

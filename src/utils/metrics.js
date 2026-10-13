@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const { monitorEventLoopDelay } = require('node:perf_hooks');
 
 /**

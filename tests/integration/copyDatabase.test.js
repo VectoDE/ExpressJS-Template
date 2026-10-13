@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const { createDatabase } = require('../../src/db');
 const { newId } = require('../../src/utils/id');

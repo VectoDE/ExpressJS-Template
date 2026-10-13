@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 // The motion layer: off for reduced motion, switchable in the footer, scroll-driven story on the home page.
 const { test, expect } = require('@playwright/test');
 

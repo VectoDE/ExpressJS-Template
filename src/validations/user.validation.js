@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const Joi = require('joi');
 const { roles } = require('../config/roles');
 const { objectId, fields } = require('./custom.validation');

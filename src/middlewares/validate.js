@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const Joi = require('joi');
 const pick = require('../utils/pick');
 const ApiError = require('../utils/ApiError');

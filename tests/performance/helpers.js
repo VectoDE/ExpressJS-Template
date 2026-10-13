@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 /**
  * Test data for the load test. Must be required after the environment (secrets, DATABASE_URL) is set,
  * because tokens are signed with the same configuration the server uses.

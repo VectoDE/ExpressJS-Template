@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 /**
  * Starts the app against a throwaway in-memory SQLite database with demo accounts. Used by the Playwright tests and
  * handy for a quick look at the interface without installing a database. Nothing is written to disk.

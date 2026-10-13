@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 // Every page renders without browser errors, passes axe in both colour schemes and never scrolls sideways.
 const { test, expect } = require('@playwright/test');
 const fixtures = require('./fixtures');

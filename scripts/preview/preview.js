@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 // Only in the static preview on GitHub Pages: there is no server, so forms and some links cannot work.
 // A notice says so at the top of every page, and is announced again when someone tries one of them.
 (() => {

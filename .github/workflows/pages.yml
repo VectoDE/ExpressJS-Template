@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024-2026 VectoDE
+#
+# SPDX-License-Identifier: MIT
+
 # Builds the static preview of every page and deploys it to GitHub Pages: https://vectode.github.io/ExpressJS-Template/
 name: Preview
 

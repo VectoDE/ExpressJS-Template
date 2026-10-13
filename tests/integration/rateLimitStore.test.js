@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const DatabaseRateLimitStore = require('../../src/db/rateLimitStore');
 const { useDatabase, db } = require('../helpers/db');
 

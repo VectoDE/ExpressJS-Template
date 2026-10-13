@@ -1,4 +1,10 @@
 /*
+ * SPDX-FileCopyrightText: 2024-2026 VectoDE
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+/*
  * Home page scrollytelling: a request travels through the stations while the visitor scrolls.
  * main.js sets --story-progress (0 to 1) on .story and marks the active step with .is-active.
  * Without the "motion" class the stage stays hidden and the steps read as a plain numbered list.

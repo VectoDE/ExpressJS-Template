@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 /**
  * Creates .env from .env.example and fills JWT_SECRET, SESSION_SECRET, ENCRYPTION_KEY and METRICS_TOKEN with
  * random values. An existing .env is never touched, so running it twice is safe.

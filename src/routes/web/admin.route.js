@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024-2026 VectoDE
+//
+// SPDX-License-Identifier: MIT
+
 const express = require('express');
 const { ensureAuthenticated, requireRights } = require('../../middlewares/viewAuth');
 const adminController = require('../../controllers/web/admin.controller');
