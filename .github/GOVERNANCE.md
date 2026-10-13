@@ -31,15 +31,16 @@ from a laptop. See [deployment](../docs/deployment.md#releases).
 
 ## Access to sensitive resources
 
-| Resource                                                 | Who has access                                                              |
-| -------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Repository settings, rulesets and secrets                | [@VectoDE](https://github.com/VectoDE) (owner)                              |
-| Merging into `main`                                      | [@VectoDE](https://github.com/VectoDE), through pull requests only          |
-| Version tags and releases                                | [@VectoDE](https://github.com/VectoDE); the release workflow publishes      |
-| Docker image `ghcr.io/vectode/expressjs-template`        | The release workflow with the repository token; no personal token is stored |
-| GitHub Pages preview                                     | The preview workflow on `main`                                              |
-| Security advisories                                      | [@VectoDE](https://github.com/VectoDE)                                      |
-| SonarQube Cloud project and OpenSSF Best Practices entry | [@VectoDE](https://github.com/VectoDE)                                      |
+| Resource                                                               | Who has access                                                                                    |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Repository settings, rulesets and secrets                              | [@VectoDE](https://github.com/VectoDE) (owner)                                                    |
+| Merging into `main`                                                    | [@VectoDE](https://github.com/VectoDE), through pull requests only                                |
+| Version tags and releases                                              | [@VectoDE](https://github.com/VectoDE); the release workflow publishes                            |
+| Docker image `ghcr.io/vectode/expressjs-template`                      | The release workflow with the repository token; no personal token is stored                       |
+| Live demo: Cloudflare Worker and D1 database `expressjs-template-demo` | [@VectoDE](https://github.com/VectoDE); Workers Builds deploys `main`, the owner sets the secrets |
+| GitHub Pages (redirect to the live demo)                               | The Pages workflow on `main`                                                                      |
+| Security advisories                                                    | [@VectoDE](https://github.com/VectoDE)                                                            |
+| SonarQube Cloud project and OpenSSF Best Practices entry               | [@VectoDE](https://github.com/VectoDE)                                                            |
 
 The list changes in the same pull request that grants or removes access.
 
