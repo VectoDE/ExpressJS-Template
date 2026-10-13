@@ -45,6 +45,9 @@ with `gh attestation verify <file or oci://image> --repo VectoDE/ExpressJS-Templ
 - The release workflow needs no stored secret: it signs with GitHub's OIDC identity and pushes the image with the
   short-lived repository token. The repository has no Actions secrets; SonarQube Cloud analyses through its
   GitHub app.
+- The live demo on Cloudflare has its own three keys (`JWT_SECRET`, `SESSION_SECRET`, `ENCRYPTION_KEY`). They are
+  random values that were never displayed, stored only as Worker secrets in Cloudflare, and set by the maintainer
+  with `wrangler secret put`. They protect nothing but the demo, whose data is deleted every hour.
 - Should a secret become necessary, only the maintainer can read or change it (see [governance](GOVERNANCE.md)).
   It is rotated at least once a year, at once when someone with access leaves, and whenever it may have leaked.
 - Applications built from the template keep their secrets in environment variables; `npm run setup` generates
