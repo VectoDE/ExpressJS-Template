@@ -51,6 +51,8 @@ node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
 | `MOTION_STYLE`                   | `film`                                     | Animation style of the web pages, see [Motion](#motion)                              |
 | `MOTION_SWITCH`                  | `true`                                     | Shows the style switch in the footer                                                 |
 | `LOG_LEVEL`                      | `info`                                     | Winston level. JSON lines in production                                              |
+| `PASSWORD_HASH_COST`             | `17`                                       | scrypt cost as a power of two (N = 2^cost), 10 to 20. Below 17 only with `DEMO_MODE` |
+| `DEMO_MODE`                      | `false`                                    | Public demo only, see the README section on the Cloudflare demo. Never in real use   |
 
 ## Database
 
