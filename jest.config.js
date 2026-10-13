@@ -12,6 +12,6 @@ module.exports = {
   testTimeout: 30000,
   collectCoverageFrom: ['src/**/*.js', '!src/server.js'],
   coverageThreshold: {
-    global: { statements: 85, branches: 75, functions: 85, lines: 85 },
+    global: { statements: 90, branches: 80, functions: 90, lines: 90 },
   },
 };

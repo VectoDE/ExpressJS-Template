@@ -25,6 +25,7 @@ All notable changes to this project are documented here. The format follows
 
 - The public demo runs at https://expressjs-template-demo.vectode.workers.dev; GitHub Pages now redirects there
   instead of serving the static preview. `npm run build:preview` stays for projects that want a static preview.
+- Coverage thresholds raised to 90 % for statements, lines and functions and 80 % for branches.
 - The metrics endpoint reports an event loop delay of 0 on runtimes without an event loop monitor instead of
   failing at start.
 - Contributing guide: coding standards and how dependencies are chosen. Security policy: handling of secrets and
@@ -34,6 +35,9 @@ All notable changes to this project are documented here. The format follows
 
 - Following a link to the API docs no longer logs "Transition was aborted" in Chrome. Swagger UI cannot opt in to
   the page transitions, so the page skips the transition when it leaves for `/docs`.
+- Live demo: the sign-in limit counted successful sign-ins too and locked visitors out after ten. The Worker
+  cancelled the database update that takes a successful attempt back, because it runs after the response; each
+  request now stays alive until its database work is done.
 
 ## [4.0.0] - 2026-10-12
 
