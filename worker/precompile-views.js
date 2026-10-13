@@ -4,7 +4,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const ejs = require('ejs');
-// espree is ESLint's parser and comes with the ESLint dev dependency; it is only used at build time.
+// espree (ESLint's parser, a pinned dev dependency) tokenises the compiled templates; only used at build time.
 const espree = require('espree');
 const globals = require('globals');
 
