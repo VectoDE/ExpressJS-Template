@@ -46,9 +46,9 @@
     {
       "binding": "DB",
       "database_name": "expressjs-template-demo",
-      // Placeholder. `npx wrangler d1 create expressjs-template-demo` prints the real id; put it here before
-      // deploying. Local development (`wrangler dev`) works with the placeholder.
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      // The project's own demo database (EU jurisdiction). For your own deployment, `npx wrangler d1 create
+      // expressjs-template-demo` prints the id to put here. Local development (`wrangler dev`) ignores it.
+      "database_id": "560df8db-35c3-42fe-83ad-5677aca04375",
       "migrations_dir": "worker/migrations",
     },
   ],
@@ -71,9 +71,9 @@
     "RATE_LIMIT_STORE": "database",
     "API_DOCS_ENABLED": "true",
     "APP_NAME": "Express.js Template Demo",
-    // The public address of the demo, used for the links in the emails it shows. Change it to your workers.dev
-    // or custom domain URL.
-    "APP_URL": "https://expressjs-template-demo.example.workers.dev",
+    // The public address of the demo, used for the links in the emails it shows. Change it to your own
+    // workers.dev or custom domain URL when you deploy it yourself.
+    "APP_URL": "https://expressjs-template-demo.vectode.workers.dev",
     "LOG_LEVEL": "info",
   },
 
