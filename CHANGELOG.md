@@ -5,6 +5,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Dependabot pull requests for patch and minor updates merge on their own once every required check has passed;
+  major updates still wait for a review.
+- Version tags (`v*`) can no longer be moved or deleted; a ruleset protects them.
+
 ## [4.1.0] - 2026-10-13
 
 The template now runs as a public live demo on Cloudflare Workers with D1, and releases come with signed version
