@@ -125,7 +125,10 @@ describe('DatabaseSessionStore', () => {
     const store = storeOn(fakeDb());
     await call((done) => store.set('s2', { cookie: {} }, done));
     const [version, iv, tag, data] = saved.get('s2').split('.');
-    saved.set('s2', [version, iv, tag, `${data.slice(0, -2)}AA`].join('.'));
+    // Flip one bit of the ciphertext. Swapping characters of the text could leave the bytes unchanged by chance.
+    const tampered = Buffer.from(data, 'base64url');
+    tampered[0] ^= 1;
+    saved.set('s2', [version, iv, tag, tampered.toString('base64url')].join('.'));
     expect((await call((done) => store.get('s2', done))).value).toBeNull();
 
     await call((done) => store.set('s3', { cookie: {} }, done));
