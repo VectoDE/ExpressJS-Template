@@ -81,7 +81,9 @@ jobs:
           - name: PostgreSQL
             image: postgres:18-alpine@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873
             port: 5432
-            health: pg_isready -U postgres
+            # Over TCP: during initialisation a temporary server answers on the socket only, so a socket check
+            # reports ready before port 5432 is open.
+            health: pg_isready -h 127.0.0.1 -U postgres
             url: postgres://postgres:ci-only-Passw0rd@127.0.0.1:5432/app
           - name: MySQL
             image: mysql:8.4@sha256:6ea90827b1100f8f2ae306a539f86d2c264a26ed435a2a9f75551dd5c3aeb242
