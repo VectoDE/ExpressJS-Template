@@ -34,6 +34,8 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- Dependabot's Docker Compose update failed because it looked up the locally built app image on Docker Hub.
+  `docker-compose.yml` no longer names that image, so Compose names it and no version needs updating per release.
 - Following a link to the API docs no longer logs "Transition was aborted" in Chrome. Swagger UI cannot opt in to
   the page transitions, so the page skips the transition when it leaves for `/docs`.
 - Live demo: the sign-in limit counted successful sign-ins too and locked visitors out after ten. The Worker
