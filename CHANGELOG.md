@@ -5,6 +5,11 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [4.1.0] - 2026-10-13
+
+The template now runs as a public live demo on Cloudflare Workers with D1, and releases come with signed version
+tags. Nothing changes for existing installations; there is nothing to migrate.
+
 ### Added
 
 - Every file states its copyright holder and license in an SPDX header or in `REUSE.toml`; CI checks this with the
@@ -210,7 +215,8 @@ Security release with a full audit. See [upgrading](docs/upgrading.md) for migra
 
 - First release.
 
-[Unreleased]: https://github.com/VectoDE/ExpressJS-Template/compare/v4.0.0...HEAD
+[Unreleased]: https://github.com/VectoDE/ExpressJS-Template/compare/v4.1.0...HEAD
+[4.1.0]: https://github.com/VectoDE/ExpressJS-Template/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/VectoDE/ExpressJS-Template/compare/v3.0.0...v4.0.0
 [3.0.0]: https://github.com/VectoDE/ExpressJS-Template/compare/1.0.1...v3.0.0
 [1.0.1]: https://github.com/VectoDE/ExpressJS-Template/compare/v1.0...1.0.1

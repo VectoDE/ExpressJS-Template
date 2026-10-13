@@ -6,7 +6,7 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/VectoDE/ExpressJS-Template/badge)](https://securityscorecards.dev/viewer/?uri=github.com/VectoDE/ExpressJS-Template)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Starter for Express 5 applications with a JSON API and server-rendered pages. Version 4.0.0.
+Starter for Express 5 applications with a JSON API and server-rendered pages. Version 4.1.0.
 
 **[Try the live demo](https://expressjs-template-demo.vectode.workers.dev/)** on Cloudflare Workers, in English and
 German, with the [public demo accounts](#live-demo-on-cloudflare). Its data is reset every hour. `npm run preview`

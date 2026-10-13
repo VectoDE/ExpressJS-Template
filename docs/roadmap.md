@@ -16,10 +16,14 @@ objections are welcome in [Discussions](https://github.com/VectoDE/ExpressJS-Tem
 Node.js 26 and MongoDB 9 in Docker and CI, the copy script between databases, passkeys as a second factor and
 separate database accounts for migrations. See the [changelog](../CHANGELOG.md#400---2026-10-12).
 
+## Done in 4.1
+
+A public live demo on Cloudflare Workers with D1 and signed version tags. See the
+[changelog](../CHANGELOG.md#410---2026-10-13).
+
 ## 4.x
 
 - Passkeys as the only sign-in step (passwordless), as an option next to password plus second factor.
-- Signed version tags, so a tag can be verified without the release files.
 - A second maintainer, so that pull requests get a review by someone other than the author.
 
 ## Not planned

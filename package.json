@@ -1,6 +1,6 @@
 {
   "name": "expressjs-template",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "Security-hardened Express.js 5 template with a REST API, JWT authentication, a browser UI with CSRF-protected sessions, OpenAPI docs and tests.",
   "main": "src/server.js",
   "private": true,
