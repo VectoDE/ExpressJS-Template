@@ -46,7 +46,8 @@ Node.js 22.12 or newer is required (`.nvmrc` pins 26). Tests use an in-memory SQ
   library does not, its maintenance state and its license (MIT, BSD, ISC, Apache-2.0 or similar).
 - `package-lock.json` is committed and installs use `npm ci`. Docker base images and GitHub Actions are pinned
   by digest or commit SHA.
-- Dependabot proposes updates weekly, grouped by production and development dependencies. `npm audit`,
+- Dependabot proposes updates weekly, grouped by production and development dependencies. Patch and minor updates
+  merge on their own once every required check has passed; major updates wait for a review. `npm audit`,
   OSV-Scanner and GitHub dependency review run on every pull request.
 - `npm run licenses` regenerates [third-party notices](../docs/third-party-notices.md) after a dependency change.
 

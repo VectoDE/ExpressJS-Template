@@ -27,7 +27,8 @@ request that adds them to this file and to [CODEOWNERS](CODEOWNERS).
 
 A release is a signed version tag on a commit of `main`, created by the [tag workflow](workflows/tag.yml). The
 [release workflow](workflows/release.yml) checks the signature and the commit again and publishes the source archive,
-the SBOM and the Docker image with signed provenance. Nobody publishes from a laptop. See
+the SBOM and the Docker image with signed provenance. The ruleset "Protect release tags" keeps a published `v*` tag
+from being moved or deleted. Nobody publishes from a laptop. See
 [deployment](../docs/deployment.md#releases).
 
 ## Access to sensitive resources
