@@ -112,10 +112,12 @@ describe('DatabaseSessionStore', () => {
 
   it('stores sessions encrypted and reads them back', async () => {
     const store = storeOn(fakeDb());
-    await call((done) => store.set('s1', { cookie: {}, userId: 'u1' }, done));
+    // A value long enough that random ciphertext cannot contain it by chance, unlike a short one such as "u1".
+    const userId = 'plaintext-user-id-marker';
+    await call((done) => store.set('s1', { cookie: {}, userId }, done));
     expect(saved.get('s1')).toMatch(/^v1\./);
-    expect(saved.get('s1')).not.toContain('u1');
-    expect((await call((done) => store.get('s1', done))).value).toEqual({ cookie: {}, userId: 'u1' });
+    expect(saved.get('s1')).not.toContain(userId);
+    expect((await call((done) => store.get('s1', done))).value).toEqual({ cookie: {}, userId });
     expect((await call((done) => store.get('missing', done))).value).toBeNull();
   });
 
