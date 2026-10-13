@@ -8,8 +8,9 @@
 
 Starter for Express 5 applications with a JSON API and server-rendered pages. Version 4.0.0.
 
-**[Look at the pages](https://vectode.github.io/ExpressJS-Template/)** in a static preview on GitHub Pages, in English
-and German. Signing in and forms need the running app; `npm run preview` starts it locally with demo accounts.
+**[Try the live demo](https://expressjs-template-demo.vectode.workers.dev/)** on Cloudflare Workers, in English and
+German, with the [public demo accounts](#live-demo-on-cloudflare). Its data is reset every hour. `npm run preview`
+starts the same app locally.
 
 It comes with sign-up and sign-in for both an API (JWT) and a browser (session cookie), two-factor
 authentication with an app or a passkey, email verification and password reset, user management for admins, GDPR self-service,

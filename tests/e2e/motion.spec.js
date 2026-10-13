@@ -4,6 +4,7 @@
 
 // The motion layer: off for reduced motion, switchable in the footer, scroll-driven story on the home page.
 const { test, expect } = require('@playwright/test');
+const { watchConsole } = require('./helpers');
 
 test('reduced motion shows the final state without the motion class', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -36,6 +37,17 @@ test('the story follows the scroll position', { tag: '@desktop' }, async ({ page
   await expect(page.locator('[data-step="6"]')).toHaveClass(/is-active/);
   const progress = await story.evaluate((element) => Number(element.style.getPropertyValue('--story-progress')));
   expect(progress).toBeGreaterThan(0.9);
+});
+
+// Swagger UI cannot opt in to view transitions; Chrome reports an aborted transition unless the page skips it.
+// Desktop only: on phones the link sits in the menu.
+test('the way to the API docs ends without a transition error', { tag: '@desktop' }, async ({ page }) => {
+  const errors = watchConsole(page);
+  await page.goto('/');
+  await page.locator('header a[href="/docs/"]').click();
+  await expect(page).toHaveURL(/\/docs\/$/);
+  await expect(page.getByRole('heading', { name: /Express\.js Template API/ })).toBeVisible();
+  expect(errors).toEqual([]);
 });
 
 test('headlines are split into words but keep their text for screen readers', async ({ page }) => {

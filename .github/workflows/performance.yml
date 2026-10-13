@@ -9,7 +9,8 @@ on:
     inputs:
       duration:
         description: Seconds per endpoint
-        default: '5'
+        type: number
+        default: 5
   schedule:
     - cron: '7 2 * * 0'
   pull_request:

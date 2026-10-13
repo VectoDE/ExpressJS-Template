@@ -40,7 +40,7 @@ TEST_DATABASE_URL=postgres://postgres:pw@127.0.0.1:5432/app npm test
 | `tests/integration/security.test.js`       | Headers, CORS, body limits, health, docs, rate limiting                                                                                         |
 | `tests/e2e`                                | Browser tests, see below                                                                                                                        |
 
-Coverage thresholds are enforced in `jest.config.js` (85 % statements, lines and functions, 75 % branches).
+Coverage thresholds are enforced in `jest.config.js` (90 % statements, lines and functions, 80 % branches).
 
 ## Browser tests
 

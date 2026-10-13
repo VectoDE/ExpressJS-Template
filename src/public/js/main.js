@@ -250,6 +250,17 @@
     });
   };
 
+  // The pages cross-fade (motion.css), but Swagger UI under /docs cannot opt in, and Chrome aborts a transition
+  // into a page without the opt-in with an error. Leaving for /docs therefore skips the transition.
+  const setupPageSwap = () => {
+    window.addEventListener('pageswap', (event) => {
+      const target = event.activation?.entry?.url;
+      if (event.viewTransition && target && new URL(target).pathname.startsWith('/docs')) {
+        event.viewTransition.skipTransition();
+      }
+    });
+  };
+
   const start = () => {
     if (moving()) {
       document.querySelectorAll('[data-split]').forEach(splitWords);
@@ -263,6 +274,7 @@
     setupCodeTimer();
     setupMotionSwitch();
     setupForms();
+    setupPageSwap();
   };
 
   // A visitor who switches reduced motion on mid-visit gets the final state right away.
