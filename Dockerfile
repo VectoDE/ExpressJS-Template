@@ -4,13 +4,13 @@
 # SPDX-License-Identifier: MIT
 
 # Base image pinned by digest (node 26.10.0 on Alpine 3.24) in both stages, so Dependabot can propose updates.
-FROM node:26.12.0-alpine3.24@sha256:6f08a523443ddedf52941874c203475b0ad503e859ad70cb26ab8be9a517dbd5 AS deps
+FROM node:26.12.1-alpine3.24@sha256:40cd011b55415bc894e45b02fdd5a5dfde056921b7d23a64c74f80497af48797 AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 # No install scripts, no dev dependencies, exact versions from the lockfile.
 RUN npm ci --omit=dev --ignore-scripts --no-audit --no-fund && npm cache clean --force
 
-FROM node:26.12.0-alpine3.24@sha256:6f08a523443ddedf52941874c203475b0ad503e859ad70cb26ab8be9a517dbd5 AS runtime
+FROM node:26.12.1-alpine3.24@sha256:40cd011b55415bc894e45b02fdd5a5dfde056921b7d23a64c74f80497af48797 AS runtime
 ENV NODE_ENV=production \
     PORT=8080 \
     NPM_CONFIG_UPDATE_NOTIFIER=false
