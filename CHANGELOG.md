@@ -5,6 +5,14 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Security
+
+- Updated dependencies with known vulnerabilities to fixed patch or minor releases: @azure/identity 4.14.1 (pulls
+  @azure/msal-node 7.2.2, GHSA-xcx6-jx8p-x3h5), body-parser 2.4.0, fast-uri 3.1.9, follow-redirects 1.16.3,
+  ip-address 10.7.6, joi 18.3.2, nodemailer 10.6.0, qs 6.17.1 and undici 7.30.2 (override, used by Wrangler only).
+- `osv-scanner.toml` ignores GHSA-g3hv-75wg-m249 (minimatch) and GHSA-3g3m-2fjr-6pw4 (glob) until 2027-02-18: only
+  major updates fix them, no dependent allows those yet, and neither flaw is reachable with the patterns the app uses.
+
 ## [4.1.1] - 2026-10-13
 
 Repository maintenance only; the application is unchanged.
