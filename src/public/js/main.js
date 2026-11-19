@@ -256,6 +256,9 @@
     window.addEventListener('pageswap', (event) => {
       const target = event.activation?.entry?.url;
       if (event.viewTransition && target && new URL(target).pathname.startsWith('/docs')) {
+        // Skipping rejects `ready` with an AbortError. Chrome marks that promise as handled, WebKit reports it
+        // as an unhandled rejection, so the rejection is caught here on purpose.
+        event.viewTransition.ready.catch(() => {});
         event.viewTransition.skipTransition();
       }
     });
