@@ -89,7 +89,9 @@ remove the `depends_on` block of `app` and set `DATABASE_URL` in `.env`.
 
 - [ ] `NODE_ENV=production`; `JWT_SECRET`, `SESSION_SECRET` and `ENCRYPTION_KEY` set from a secret store,
       never committed. Keep `ENCRYPTION_KEY` stable, otherwise two-factor setups stop working
-- [ ] `APP_URL` is the public `https://` address
+- [ ] `APP_URL` is the public `https://` address, exactly as users open it. Passkeys use its host as the relying party ID and
+      its origin for verification; `@simplewebauthn/server` 14 throws on an invalid RP ID or origin, so a wrong value
+      breaks passkey sign-in instead of failing silently
 - [ ] `SMTP_URL` points to a mail server with TLS; a test email arrived
 - [ ] `TRUST_PROXY` matches the proxy setup; HTTPS only
 - [ ] `CORS_ORIGIN` lists exactly the front-end origins, or is empty

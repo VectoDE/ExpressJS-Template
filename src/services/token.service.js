@@ -78,7 +78,10 @@ const consumeRefreshToken = async (token) => {
       (await db.tokens.exists({ userId: payload.sub, type: tokenTypes.REFRESH, family: payload.fam }));
     const error = new ApiError(httpStatus.UNAUTHORIZED, INVALID_TOKEN);
     if (rotated) {
-      logger.warn('Refresh token reuse detected for user %s, revoking all refresh tokens', payload.sub);
+      logger.warn(
+        'Refresh token reuse detected for user %s, revoking all refresh tokens',
+        String(payload.sub).replaceAll(/[\r\n]/g, ' '),
+      );
       await revokeAllForUser(payload.sub);
       error.reuseDetectedFor = payload.sub;
     }

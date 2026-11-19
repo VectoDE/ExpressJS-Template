@@ -19,7 +19,8 @@ const record = async (userId, type, context = {}) => {
     const device = context.device ? String(context.device).slice(0, 120) : undefined;
     await db.audit.add({ id: newId(), userId: String(userId), type, device });
   } catch (error) {
-    logger.error('Audit event %s for user %s was not stored: %s', type, String(userId), error.message);
+    const plain = (value) => String(value).replaceAll(/[\r\n]/g, ' ');
+    logger.error('Audit event %s for user %s was not stored: %s', plain(type), plain(userId), plain(error.message));
   }
 };
 
