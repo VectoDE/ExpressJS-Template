@@ -3,8 +3,9 @@
 # SPDX-License-Identifier: MIT
 
 # Every commit in a pull request must be signed off (Developer Certificate of Origin): the author certifies the right
-# to submit it under the project's license. Commits by bots such as Dependabot and merge commits (for example from
-# "Update branch") are exempt: bots cannot sign off, and a merge adds no new authorship.
+# to submit it under the project's license. Commits by bots such as Dependabot and merges that GitHub itself made (for
+# example "Update branch", verified and committed by web-flow) are exempt: bots cannot sign off, and such a merge adds
+# no authorship of its own.
 name: DCO
 
 on: pull_request
@@ -30,10 +31,10 @@ jobs:
           PR: ${{ github.event.pull_request.number }}
         run: |
           missing=0
-          while IFS=$'\t' read -r sha login email parents; do
+          while IFS=$'\t' read -r sha login email web_merge; do
             case "$login" in *'[bot]') continue ;; esac
-            if [ "$parents" -gt 1 ]; then
-              echo "${sha:0:7} is a merge commit, skipped"
+            if [ "$web_merge" = 1 ]; then
+              echo "${sha:0:7} is a merge made by GitHub, skipped"
               continue
             fi
             message="$(gh api "repos/$GITHUB_REPOSITORY/commits/$sha" --jq .commit.message)"
@@ -44,5 +45,5 @@ jobs:
               missing=1
             fi
           done < <(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR/commits" \
-            --jq '.[] | [.sha, (.author.login // ""), .commit.author.email, (.parents | length)] | @tsv')
+            --jq '.[] | [.sha, (.author.login // "-"), .commit.author.email, (if (.parents | length) > 1 and .committer.login == "web-flow" and .commit.verification.verified then 1 else 0 end)] | @tsv')
           exit "$missing"
