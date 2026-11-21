@@ -93,7 +93,8 @@ In production the app refuses to start when:
 
 - `JWT_SECRET`, `SESSION_SECRET` or `ENCRYPTION_KEY` is missing or looks like a placeholder, or two of them are equal
 - `METRICS_TOKEN` is set but looks like a placeholder
-- `APP_URL` is missing or does not use `https://`
+- `APP_URL` is missing or does not use `https://` (it is also the passkey relying party; `@simplewebauthn/server` 14 throws
+  on an invalid RP ID or origin, so set it to the real public address)
 - `SMTP_URL` is missing
 - `CORS_ORIGIN` contains `*`
 - `SESSION_COOKIE_SECURE=false`
